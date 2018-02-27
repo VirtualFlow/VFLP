@@ -1,0 +1,3 @@
+smiles	zinc_id	inchikey	mwt	logp	reactive	purchasable	tranche_name	features
+Cc1ccccc1/N=N/c1ccccc1	ZINC000017058876	CFNRNHFKQPOFMH-CCEZHUSRSA-N	196.253	4.410	10	40	AICB	
+Cc1ccccc1/N=N\c1ccccc1	ZINC000104186074	CFNRNHFKQPOFMH-PFONDFGASA-N	196.253	4.410	10	40	AICB	

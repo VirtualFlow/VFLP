@@ -1,0 +1,2 @@
+smiles	zinc_id	inchikey	mwt	logp	reactive	purchasable	tranche_name	features
+CCCC(=CC1CCCCC1)CCC	ZINC000104837632	WEUBMLWWXAEKKJ-UHFFFAOYSA-N	194.362	5.093	0	30	AKAC	

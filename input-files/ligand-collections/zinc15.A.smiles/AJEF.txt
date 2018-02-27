@@ -1,0 +1,2 @@
+smiles	zinc_id	inchikey	mwt	logp	reactive	purchasable	tranche_name	features
+CCCCCCCC/C=C/CCl	ZINC000100057897	YOWRXGYJBUMGRR-MDZDMXLPSA-N	188.742	4.532	30	1	AJEF	

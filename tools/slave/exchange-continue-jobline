@@ -1,0 +1,43 @@
+#!/bin/bash
+# ---------------------------------------------------------------------------
+#
+# Usage: . exchange-continue-jobline first_jobline_no last_jobline_no job_template 
+# partition/queue [quiet]
+#
+# Description: Exchange jobfiles and continue a jobline which was already started. 
+#
+# Option: quiet (optional)
+#    Possible values: 
+#        quiet: No information is displayed on the screen.
+#
+# Revision history:
+# 2015-12-05  Created (version 1.2)
+# 2015-12-12  Various improvements (version 1.10)
+# 2015-12-16  Adaption to version 2.1
+# 2016-07-16  Various improvements
+#
+# ---------------------------------------------------------------------------
+
+# Displaying help if the first argument is -h
+usage="Usage: . exchange-continue-jobline first_jobline_no last_jobline_no job_template batch_partition [quiet]"
+if [ "${1}" = "-h" ]; then
+    echo "${usage}"
+    return
+fi
+
+# Variables
+i=0
+
+# Continuing the jobline
+for jobline_no in $(seq ${1} ${2}); do
+    i=$(( i + 1 ))
+    . exchange-jobfile  ${3} ${jobline_no} ${5}
+    . continue-jobline ${jobline_no} ${4} "sync" ${5}
+done
+
+# Displaying some information if no quiet option
+if [[ ! "$*" = *"quiet"* ]]; then
+    echo
+    echo "Number of joblines which were continued: ${i}"
+    echo
+fi
