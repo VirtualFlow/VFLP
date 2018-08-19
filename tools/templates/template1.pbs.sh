@@ -109,7 +109,7 @@ print_job_infos_end() {
 # Checking if the queue should be stopped
 check_queue_end1() {
 
-    # Determining the controlfile to use for this jobline
+    # Determining the VF_CONTROLFILE to use for this jobline
     VF_CONTROLFILE=""
     for file in $(ls ../workflow/control/*-* 2>/dev/null|| true); do
         file_basename=$(basename $file)
@@ -130,7 +130,7 @@ check_queue_end1() {
     stop_after_current_docking=${line/"stop_after_current_docking="}
     if [[ "${stop_after_current_docking}" == "yes" ]]; then
         echo
-        echo "This job line was stopped by the stop_after_current_docking flag in the controlfile ${VF_CONTROLFILE}."
+        echo "This job line was stopped by the stop_after_current_docking flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         print_job_infos_end
         exit 0
@@ -163,7 +163,7 @@ check_queue_end2() {
     stop_after_job=${line/"stop_after_job="}
     if [ "${stop_after_job}" = "yes" ]; then
         echo
-        echo "This job line was stopped by the stop_after_job flag in the controlfile ${VF_CONTROLFILE}."
+        echo "This job line was stopped by the stop_after_job flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         print_job_infos_end
         exit 0
@@ -188,7 +188,7 @@ export VF_START_TIME_SECONDS="$(date +%s)"
 export LC_ALL=C
 
 
-# Determining the controlfile to use for this jobline
+# Determining the VF_CONTROLFILE to use for this jobline
 VF_CONTROLFILE=""
 for file in $(ls ../workflow/control/*-* 2>/dev/null|| true); do
     file_basename=$(basename $file)
@@ -276,7 +276,7 @@ echo
 # Checking if the queue should be stopped
 check_queue_end2
 
-# Syncing the new jobfile with the settings in the controlfile
+# Syncing the new jobfile with the settings in the VF_CONTROLFILE
 cd slave
 . sync-jobfile.sh ${VF_JOBLINE_NO}
 cd ..

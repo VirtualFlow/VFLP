@@ -128,9 +128,9 @@ if [ ! -d /tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/ ]; then
 fi
 modification_time_difference=0
 start_time_waiting="$(date +%s)"
-line=$(cat ../${controlfile} | grep "^dispersion_time_min=")
+line=$(cat ../${VF_CONTROLFILE} | grep "^dispersion_time_min=")
 dispersion_time_min=${line/"dispersion_time_min="}
-line=$(cat ../${controlfile} | grep "^dispersion_time_max=")
+line=$(cat ../${VF_CONTROLFILE} | grep "^dispersion_time_max=")
 dispersion_time_max=${line/"dispersion_time_max="}
 modification_time_treshhold=$(shuf -i ${dispersion_time_min}-${dispersion_time_max} -n1)
 modification_time_treshhold_lockedfile="3600"              # one hour
@@ -193,17 +193,17 @@ grep '[^[:blank:]]' < ${todo_file_temp} > ${todo_file_temp}.tmp || true
 mv ${todo_file_temp}.tmp ${todo_file_temp}
 
 # Variables
-line=$(cat ../${controlfile} | grep "collection_folder=" | sed 's/\/$//g')
+line=$(cat ../${VF_CONTROLFILE} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
 collection_folder=${collection_folder%/}
 VF_START_TIME_SECONDS="$(date +%s)"
 
 # Getting the number of ligands to-do per queue
-line=$(cat ../${controlfile} | grep "ligands_todo_per_queue=")
+line=$(cat ../${VF_CONTROLFILE} | grep "ligands_todo_per_queue=")
 ligands_todo_per_queue=${line/"ligands_todo_per_queue="}
 
 # Getting the number of ligands per refilling step
-line=$(cat ../${controlfile} | grep "ligands_per_refilling_step=")
+line=$(cat ../${VF_CONTROLFILE} | grep "ligands_per_refilling_step=")
 ligands_per_refilling_step=${line/"ligands_per_refilling_step="}
 
 # Screen formatting output

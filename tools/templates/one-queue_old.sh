@@ -85,11 +85,11 @@ update_ligand_list_end_success() {
 # Obtaining the next ligand collection
 next_ligand_collection() {
     # Checking if this jobline should be stopped now
-    line=$(cat ${controlfile} | grep "stop_after_collection=")
+    line=$(cat ${VF_CONTROLFILE} | grep "stop_after_collection=")
     stop_after_collection=${line/"stop_after_collection="}
     if [ "${stop_after_collection}" = "yes" ]; then   
         echo
-        echo "This job line was stopped by the stop_after_collection flag in the controlfile ${controlfile}."
+        echo "This job line was stopped by the stop_after_collection flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         end_queue 0
     fi
@@ -305,34 +305,34 @@ check_pdbqt_3D() {
 }
 
 # Setting if the smi files should be kept and in which format
-line=$(cat ${controlfile} | grep "smi_keep_individuals=")
+line=$(cat ${VF_CONTROLFILE} | grep "smi_keep_individuals=")
 smi_keep_individuals=${line/"smi_keep_individuals="}
-line=$(cat ${controlfile} | grep "smi_keep_individuals_tar=")
+line=$(cat ${VF_CONTROLFILE} | grep "smi_keep_individuals_tar=")
 smi_keep_individuals_tar=${line/"smi_keep_individuals_tar="}
 
 # Setting if the pdb files should be kept and in which format
-line=$(cat ${controlfile} | grep "pdb_keep_individuals=")
+line=$(cat ${VF_CONTROLFILE} | grep "pdb_keep_individuals=")
 pdb_keep_individuals=${line/"pdb_keep_individuals="}
-line=$(cat ${controlfile} | grep "pdb_keep_individuals_compressed=")
+line=$(cat ${VF_CONTROLFILE} | grep "pdb_keep_individuals_compressed=")
 pdb_keep_individuals_compressed=${line/"pdb_keep_individuals_compressed="}
-line=$(cat ${controlfile} | grep "pdb_keep_individuals_compressed_tar=")
+line=$(cat ${VF_CONTROLFILE} | grep "pdb_keep_individuals_compressed_tar=")
 pdb_keep_individuals_compressed_tar=${line/"pdb_keep_individuals_compressed_tar="}
 
 # Setting if the targetformat files should be kept and in which format
-line=$(cat ${controlfile} | grep "targetformat_keep_individuals=")
+line=$(cat ${VF_CONTROLFILE} | grep "targetformat_keep_individuals=")
 targetformat_keep_individuals=${line/"targetformat_keep_individuals="}
-line=$(cat ${controlfile} | grep "targetformat_keep_individuals_compressed=")
+line=$(cat ${VF_CONTROLFILE} | grep "targetformat_keep_individuals_compressed=")
 targetformat_keep_individuals_compressed=${line/"targetformat_keep_individuals_compressed="}
-line=$(cat ${controlfile} | grep "targetformat_keep_individuals_compressed_tar=")
+line=$(cat ${VF_CONTROLFILE} | grep "targetformat_keep_individuals_compressed_tar=")
 targetformat_keep_individuals_compressed_tar=${line/"targetformat_keep_individuals_compressed_tar="}
 
 # Setting the target output file format
-line=$(cat ${controlfile} | grep "targetformat=")
+line=$(cat ${VF_CONTROLFILE} | grep "targetformat=")
 targetformat=${line/"targetformat="}
 targetformat=${targetformat// /}
 
 
-# Saving some information about the controlfiles
+# Saving some information about the VF_CONTROLFILEs
 echo
 echo
 echo "*****************************************************************************************"
@@ -341,17 +341,17 @@ echo "**************************************************************************
 echo 
 echo "Control files in use"
 echo "-------------------------"
-echo "controlfile = ${controlfile}"
+echo "VF_CONTROLFILE = ${VF_CONTROLFILE}"
 echo
-echo "Contents of the controlfile ${controlfile}"
+echo "Contents of the VF_CONTROLFILE ${VF_CONTROLFILE}"
 echo "-----------------------------------------------"
-cat ${controlfile}
+cat ${VF_CONTROLFILE}
 echo
 echo
 
 
 # Setting the number of ligands to screen in this job
-line=$(cat ${controlfile} | grep "ligands_per_queue=")
+line=$(cat ${VF_CONTROLFILE} | grep "ligands_per_queue=")
 no_of_ligands=${line/"ligands_per_queue="}
 
 # Variables
@@ -360,7 +360,7 @@ molconvert_version="$(molconvert | grep -m 1 version | sed "s/.*version \([0-9. 
 obabel_version="$(molconvert | grep -m 1 version | sed "s/.*version \([0-9. ]*\).*/\1/")"
 
 # Getting the folder where the colections are
-line=$(cat ${controlfile} | grep "collection_folder=" | sed 's/\/$//g')
+line=$(cat ${VF_CONTROLFILE} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
 
 for i in $(seq 1 ${no_of_ligands}); do
@@ -373,19 +373,19 @@ for i in $(seq 1 ${no_of_ligands}); do
     success_remark=""
     error_molconvert="false"
 
-    # Determining the controlfile to use for this jobline
+    # Determining the VF_CONTROLFILE to use for this jobline
     if [ -f ../workflow/control/${VF_JOBLINE_NO}.ctrl ]; then
-        controlfile="../workflow/control/${VF_JOBLINE_NO}.ctrl"
+        VF_CONTROLFILE="../workflow/control/${VF_JOBLINE_NO}.ctrl"
     else
-        controlfile="../workflow/control/all.ctrl"
+        VF_CONTROLFILE="../workflow/control/all.ctrl"
     fi
     
     # Checking if this queue line should be stopped immediately
-    line=$(cat ${controlfile} | grep "stop_after_ligand=")
+    line=$(cat ${VF_CONTROLFILE} | grep "stop_after_ligand=")
     stop_after_ligand=${line/"stop_after_ligand="}
     if [ "${stop_after_ligand}" = "yes" ]; then
         echo
-        echo "This queue was stopped by the stop_after_ligand flag in the controlfile ${controlfile}."
+        echo "This queue was stopped by the stop_after_ligand flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         end_queue 0
     fi

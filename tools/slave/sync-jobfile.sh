@@ -3,8 +3,8 @@
 #
 # Usage: . sync-jobfile.sh VF_JOBLINE_NO
 #
-# Description: Synchronizes the jobfile with the settings in the controlfile
-# (the global or local controlfile if existent).
+# Description: Synchronizes the jobfile with the settings in the VF_CONTROLFILE
+# (the global or local VF_CONTROLFILE if existent).
 #
 # Revision history:
 # 2015-12-05  Created (version 1.2)
@@ -44,7 +44,7 @@ batchsystem="${line/batchsystem=}"
 
 
 # Printing some information
-echo -e "Syncing the jobfile of jobline ${VF_JOBLINE_NO} with the controlfile file ${VF_CONTROLFILE}."
+echo -e "Syncing the jobfile of jobline ${VF_JOBLINE_NO} with the VF_CONTROLFILE file ${VF_CONTROLFILE}."
 
 # Syncing the number of nodes
 line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^VF_NODES_PER_JOB=")

@@ -89,7 +89,7 @@ next_ligand_collection() {
     stop_after_collection=${line/"stop_after_collection="}
     if [ "${stop_after_collection}" = "yes" ]; then   
         echo
-        echo "This job line was stopped by the stop_after_collection flag in the controlfile ${VF_CONTROLFILE}."
+        echo "This job line was stopped by the stop_after_collection flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         end_queue 0
     fi
@@ -339,7 +339,7 @@ targetformat=${line/"targetformat="}
 targetformat=${targetformat// /}
 
 
-# Saving some information about the controlfiles
+# Saving some information about the VF_CONTROLFILEs
 echo
 echo
 echo "*****************************************************************************************"
@@ -348,9 +348,9 @@ echo "**************************************************************************
 echo 
 echo "Control files in use"
 echo "-------------------------"
-echo "controlfile = ${VF_CONTROLFILE}"
+echo "VF_CONTROLFILE = ${VF_CONTROLFILE}"
 echo
-echo "Contents of the controlfile ${VF_CONTROLFILE}"
+echo "Contents of the VF_CONTROLFILE ${VF_CONTROLFILE}"
 echo "-----------------------------------------------"
 cat ${VF_CONTROLFILE}
 echo
@@ -380,7 +380,7 @@ for i in $(seq 1 ${no_of_ligands}); do
     success_remark=""
     error_molconvert="false"
 
-    # Determining the controlfile to use for this jobline
+    # Determining the VF_CONTROLFILE to use for this jobline
     if [ -f ../workflow/control/${VF_JOBLINE_NO}.ctrl ]; then
         VF_CONTROLFILE="../workflow/control/${VF_JOBLINE_NO}.ctrl"
     else
@@ -392,7 +392,7 @@ for i in $(seq 1 ${no_of_ligands}); do
     stop_after_ligand=${line/"stop_after_ligand="}
     if [ "${stop_after_ligand}" = "yes" ]; then
         echo
-        echo "This queue was stopped by the stop_after_ligand flag in the controlfile ${VF_CONTROLFILE}."
+        echo "This queue was stopped by the stop_after_ligand flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         end_queue 0
     fi

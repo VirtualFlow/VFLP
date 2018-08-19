@@ -34,10 +34,10 @@ line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
 job_template=$1
 no_of_jobfiles=$(ls ../workflow/job-files/main/ | wc -l)
-controlfile="../workflow/control/all.ctrl"
+export VF_CONTROLFILE="../workflow/control/all.ctrl"
 
 # Verbosity
-VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 export VF_VERBOSITY_COMMANDS
 if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
     set -x

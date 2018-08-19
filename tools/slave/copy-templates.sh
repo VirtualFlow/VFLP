@@ -50,7 +50,7 @@ if [[ "${1}" = "todofiles" || "${1}" = "all" ]]; then
     cp -i ../templates/todo.all ../../workflow/ligand-collections/todo/
     cp -i ../templates/todo.all ../../workflow/ligand-collections/var/todo.original
 fi
-if [[ "${1}" = "controlfiles" || "${1}" = "all" ]]; then
+if [[ "${1}" = "VF_CONTROLFILEs" || "${1}" = "all" ]]; then
     cp -i ../templates/all.ctrl ../../workflow/control/
 fi
 

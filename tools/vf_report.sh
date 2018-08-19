@@ -57,19 +57,19 @@ Options:
 
 "
 help_info="The -h option can be used to get more information on how to use this script."
-controlfile="../workflow/control/all.ctrl"
-line=$(cat ${controlfile} | grep "collection_folder=" | sed 's/\/$//g')
+export VF_CONTROLFILE="../workflow/control/all.ctrl"
+line=$(cat ${VF_CONTROLFILE} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
 export LC_ALL=C
 export LANG=C
 # Determining the names of each docking type
-line=$(cat ${controlfile} | grep "^docking_type_names=")
+line=$(cat ${VF_CONTROLFILE} | grep "^docking_type_names=")
 docking_type_names=${line/"docking_type_names="}
 IFS=':' read -a docking_type_names <<< "$docking_type_names"
 tmp_dir=/tmp/vfvs_report_$(date | tr " :" "_")
 
 # Verbosity
-VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 export VF_VERBOSITY_COMMANDS
 if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
     set -x
@@ -115,7 +115,7 @@ while getopts ':hc:v:d:n:s:' option; do
 
            if [[ "${docking_type_name_flag}" == "false" ]]; then
                 echo -e "\nAn unsupported docking_type_name (${docking_type_name}) has been specified via the -d option."
-                echo -e "In the control-file $controlfile the following docking type names are specified: ${docking_type_names[@]}"
+                echo -e "In the control-file $VF_CONTROLFILE the following docking type names are specified: ${docking_type_names[@]}"
                 echo -e "${help_info}\n"
                 echo -e "Cleaning up and exiting...\n\n"   
                 exit 1
@@ -165,7 +165,7 @@ if [ "${category_flag}" == "false" ]; then
 elif [ "${category_flag}" == "true" ]; then
     if [[ "${category}" == "vs" &&  "${docking_type_name_flag}" == "false" ]]; then 
         echo -e "\nThe option -d which specifies the docking type name was not specified, but it is required for this category (vs)."
-        echo -e "In the control-file $controlfile the following docking type names are specified: ${docking_type_names[@]}"
+        echo -e "In the control-file $VF_CONTROLFILE the following docking type names are specified: ${docking_type_names[@]}"
         echo -e "${help_info}\n"
         echo -e "Cleaning up and exiting...\n\n"   
         exit 1
@@ -188,7 +188,7 @@ line=$(grep -m 1 "^job_letter=" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
 
 # Determining the docking type replicas
-line=$(cat ${controlfile} | grep "^docking_type_replicas=")
+line=$(cat ${VF_CONTROLFILE} | grep "^docking_type_replicas=")
 docking_type_replicas_total=${line/"docking_type_replicas="}
 IFS=':' read -a docking_type_replicas_total <<< "$docking_type_replicas_total"
 
