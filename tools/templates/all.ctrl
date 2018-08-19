@@ -2,24 +2,43 @@
 ***************************************************************    Job Resource Configuration    ****************************************************************
 *****************************************************************************************************************************************************************
 
+job_letter=r
+# One alphabetic character (i.e. a letter from a-z or A-Z)
+# Should not be changed during runtime, and be the same for all joblines
+# Required when running VF several times on the same cluster to distinguish the jobs in the batchsystem
+
 batchsystem=SLURM
-# Possible values: SLURM, TORQUE, PBS, LSF, SGE
+# Possible values: SLURM, TOQRUE, PBS, LSF, SGE
 
-nodes_per_job=1 
-# equals steps per job bacause we start one step per node
+partition=serial_requeue
+# also called queue
 
-queues_per_step=8
+timelimit=07-00:00:00
+# format for slurm: dd-hh:mm:ss
+# format for MTP: hh:mm:ss
+# format for SGE: hh:mm:ss
+# format for LSF: hh:mm
+# for all: always fill up with two digits per field (used be the job scripts)
 
-cpus_per_step=8
-# sets the slurm cpus-per-task variable (task = step)
+nodes_per_job=1
+# Not (yet) available for LSF and SGE (is always set to 1)
+# Should not be changed during runtime, and be the same for all joblines
+
+cpus_per_step=6
+# sets the slurm cpus-per-task variable (task = step) in SLURM
+# in LSF this corresponds to the number of slots per node
+# Should not be changed during runtime, and be the same for all joblines
+# Not yet available for SGE (always set to 1)
+
+queues_per_step=6
+# sets the number of queues/processes per step
+# Should not be changed during runtime, and be the same for all joblines
+# Not yet available for SGE (always set to 1)
 
 cpus_per_queue=1
-# is not used, just for our information. It equals cpus-per-step/queues-per-step
-
-timelimit=00-01:00:00
-# format for slurm: dd-hh:mm:ss
-# format for MT: hh:mm:ss
-# alway fill up with two digits per field (used be the job scripts)
+# Should equal the number: cpus-per-step/queues-per-step
+# Should not be changed during runtime, and be the same for all joblines
+# Not yet available for SGE (always set to 1)
 
 
 *****************************************************************************************************************************************************************

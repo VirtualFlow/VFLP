@@ -1,4 +1,7 @@
-.idea/
+# remove some files in .idea
+workspace.xml
+tasks.xml
+
 *.pyc
 .dropbox.attr
 *.attr
