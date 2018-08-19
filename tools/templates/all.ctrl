@@ -45,16 +45,20 @@ cpus_per_queue=1
 *********************************************************************    Workflow Options    ********************************************************************
 *****************************************************************************************************************************************************************
 
-ligands_per_queue=20000
+ligands_per_queue=200000
+# used as a limit of ligands per running queue (small values only useful for testing)
 
-ligands_todo_per_queue=2000
+ligands_todo_per_queue=80
+# used as a limit of ligands for the to-do lists
+# this value should be divisible by the next setting "ligands_todo_per_refilling_step"
 
-ligands_per_refilling_step=1000
-# fill the queues with this number of ligands per refill step
-# ligands-todo-per-queue%ligands-per-refilling-step should be zero
+ligands_per_refilling_step=20
+# fill the to-do files of the queues with this number of ligands per refill step
+# a number roughly equal to the average of number of ligands per collection is recommended
 
 collection_folder=../input-files/ligand-collections/zinc15.A.smiles
 # slash at the end is not required (optional)
+# relative pathname is required w.r.t. the folder tools/
 
 dispersion_time_min=10
 # One positive integer, resembling the time in seconds
