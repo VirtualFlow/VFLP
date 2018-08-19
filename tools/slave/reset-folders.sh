@@ -56,7 +56,7 @@ if [[ "$1" = *"output"* || "$1" = *"all"* ]]; then
             echo "Cleaning the output-files folder."
         fi
         if [ -d ../../output-files/ ]; then
-            rm -r ../../output-files/* 2>/dev/null
+            rm -r ../../output-files/* || true 2>/dev/null
         else 
             mkdir ../../output-files/
         fi

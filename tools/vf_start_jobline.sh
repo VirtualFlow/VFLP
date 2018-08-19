@@ -80,17 +80,17 @@ submit_mode=${4}
 job_template=${3}
 controlfile="../workflow/control/all.ctrl"
 
+# Cleaning up if specified
+cd slave
+. reset-folders.sh ${folders_to_reset}
+cd ..
+
 # Verbosity
 VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 export VF_VERBOSITY_COMMANDS
 if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
     set -x
 fi
-
-# Cleaning up if specified
-cd slave
-. reset-folders.sh ${folders_to_reset}
-cd ..
 
 # Getting the batchsystem type
 line=$(grep -m 1 batchsystem ../workflow/control/all.ctrl)
