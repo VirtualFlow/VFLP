@@ -47,7 +47,7 @@ batchsystem="${line/batchsystem=}"
 echo -e "Syncing the jobfile of jobline ${VF_JOBLINE_NO} with the VF_CONTROLFILE file ${VF_CONTROLFILE}."
 
 # Syncing the number of nodes
-line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^VF_NODES_PER_JOB=")
+line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^VF_NODES_PER_JOB=")
 nodes_per_job_new=${line/"VF_NODES_PER_JOB="}
 if [ "${batchsystem}" = "SLURM" ]; then
     job_line=$(grep -m 1 "nodes=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)
@@ -61,7 +61,7 @@ elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
 fi
 
 # Syncing the number of cpus per step
-line=$(cat ${VF_CONTROLFILE} | grep -m 1 "cpus_per_step=")
+line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "cpus_per_step=")
 cpus_per_step_new=${line/"cpus_per_step="}
 if [ "${batchsystem}" = "SLURM" ]; then
     job_line="$(grep -m 1 "cpus-per-task=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)"
@@ -79,7 +79,7 @@ elif [ "${batchsystem}" = "LSF" ]; then
 fi
 
 # Syncing the timelimit
-line=$(cat ${VF_CONTROLFILE} | grep -m 1  "^timelimit=")
+line=$(cat ../${VF_CONTROLFILE} | grep -m 1  "^timelimit=")
 timelimit_new=${line/"timelimit="}
 if [ "${batchsystem}" == "SLURM" ]; then
     job_line=$(grep -m 1 "^#SBATCH \-\-time=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)
@@ -100,7 +100,7 @@ elif [ "${batchsystem}" == "LSF" ]; then
 fi
 
 # Syncing the partition
-line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^partition=")
+line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^partition=")
 partition_new=${line/"partition="}
 if [ "${batchsystem}" = "SLURM" ]; then
     sed -i "s/--partition=.*/--partition=${partition_new}/g" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
@@ -113,7 +113,7 @@ elif [ "${batchsystem}" = "LSF" ]; then
 fi
 
 # Syncing the job letter
-line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^job_letter=")
+line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^job_letter=")
 job_letter_new=${line/"job_letter="}
 if [ "${batchsystem}" = "SLURM" ]; then
     sed -i "s/^#SBATCH --job-name=[a-zA-Z]/#SBATCH --job-name=${job_letter_new}/g" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job

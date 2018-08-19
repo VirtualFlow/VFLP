@@ -9,7 +9,7 @@
 #    Possible values: 
 #        subjobfiles: ../templates/one-step.sh and ../templates/one-queue.sh are copied to ../../worflow/job-files/sub/
 #        todofiles: ../templates/todo.all is copied to ../../workflow/ligand-collections/todo/todo.all and ../../workflow/ligand-collections/var/todo.original
-#        control: ../templates/all.ctrl is copied to ../../workflow/control/
+#        controlfiles: ../templates/all.ctrl is copied to ../../workflow/control/
 #        all: all of the above templates
 #
 # Option: quiet (optional)
@@ -50,7 +50,7 @@ if [[ "${1}" = "todofiles" || "${1}" = "all" ]]; then
     cp -i ../templates/todo.all ../../workflow/ligand-collections/todo/
     cp -i ../templates/todo.all ../../workflow/ligand-collections/var/todo.original
 fi
-if [[ "${1}" = "VF_CONTROLFILEs" || "${1}" = "all" ]]; then
+if [[ "${1}" = "controlfiles" || "${1}" = "all" ]]; then
     cp -i ../templates/all.ctrl ../../workflow/control/
 fi
 
