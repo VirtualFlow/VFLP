@@ -243,7 +243,7 @@ timelimit=${timelimit//-/:}
 export VF_TIMELIMIT_SECONDS="$(echo -n "${timelimit}" | awk -F ':' '{print $4 + $3 * 60 + $2 * 3600 + $1 * 3600 * 24}')"
 
 # Getting the number of queues per step
-line=$(cat ${VF_CONTROLFILE} | grep "^VF_QUEUES_PER_STEP=")
+line=$(cat ${VF_CONTROLFILE} | grep "vf_queues_per_step=")
 export VF_QUEUES_PER_STEP=${line/"VF_QUEUES_PER_STEP="}
 
 # Preparing the todo lists for the queues

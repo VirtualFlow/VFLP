@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: Usage: vf_start_jobline.sh start_VF_JOBLINE_NO end_VF_JOBLINE_NO job_template submit_mode folders_to_reset delay_time_in_seconds [quiet]
+# Usage: Usage: vf_start_jobline.sh start_jobline_no end_jobline_no job_template submit_mode folders_to_reset delay_time_in_seconds [quiet]
 #
 # Description: Creates many copies of a template job file.
 #
@@ -32,11 +32,11 @@
 # ---------------------------------------------------------------------------
 
 #Checking the input arguments
-usage="Usage: vf_start_jobline.sh <start_VF_JOBLINE_NO> <end_VF_JOBLINE_NO> <job_template> <submit_mode> <folders_to_reset> <delay_time_in_seconds> [quiet]
+usage="Usage: vf_start_jobline.sh <VF_START_JOBLINE_NO> <VF_END_JOBLINE_NO> <job_template> <submit_mode> <folders_to_reset> <delay_time_in_seconds> [quiet]
 
 Arguments:
-    <start_VF_JOBLINE_NO>:         Positive integer
-    <end_VF_JOBLINE_NO>:           Positive integer
+    <start_jobline_no>:         Positive integer
+    <end_jobline_no>:           Positive integer
     <job_template>:             Filename (with absolute or relative path) of the job templates in the template folder, depending on the batchsystem
     <submit mode>:              Whether the newly created job should be directly submitted to the batch system. Possible options: submit, nosubmit
     <folder_to_reset>:          Useful for cleaning up the workflow and output files of previous runs if desired. Possible values are the same for the script slave/reset-folders.sh (see the header of the file)
@@ -72,8 +72,8 @@ error_response_nonstd() {
 trap 'error_response_nonstd $LINENO' ERR
 
 # Variables
-start_VF_JOBLINE_NO=${1}
-end_VF_JOBLINE_NO=${2}
+start_jobline_no=${1}
+end_jobline_no=${2}
 delay_time=${6}
 folders_to_reset=${5}
 submit_mode=${4}
@@ -100,7 +100,7 @@ batchsystem="${line/batchsystem=}"
 echo "" 
  
 # Duplicating the main template job file and syncing the copied jobfiles with the control file
-for i in $(seq ${start_VF_JOBLINE_NO} ${end_VF_JOBLINE_NO}); do
+for i in $(seq ${start_jobline_no} ${end_jobline_no}); do
     cp ${job_template} ../workflow/job-files/main/${i}.job
     sed -i "s/-1\.1/-${i}\.1/g" ../workflow/job-files/main/${i}.job
     cd slave
@@ -114,9 +114,9 @@ echo ""
 # Submitting the job files
 if [[ "${submit_mode}" = "submit" ]]; then
     cd slave
-    for i in $(seq ${start_VF_JOBLINE_NO} ${end_VF_JOBLINE_NO}); do
+    for i in $(seq ${start_jobline_no} ${end_jobline_no}); do
         . submit.sh ../workflow/job-files/main/${i}.job
-        if [ ! "${i}" = "${end_VF_JOBLINE_NO}" ]; then
+        if [ ! "${i}" = "${end_jobline_no}" ]; then
             sleep ${delay_time}
         fi
     done

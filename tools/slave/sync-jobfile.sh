@@ -44,10 +44,10 @@ batchsystem="${line/batchsystem=}"
 
 
 # Printing some information
-echo -e "Syncing the jobfile of jobline ${VF_JOBLINE_NO} with the VF_CONTROLFILE file ${VF_CONTROLFILE}."
+echo -e "Syncing the jobfile of jobline ${VF_JOBLINE_NO} with the controlfile file ${VF_CONTROLFILE}."
 
 # Syncing the number of nodes
-line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^VF_NODES_PER_JOB=")
+line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^nodes_per_job=")
 nodes_per_job_new=${line/"VF_NODES_PER_JOB="}
 if [ "${batchsystem}" = "SLURM" ]; then
     job_line=$(grep -m 1 "nodes=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)
