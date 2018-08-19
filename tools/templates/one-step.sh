@@ -63,11 +63,11 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
 fi
 
 # Setting important variables
-export queue_no_2=${step_no}
-export queue_no_12="${queue_no_1}-${queue_no_2}"
+export queue_no_2=${VF_STEP_NO}
+export VF_QUEUE_NO_12="${VF_QUEUE_NO_1}-${queue_no_2}"
 export little_time="false";
-export start_time_seconds
-export timelimit_seconds
+export VF_START_TIME_SECONDS
+export VF_TIMELIMIT_SECONDS
 export CHEMAXON_LICENSE_URL=/tmp/${USER}/ChemAxon/license.cxl
 pids=""
 
@@ -81,11 +81,11 @@ fi
 cp ${HOME}/downloads/ChemAxon/license.cxl /tmp/${USER}/ChemAxon/
 
 # Starting the individual queues
-for i in $(seq 1 ${queues_per_step}); do
+for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
     export queue_no_3="${i}"
-    export queue_no="${queue_no_12}-${queue_no_3}"
+    export queue_no="${VF_QUEUE_NO_12}-${queue_no_3}"
     prepare_queue_files_tmp
-    echo "Job step ${step_no} is starting queue ${queue_no} on host $(hostname)."
+    echo "Job step ${VF_STEP_NO} is starting queue ${queue_no} on host $(hostname)."
     . ../workflow/job-files/sub/one-queue.sh >> /tmp/${USER}/${queue_no}/workflow/output-files/queues/queue-${queue_no}.out 2>&1 &
     pids[$(( i - 1 ))]=$!
 done

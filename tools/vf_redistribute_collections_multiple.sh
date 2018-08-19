@@ -59,7 +59,7 @@ echo -e " *** Starting to distribute the collections ***\n"
 sed -i "s/^$//g" ${input_collection_file}
 for i in $(seq 1 $collections_per_queue); do
     for step_no in $(seq 1 ${nodes_per_job_new}); do
-        for queue_no in $(seq 1 ${queues_per_step_new}); do 
+        for queue_no in $(seq 1 ${queues_per_step_new}); do
             collection=$(head -n 1 ${input_collection_file})
             collection=$(echo ${collection} | tr -d '\040\011\012\015' )
             if [[ ${collection} == *"_"* ]]; then

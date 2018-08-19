@@ -1,7 +1,7 @@
 #!/bin/bash
 # ----------------------------
 #
-# Usage: . prepare-todolists.sh jobline_no nodes_per_job queues_per_step [quiet]
+# Usage: . prepare-todolists.sh VF_JOBLINE_NO VF_NODES_PER_JOB VF_QUEUES_PER_STEP [quiet]
 #
 # Description: prepares the todolists for the queues. The tasks are taken from the central todo list ../../workflow/ligand-collections/todo/todo.all
 #
@@ -12,7 +12,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . prepare-todolists.sh jobline_no nodes_per_job queues_per_step [quiet]"
+usage="Usage: . prepare-todolists.sh VF_JOBLINE_NO VF_NODES_PER_JOB VF_QUEUES_PER_STEP [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
@@ -24,20 +24,20 @@ if [[ "${verbosity}" == "debug" ]]; then
 fi
 
 # Setting the error sensitivity
-if [[ "${error_sensitivity}" == "high" ]]; then
+if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
     set -uo pipefail
     trap '' PIPE        # SIGPIPE = exit code 141, means broken pipe. Happens often, e.g. if head is listening and got all the lines it needs.
 fi
 
 # Variables
-queue_no_1="${1}"
-nodes_per_job="${2}"
-queues_per_step="${3}"
+VF_QUEUE_NO_1="${1}"
+VF_NODES_PER_JOB="${2}"
+VF_QUEUES_PER_STEP="${3}"
 export LC_ALL=C
-todo_file_temp=/tmp/${USER}/${jobline_no}/prepare-todolists/todo.all
+todo_file_temp=/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/todo.all
 
 # Printing some information
-echo -e "\n * Preparing the to-do lists for jobline ${queue_no_1}\n"
+echo -e "\n * Preparing the to-do lists for jobline ${VF_QUEUE_NO_1}\n"
 
 # Standard error response
 error_response_std() {
@@ -45,12 +45,12 @@ error_response_std() {
     echo "Error in bash script $(basename ${BASH_SOURCE[0]})"
     echo "Error on line $1"
     #clean_up
-    if [[ "${error_response}" == "ignore" ]]; then
+    if [[ "${VF_ERROR_RESPONSE}" == "ignore" ]]; then
         echo -e "\n * Ignoring error. Trying to continue..."
-    elif [[ "${error_response}" == "next_job" ]]; then
+    elif [[ "${VF_ERROR_RESPONSE}" == "next_job" ]]; then
         echo -e "\n * Trying to stop this job and to start a new job..."
         exit 0        exit 0
-    elif [[ "${error_response}" == "fail" ]]; then
+    elif [[ "${VF_ERROR_RESPONSE}" == "fail" ]]; then
         echo -e "\n * Stopping this jobline."
         exit 1
     fi
@@ -114,7 +114,7 @@ clean_up() {
             echo -e "Also the file ../../workflow/ligand-collections/todo/todo.all.locked could not be moved back to ../../workflow/ligand-collections/todo/"
         fi
     fi
-    rm -r /tmp/${USER}/${jobline_no}/prepare-todolists/ || true
+    rm -r /tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/ || true
 }
 date
 trap 'clean_up' EXIT
@@ -123,8 +123,8 @@ trap 'clean_up' EXIT
 status="false";
 k="1"
 max_iter=250
-if [ ! -d /tmp/${USER}/${jobline_no}/prepare-todolists/ ]; then
-    mkdir -p /tmp/${USER}/${jobline_no}/prepare-todolists/
+if [ ! -d /tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/ ]; then
+    mkdir -p /tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/
 fi
 modification_time_difference=0
 start_time_waiting="$(date +%s)"
@@ -147,7 +147,7 @@ while [[ "${status}" = "false" ]]; do
         date
         if mv ../../workflow/ligand-collections/todo/todo.all ${todo_file_temp}  2>/dev/null; then
             cp ${todo_file_temp} ../../workflow/ligand-collections/todo/todo.all.locked
-            cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.locked.bak.${queue_no_1}
+            cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.locked.bak.${VF_QUEUE_NO_1}
             status="true"
             trap 'error_response_std $LINENO' ERR
         fi
@@ -196,7 +196,7 @@ mv ${todo_file_temp}.tmp ${todo_file_temp}
 line=$(cat ../${controlfile} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
 collection_folder=${collection_folder%/}
-start_time_seconds="$(date +%s)"
+VF_START_TIME_SECONDS="$(date +%s)"
 
 # Getting the number of ligands to-do per queue
 line=$(cat ../${controlfile} | grep "ligands_todo_per_queue=")
@@ -213,20 +213,20 @@ fi
 
 # Copying the length file to tmp
 length_file="../${collection_folder}.length.all"
-length_file_temp="/tmp/${USER}/${jobline_no}/prepare-todolists/length.all"
+length_file_temp="/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/length.all"
 cp "${length_file}" "${length_file_temp}"
 
 # Creating a temporary to-do file with the new ligand collections
-todo_new_temp="/tmp/${USER}/${jobline_no}/prepare-todolists/todo.new"
+todo_new_temp="/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/todo.new"
 touch ${todo_new_temp}
 
 # Getting the number of ligands which are already in the local to-do lists
 ligands_todo=""
 queue_collection_numbers=""
-for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
     # Loop for each queue of the node
-    for queue_no_3 in $(seq 1 ${queues_per_step}); do
-        queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
+    for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
+        queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
         ligands_todo[${queue_no_2}0000${queue_no_3}]=0
         queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=0
         # Getting the current number of the ligands to-do
@@ -274,10 +274,10 @@ done
 if [[ ! "$*" = *"quiet"* ]]; then
     echo "Starting the (re)filling of the todolists of the queues."
     echo
-    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+    for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
         # Loop for each queue of the node
-        for queue_no_3 in $(seq 1 ${queues_per_step}); do
-            queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
+        for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
+            queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
             echo "Before (re)filling the todolists the queue ${queue_no} had ${ligands_todo[${queue_no_2}0000${queue_no_3}]} ligands todo distributed in ${queue_collection_numbers[${queue_no_2}0000${queue_no_3}]} collections."
         done
     done
@@ -292,10 +292,10 @@ no_collections_beginning=${no_collections_remaining}
 for refill_step in $(seq 1 ${no_of_refilling_steps}); do
     step_limit=$((${refill_step} * ${ligands_per_refilling_step}))
     # Loop for each node
-    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+    for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
         # Loop for each queue of the node
-        for queue_no_3 in $(seq 1 ${queues_per_step}); do
-            queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
+        for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
+            queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
             cat /dev/null > ${todo_new_temp}
 
             while [ "${ligands_todo[${queue_no_2}0000${queue_no_3}]}" -lt "${step_limit}" ]; do
@@ -334,10 +334,10 @@ done
 
 # Printing some infos about the to-do lists of this queue after the refilling
 if [[ ! "$*" = *"quiet"* ]]; then
-    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+    for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
         # Loop for each queue of the node
-        for queue_no_3 in $(seq 1 ${queues_per_step}); do
-            queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
+        for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
+            queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
             echo "After (re)filling the todolists the queue ${queue_no} has ${ligands_todo[${queue_no_2}0000${queue_no_3}]} ligands todo distributed in ${queue_collection_numbers[${queue_no_2}0000${queue_no_3}]} collections."
         done
     done
@@ -347,7 +347,7 @@ fi
 if [[ ! "$*" = *"quiet"* ]]; then
     end_time_seconds="$(date +%s)"
     echo
-    echo "The todo lists for the queues were (re)filled in $((end_time_seconds-start_time_seconds)) second(s) (waiting time not included)."
+    echo "The todo lists for the queues were (re)filled in $((end_time_seconds-VF_START_TIME_SECONDS)) second(s) (waiting time not included)."
     echo "The waiting time was $((end_time_waiting-start_time_waiting)) second(s)."
     echo
 fi

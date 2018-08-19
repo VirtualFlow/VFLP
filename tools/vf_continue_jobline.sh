@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Description: Automatically finds the joblines with jobline numbers between first/last_jobline_no which are not running and continues the jobline. 
+# Description: Automatically finds the joblines with jobline numbers between first/last_VF_JOBLINE_NO which are not running and continues the jobline.
 #
 # Option: quiet (optional)
 #    Possible values: 
@@ -14,7 +14,7 @@
 # ---------------------------------------------------------------------------
 
 #Checking the input arguments
-usage="Usage: vf_continue_jobline.sh first_jobline_no last_jobline_no job_template delay_time_in_seconds [quiet]"
+usage="Usage: vf_continue_jobline.sh first_VF_JOBLINE_NO last_VF_JOBLINE_NO job_template delay_time_in_seconds [quiet]"
 if [ "${1}" == "-h" ]; then
     echo -e "\n${usage}\n\n"
     exit 0 
@@ -45,8 +45,8 @@ error_response_nonstd() {
 trap 'error_response_nonstd $LINENO' ERR
 
 # Variables
-first_jobline_no=${1}
-last_jobline_no=${2}
+first_VF_JOBLINE_NO=${1}
+last_VF_JOBLINE_NO=${2}
 job_template=${3}
 line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
@@ -74,12 +74,12 @@ bin/sqs > tmp/jobs-all 2>/dev/null || true
 
 # Storing all joblines which have to be restarted
 echo "Checking which joblines are already in the batchsystem"
-for jobline_no in $(seq ${first_jobline_no} ${last_jobline_no}); do 
-    if ! grep -q "${job_letter}\-${jobline_no}\."  tmp/jobs-all; then 
-        echo "Adding jobline ${jobline_no} to the list of joblines to be continued."
-        echo ${jobline_no} >> "tmp/jobs-to-continue"
+for VF_JOBLINE_NO in $(seq ${first_VF_JOBLINE_NO} ${last_VF_JOBLINE_NO}); do
+    if ! grep -q "${VF_JOB_LETTER}\-${VF_JOBLINE_NO}\."  tmp/jobs-all; then
+        echo "Adding jobline ${VF_JOBLINE_NO} to the list of joblines to be continued."
+        echo ${VF_JOBLINE_NO} >> "tmp/jobs-to-continue"
     else
-        echo "Omitting jobline ${jobline_no} because it was found in the batchsystem."
+        echo "Omitting jobline ${VF_JOBLINE_NO} because it was found in the batchsystem."
     fi
 done
 
@@ -90,11 +90,11 @@ delay_time="${4}"
 # Resetting the collections and continuing the jobs if existent
 if [ -f tmp/jobs-to-continue ]; then
     k_max="$(cat tmp/jobs-to-continue | wc -l)"
-    for jobline_no in $(cat tmp/jobs-to-continue ); do
+    for VF_JOBLINE_NO in $(cat tmp/jobs-to-continue ); do
         k=$(( k + 1 ))
         cd slave
-        echo "Continuing jobline ${jobline_no}"
-        . exchange-continue-jobline.sh ${jobline_no} ${jobline_no} ${job_template} quiet
+        echo "Continuing jobline ${VF_JOBLINE_NO}"
+        . exchange-continue-jobline.sh ${VF_JOBLINE_NO} ${VF_JOBLINE_NO} ${job_template} quiet
         cd ..
         if [ ! "${k}" = "${k_max}" ]; then
             sleep ${delay_time}

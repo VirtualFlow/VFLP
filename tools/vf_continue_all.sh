@@ -50,9 +50,9 @@ bin/sqs > tmp/sqs.out || true
 # Loop for each jobfile
 counter=1
 for file in $(ls ../workflow/job-files/main/); do
-    jobline_no=${file/.job}
-    if ! grep -q "${job_letter}\-${jobline_no}\." tmp/sqs.out; then
-        vf_continue_jobline.sh ${jobline_no} ${jobline_no} ${job_template} 1
+    VF_JOBLINE_NO=${file/.job}
+    if ! grep -q "${VF_JOB_LETTER}\-${VF_JOBLINE_NO}\." tmp/sqs.out; then
+        vf_continue_jobline.sh ${VF_JOBLINE_NO} ${VF_JOBLINE_NO} ${job_template} 1
         if [ ! "${counter}" -eq "${no_of_jobfiles}" ]; then
             sleep $delay_time
         fi

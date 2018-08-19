@@ -343,7 +343,7 @@ targetformat=${targetformat// /}
 echo
 echo
 echo "*****************************************************************************************"
-echo "              Beginning of a new job (job ${old_job_no}) in queue ${queue_no}"
+echo "              Beginning of a new job (job ${VF_OLD_JOB_NO}) in queue ${queue_no}"
 echo "*****************************************************************************************"
 echo 
 echo "Control files in use"
@@ -381,8 +381,8 @@ for i in $(seq 1 ${no_of_ligands}); do
     error_molconvert="false"
 
     # Determining the controlfile to use for this jobline
-    if [ -f ../workflow/control/${jobline_no}.ctrl ]; then
-        VF_CONTROLFILE="../workflow/control/${jobline_no}.ctrl"
+    if [ -f ../workflow/control/${VF_JOBLINE_NO}.ctrl ]; then
+        VF_CONTROLFILE="../workflow/control/${VF_JOBLINE_NO}.ctrl"
     else
         VF_CONTROLFILE="../workflow/control/all.ctrl"
     fi
@@ -404,7 +404,7 @@ for i in $(seq 1 ${no_of_ligands}); do
         echo
         end_queue 0
     fi
-    if [[ "$((timelimit_seconds - $(date +%s ) + start_time_seconds )) " -lt "600" ]]; then
+    if [[ "$((VF_TIMELIMIT_SECONDS - $(date +%s ) + VF_START_TIME_SECONDS )) " -lt "600" ]]; then
         echo
         echo "This queue was ended because there were less than 10 minutes runtime left for the job (by internal calculation)."
         echo
@@ -483,7 +483,7 @@ for i in $(seq 1 ${no_of_ligands}); do
    
     # Displaying the heading for the new ligand
     echo ""
-    echo "      Ligand ${i} of job ${old_job_no} belonging to collection ${next_ligand_collection_basename}: ${next_ligand}"
+    echo "      Ligand ${i} of job ${VF_OLD_JOB_NO} belonging to collection ${next_ligand_collection_basename}: ${next_ligand}"
     echo "*****************************************************************************************"
     echo ""
 

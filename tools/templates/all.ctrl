@@ -15,7 +15,7 @@ partition=serial_requeue
 
 timelimit=00-12:00:00
 # format for slurm: dd-hh:mm:ss
-# format for MTP: hh:mm:ss
+# format for TORQUE and PBS: hh:mm:ss
 # format for SGE: hh:mm:ss
 # format for LSF: hh:mm
 # for all: always fill up with two digits per field (used be the job scripts)
@@ -72,9 +72,21 @@ verbosity_commands=debug
 # Possible values: standard, debug
 # This option mainly effects the screen output and the logfiles
 
-verbosity_logfilesfiles=debug
+verbosity_logfiles=debug
 # Possible values: standard, debug
 # This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
+
+error_sensitivity=normal
+# Possible values: normal, high
+# high sets the shell options "-uo pipefail". Not recommended for production runs, useful mainly for debugging. Pipefails often occur with tar combined with head/tail in pipes, which are not an actual problem.
+# The u-option will always lead to a direct exit of the shell script when an unset variable is going to be used.
+
+error_response=fail
+# Affects most errors, but not all (e.g. not the u-option of the shell)
+# Possible values:
+#     ignore    : ignore error and continue
+#     next_job  : end this job and start new job
+#     fail      : exit workflow with failure (exit code 1)
 
 
 *****************************************************************************************************************************************************************

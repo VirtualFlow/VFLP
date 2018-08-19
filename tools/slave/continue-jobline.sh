@@ -1,13 +1,13 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . continue-jobline.sh jobline_no partition/queue sync_mode
+# Usage: . continue-jobline VF_JOBLINE_NO sync_mode
 #
 # Description: Continues a jobline by adjusting the latest job script and submitting
 # it to the batchsystem.
 #
 # Option: sync_mode
-#    Possible values: 
+#    Possible values:
 #        sync: The sync-control-jobfile script is called
 #        anything else: no synchronization
 #
@@ -18,58 +18,84 @@
 # 2016-07-16  Various improvements
 #
 # ---------------------------------------------------------------------------
-
 # Displaying help if the first argument is -h
-usage="Usage: . continue-jobline.sh jobline_no batch_partition sync_mode"
-if [ "${1}" = "-h" ]; then
-    echo "${usage}"
-    return
+usage="Usage: . continue-jobline VF_JOBLINE_NO sync_mode"
+if [ "${1}" == "-h" ]; then
+   echo -e "\n${usage}\n\n"
+   exit 0
 fi
+if [[ "$#" -ne "2" ]]; then
+   echo -e "\nWrong number of arguments. Exiting."
+   echo -e "\n${usage}\n\n"
+   exit 1
+fi
+
+# Standard error response
+error_response_nonstd() {
+    echo "Error was trapped which is a nonstandard error."
+    echo "Error in bash script $(basename ${BASH_SOURCE[0]})"
+    echo "Error on line $1"
+    exit 1
+}
+trap 'error_response_nonstd $LINENO' ERR
 
 # Variables
-partition=${2}
-
 # Getting the batchsystem type
-line=$(grep -m 1 "^batchsystem=" ../../workflow/control/all.ctrl)
+line=$(grep -m 1 batchsystem ../../workflow/control/all.ctrl)
 batchsystem="${line/batchsystem=}"
+sync_mode=${2}
 
 # Getting the jobline number and the old job number
-jobline_no=${1}
+VF_JOBLINE_NO=${1}
 if [ "${batchsystem}" = "SLURM" ]; then
-    line=$(cat ../../workflow/job-files/main/${jobline_no}.job | grep -m 1 "job-name")
-    old_job_no=${line/"#SBATCH --job-name=j-"}
-elif [ "${batchsystem}" = "MT" ]; then
-    line=$(cat ../../workflow/job-files/main/${jobline_no}.job | grep -m 1 "\-N")
-    old_job_no=${line/\#PBS -N j-}
+    line=$(cat ../../workflow/job-files/main/${VF_JOBLINE_NO}.job | grep -m 1 "job-name")
+    VF_OLD_JOB_NO=${line/^#SBATCH --job-name=[a-zA-Z]-}
+elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
+    line=$(cat ../../workflow/job-files/main/${VF_JOBLINE_NO}.job | grep -m 1 "\-N")
+    VF_OLD_JOB_NO=${line/^\#PBS -N [a-zA-Z]-}
+elif [ "${batchsystem}" = "SGE" ]; then
+    line=$(cat ../../workflow/job-files/main/${VF_JOBLINE_NO}.job | grep -m 1 "\-N")
+    VF_OLD_JOB_NO=${line/^\#\$ -N [a-zA-Z]-}
+elif [ "${batchsystem}" = "LSF" ]; then
+    line=$(cat ../../workflow/job-files/main/${VF_JOBLINE_NO}.job | grep -m 1 "^#BSUB \-J")
+    VF_OLD_JOB_NO=${line/^\#BSUB -J [a-zA-Z]-}
 fi
-old_job_no_2=${old_job_no/*.}
+VF_VF_OLD_JOB_NO_2=${VF_OLD_JOB_NO/*.}
 
 
 # Computing the new job number
-new_job_no_2=$((${old_job_no_2} + 1))
-new_job_no="${jobline_no}.${new_job_no_2}"
+new_job_no_2=$((VF_VF_OLD_JOB_NO_2 + 1))
+new_job_no="${VF_JOBLINE_NO}.${new_job_no_2}"
 
 
 # Syncing the workflow settings if specified
-if [ "${3}" = "sync" ]; then
-    . sync-jobfile.sh ${jobline_no}
+if [ "${sync_mode}" == "sync" ]; then
+    . sync-jobfile.sh ${VF_JOBLINE_NO}
 fi
 
-# Changing the partition
+# Changing the job number 1.1 (of template/new job file) to current job number
 if [ "${batchsystem}" = "SLURM" ]; then
-    line=$(cat ../../workflow/job-files/main/${jobline_no}.job | grep -m 1 "partition=")
-    sed -i "s/${line}/#SBATCH --partition=${partition}/g" ../../workflow/job-files/main/${jobline_no}.job
-elif [ "${batchsystem}" = "MT" ]; then
-    line=$(cat ../../workflow/job-files/main/${jobline_no}.job | grep -m 1 " -q ")
-    sed -i "s/${line}/\#PBS -q ${partition}/g" ../../workflow/job-files/main/${jobline_no}.job
+    sed -i "s/^#SBATCH --job-name=\([a-zA-Z]\)-.*/#SBATCH --job-name=\1-${new_job_no}/g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
+    sed -i "s/^#PBS -N \([a-zA-Z]\)-.*/#PBS -N \1-${new_job_no}/g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+elif [ "${batchsystem}" = "LSF" ]; then
+    sed -i "s/^#BSUB -J \([a-zA-Z]\)-.*/#BSUB -J \1-${new_job_no}/g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+elif [ "${batchsystem}" = "SGE" ]; then
+    sed -i "s/^#\\$ -N \([a-zA-Z]\)-.*/#\$ -N \1-${new_job_no}/g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
 fi
 
-# Updating the job name (increase by one)
-sed -i "s/j-${old_job_no}/j-${new_job_no}/g" ../../workflow/job-files/main/${jobline_no}.job
+# Changing the output filenames
+if [ "${batchsystem}" = "SLURM" ]; then
+    sed -i "s|^#SBATCH --output=.*|#SBATCH --output=../workflow/output-files/jobs/job-${new_job_no}_%j.out|g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+    sed -i "s|^#SBATCH --error=.*|#SBATCH --output=../workflow/output-files/jobs/job-${new_job_no}_%j.out|g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
+    sed -i "s|^#PBS -\([oe]\) .*|#PBS -\1 ../workflow/output-files/jobs/job-${new_job_no}_\${PBS_JOBID}.out|g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+elif [ "${batchsystem}" = "SGE" ]; then
+    sed -i "s|^#\\$ -\([oe]\) .*|#\$ -\1 ../workflow/output-files/jobs/job-${new_job_no}_\${PBS_JOBID}.out|g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+elif [ "${batchsystem}" = "LSF" ]; then
+    sed -i "s|^#BSUB -oo .*|#BSUB -oo ../workflow/output-files/jobs/job-${new_job_no}_%J.out|g"  ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
+fi
 
-# Updating the output filenames (increase by one)
-sed -i "s/${old_job_no}_/${new_job_no}_/g" ../../workflow/job-files/main/${jobline_no}.job
 
 # Submitting new job
-. submit.sh ../workflow/job-files/main/${jobline_no}.job ${partition}
-
+. submit.sh ../workflow/job-files/main/${VF_JOBLINE_NO}.job

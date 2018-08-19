@@ -1,12 +1,12 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . submit.sh jobfile partition/queue [quiet]
+# Usage: . submit jobfile [quiet]
 
 # Description: Submits a new job.
 #
 # Option: quiet (optional)
-#    Possible values: 
+#    Possible values:
 #        quiet: No information is displayed on the screen.
 #
 # Revision history
@@ -14,45 +14,52 @@
 # 2015-12-12  Various improvements (version 1.10)
 # 2015-12-16  Adaption to version 2.1
 # 2016-07-16  Various improvements
+# 2017-03-18  Removing the partition as an argument (instead including it in the control file)
 #
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="# Usage: . submit.sh jobfile partition/queue [quiet]"
-if [ "${1}" = "-h" ]; then
-    echo "${usage}"
-    return
+usage="# Usage: . submit jobfile [quiet]"
+if [ "${1}" == "-h" ]; then
+   echo -e "\n${usage}\n\n"
+   return 0
 fi
+if [[ "$#" -ne "1" && "$#" -ne "2" ]]; then
+   echo -e "\nWrong number of arguments. Exiting."
+   echo -e "\n${usage}\n\n"
+   return 1
+fi
+# Standard error response
+error_response_nonstd() {
+    echo "Error was trapped which is a nonstandard error."
+    echo "Error in bash script $(basename ${BASH_SOURCE[0]})"
+    echo "Error on line $1"
+    exit 1
+}
+trap 'error_response_nonstd $LINENO' ERR
 
-# Variables 
-partition="${2}"
-
+# Variables
 # Getting the batchsystem type
-line=$(grep -m 1 "^batchsystem=" ../../workflow/control/all.ctrl)
+line=$(grep -m 1 batchsystem ../../workflow/control/all.ctrl)
 batchsystem="${line/batchsystem=}"
+jobfile=${1}
+jobline=$(echo ${jobfile} | awk -F '[./]' '{print $(NF-1)}')
 
 # Submitting the job
-if [ "${batchsystem}" = "SLURM" ]; then
-    cd ..
-    if [ -n "${2}" ]; then
-        sbatch --signal=10@300 -p ${partition} ${1}
-    else 
-        sbatch --signal=10@300 ${1}
-    fi
-    cd slave
-elif [ "${batchsystem}" = "MT" ]; then
-    cd ..
-    if [ -n "${2}" ]; then
-        msub -l signal=10@300 -q ${partition} ${1}
-    else 
-        msub -l signal=10@300 ${1}
-    fi
-    cd slave
+cd ../
+if [ "${batchsystem}" == "SLURM" ]; then
+    sbatch ${jobfile}
+elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
+    msub ${jobfile}
+elif [ "${batchsystem}" == "SGE" ]; then
+    qsub ${jobfile}
+elif [ "${batchsystem}" == "LSF" ]; then
+    bsub < ${jobfile}
 fi
+cd slave
 
-# Displaying some information
+# Printing some information
 if [ ! "$*" = *"quiet"* ]; then
-    echo
-    echo "The job was submitted."
+    echo "The job for jobline ${jobline} has been submitted at $(date)."
     echo
 fi
