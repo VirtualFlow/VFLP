@@ -57,9 +57,8 @@ if [[ "$1" = *"output"* || "$1" = *"all"* ]]; then
         fi
         if [ "$(ls -A /path/to/directory)" ]; then
             rm -r ../../output-files/* 2>/dev/null
-        else 
-            mkdir ../../output-files/
         fi
+        mkdir -p ../../output-files/
     fi
 fi
 
