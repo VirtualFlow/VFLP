@@ -341,7 +341,7 @@ echo "**************************************************************************
 echo 
 echo "Control files in use"
 echo "-------------------------"
-echo "VF_CONTROLFILE = ${VF_CONTROLFILE}"
+echo "Controlfile = ${VF_CONTROLFILE}"
 echo
 echo "Contents of the VF_CONTROLFILE ${VF_CONTROLFILE}"
 echo "-----------------------------------------------"

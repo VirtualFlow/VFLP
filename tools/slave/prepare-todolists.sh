@@ -1,7 +1,7 @@
 #!/bin/bash
 # ----------------------------
 #
-# Usage: . prepare-todolists.sh VF_JOBLINE_NO VF_NODES_PER_JOB VF_QUEUES_PER_STEP [quiet]
+# Usage: . prepare-todolists.sh jobline_no nodes_per_job queues_per_step [quiet]
 #
 # Description: prepares the todolists for the queues. The tasks are taken from the central todo list ../../workflow/ligand-collections/todo/todo.all
 #
@@ -12,15 +12,10 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . prepare-todolists.sh VF_JOBLINE_NO VF_NODES_PER_JOB VF_QUEUES_PER_STEP [quiet]"
+usage="Usage: . prepare-todolists.sh jobline_no nodes_per_job queues_per_step [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
-fi
-
-# Setting the verbosity level
-if [[ "${verbosity}" == "debug" ]]; then
-    set -x
 fi
 
 # Setting the error sensitivity

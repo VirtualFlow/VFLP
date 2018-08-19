@@ -216,7 +216,7 @@ export VF_JOB_LETTER=${line/"job_letter="}
 
 # Setting the error sensitivity
 line=$(cat ${VF_CONTROLFILE} | grep -m 1 "error_sensitivity=")
-export VF_ERROR_SENSITIVITY=${line/"VF_ERROR_SENSITIVITY="}
+export VF_ERROR_SENSITIVITY=${line/"error_sensitivity="}
 if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
     set -uo pipefail
     trap '' PIPE        # SIGPIPE = exit code 141, means broken pipe. Happens often, e.g. if head is listening and got all the lines it needs.
@@ -235,8 +235,8 @@ timelimit=${job_line/\#PBS -l walltime=}
 export VF_TIMELIMIT_SECONDS="$(echo -n "${timelimit}" | awk -F ':' '{print $3 + $2 * 60 + $1 * 3600}')"
 
 # Getting the number of queues per step
-line=$(cat ${VF_CONTROLFILE} | grep -m 1 "vf_queues_per_step=")
-export VF_QUEUES_PER_STEP=${line/"VF_QUEUES_PER_STEP="}
+line=$(cat ${VF_CONTROLFILE} | grep -m 1 "queues_per_step=")
+export VF_QUEUES_PER_STEP=${line/"queues_per_step="}
 
 # Preparing the todo lists for the queues
 cd slave

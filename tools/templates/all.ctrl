@@ -10,7 +10,7 @@ job_letter=r
 batchsystem=SLURM
 # Possible values: SLURM, TOQRUE, PBS, LSF, SGE
 
-partition=serial_requeue
+partition=priority
 # also called queue
 
 timelimit=00-12:00:00

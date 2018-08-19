@@ -48,7 +48,7 @@ echo -e "Syncing the jobfile of jobline ${VF_JOBLINE_NO} with the controlfile fi
 
 # Syncing the number of nodes
 line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^nodes_per_job=")
-nodes_per_job_new=${line/"VF_NODES_PER_JOB="}
+nodes_per_job_new=${line/"nodes_per_job="}
 if [ "${batchsystem}" = "SLURM" ]; then
     job_line=$(grep -m 1 "nodes=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)
     VF_NODES_PER_JOB_old=${job_line/"#SBATCH --nodes="}
