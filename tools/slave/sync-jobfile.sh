@@ -79,7 +79,7 @@ elif [ "${batchsystem}" = "LSF" ]; then
 fi
 
 # Syncing the timelimit
-line=$(cat ../${VF_CONTROLFILE} | grep -m 1  "^timelimit=")
+line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^timelimit=")
 timelimit_new=${line/"timelimit="}
 if [ "${batchsystem}" == "SLURM" ]; then
     job_line=$(grep -m 1 "^#SBATCH \-\-time=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)

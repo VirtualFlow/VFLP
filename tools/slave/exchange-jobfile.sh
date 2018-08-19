@@ -38,7 +38,7 @@ error_response_nonstd() {
 trap 'error_response_nonstd $LINENO' ERR
 
 # Getting the batchsystem type
-line=$(grep -m 1 batchsystem ../../workflow/control/all.ctrl)
+line=$(grep -m 1 "^batchsystem=" ../../workflow/control/all.ctrl)
 batchsystem="${line/batchsystem=}"
 
 # Getting the jobline number and the current job number
