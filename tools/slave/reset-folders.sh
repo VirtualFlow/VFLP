@@ -83,52 +83,52 @@ if [[ "$1" = *"workflow"* || "$1" = *"all"* ]]; then
         fi
 
         if [ "$(ls -A ../../workflow/ligand-collections/todo/ 2>/dev/null)" ]; then
-            rm ../../workflow/ligand-collections/todo/ 2>/dev/null
+            rm -r ../../workflow/ligand-collections/todo/ 2>/dev/null
         fi
         mkdir -p ../../workflow/ligand-collections/todo/
 
         if [ "$(ls -A ../../workflow/ligand-collections/current/ 2>/dev/null)" ]; then
-            rm ../../workflow/ligand-collections/current/ 2>/dev/null
+            rm -r ../../workflow/ligand-collections/current/ 2>/dev/null
         fi
         mkdir -p ../../workflow/ligand-collections/current/
 
         if [ "$(ls -A ../../workflow/ligand-collections/done/ 2>/dev/null)" ]; then
-            rm ../../workflow/ligand-collections/done/ 2>/dev/null
+            rm -r ../../workflow/ligand-collections/done/ 2>/dev/null
         fi
         mkdir -p ../../workflow/ligand-collections/done/
 
         if [ "$(ls -A ../../workflow/ligand-collections/ligand-lists/ 2>/dev/null)" ]; then
-            rm ../../workflow/ligand-collections/ligand-lists/ 2>/dev/null
+            rm -r ../../workflow/ligand-collections/ligand-lists/ 2>/dev/null
         fi
         mkdir -p ../../workflow/ligand-collections/ligand-lists/
 
         if [ "$(ls -A ../../workflow/ligand-collections/var/ 2>/dev/null)" ]; then
-            rm ../../workflow/ligand-collections/var/ 2>/dev/null
+            rm -r ../../workflow/ligand-collections/var/ 2>/dev/null
         fi
         mkdir -p ../../workflow/ligand-collections/var/
 
         if [ "$(ls -A ../../workflow/output-files/jobs/ 2>/dev/null)" ]; then
-            rm ../../workflow/output-files/jobs/ 2>/dev/null
+            rm -r ../../workflow/output-files/jobs/ 2>/dev/null
         fi
         mkdir -p ../../workflow/output-files/jobs/
 
         if [ "$(ls -A ../../workflow/output-files/queues/ 2>/dev/null)" ]; then
-            rm ../../workflow/output-files/queues/ 2>/dev/null
+            rm -r ../../workflow/output-files/queues/ 2>/dev/null
         fi
         mkdir -p ../../workflow/output-files/queues/
 
         if [ "$(ls -A ../../workflow/job-files/main/ 2>/dev/null)" ]; then
-            rm ../../workflow/job-files/main/ 2>/dev/null
+            rm -r ../../workflow/job-files/main/ 2>/dev/null
         fi
         mkdir -p ../../workflow/job-files/main/
 
         if [ "$(ls -A ../../workflow/job-files/sub/ 2>/dev/null)" ]; then
-            rm ../../workflow/job-files/sub/ 2>/dev/null
+            rm -r ../../workflow/job-files/sub/ 2>/dev/null
         fi
         mkdir -p ../../workflow/job-files/sub/
 
         if [ "$(ls -A ../../workflow/control/ 2>/dev/null)" ]; then
-            rm ../../workflow/control/ 2>/dev/null
+            rm -r ../../workflow/control/ 2>/dev/null
         fi
         mkdir -p ../../workflow/control/
     fi
