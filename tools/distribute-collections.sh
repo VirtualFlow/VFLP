@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . distribute collections
+# Usage: . distribute-collections.sh
 #
 # Description: Distributes collections in the file ./todo.temp to queues via the ligand-collections/current files. 
 # The file has to be adjusted to the current needs.
@@ -14,7 +14,7 @@
 
 # Displaying help if first argument is -h
 if [ "${1}" = "-h" ]; then
-usage="Usage: . distribute collections"
+usage="Usage: . distribute_collections.sh"
     echo "${usage}"
     return
 fi

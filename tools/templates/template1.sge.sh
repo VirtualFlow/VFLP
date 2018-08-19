@@ -273,7 +273,7 @@ check_queue_end2
 
 # Syncing the new jobfile with the settings in the controlfile
 cd slave
-. sync-jobfile ${jobline_no}
+. sync-jobfile.sh ${jobline_no}
 cd ..
 
 # Changing the job name
@@ -297,7 +297,7 @@ fi
 
 # Submitting a new new job
 cd slave 
-. submit ../workflow/job-files/main/${jobline_no}.job
+. submit.sh ../workflow/job-files/main/${jobline_no}.job
 cd ..
 
 

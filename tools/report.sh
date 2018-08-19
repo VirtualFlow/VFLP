@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . report workflow-status-mode
+# Usage: . report.sh workflow-status-mode
 #
 # Description: Display current information about the status of the workflow. 
 #
@@ -20,7 +20,7 @@
 
 # Displaying help if first argument is -h
 if [ "${1}" = "-h" ]; then
-usage="Usage: . report workflow-status-mode"
+usage="Usage: . report.sh workflow-status-mode"
     echo "${usage}"
     return
 fi

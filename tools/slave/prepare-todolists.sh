@@ -213,11 +213,11 @@ fi
 
 # Copying the length file to tmp
 length_file="../${collection_folder}.length.all"
-length_file_temp="/tmp/${USER}/${jobline_no}/prepare-todolists.sh/length.all"
+length_file_temp="/tmp/${USER}/${jobline_no}/prepare-todolists/length.all"
 cp "${length_file}" "${length_file_temp}"
 
 # Creating a temporary to-do file with the new ligand collections
-todo_new_temp="/tmp/${USER}/${jobline_no}/prepare-todolists.sh/todo.new"
+todo_new_temp="/tmp/${USER}/${jobline_no}/prepare-todolists/todo.new"
 touch ${todo_new_temp}
 
 # Getting the number of ligands which are already in the local to-do lists

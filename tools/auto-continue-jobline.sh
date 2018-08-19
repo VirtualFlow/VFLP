@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . auto-continue-jobline first_jobline_no last_jobline_no job_template partition [quiet]
+# Usage: . auto-continue-jobline.sh first_jobline_no last_jobline_no job_template partition [quiet]
 #
 # Description: Automatically finds the joblines which are not running and continues the jobline. 
 #
@@ -17,7 +17,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . auto-continue-jobline.sh first_jobline_no last_jobline_no job_template partition delay_time_in_seconds [quiet]"
+usage="Usage: . auto-continue-jobline.sh.sh first_jobline_no last_jobline_no job_template partition delay_time_in_seconds [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return

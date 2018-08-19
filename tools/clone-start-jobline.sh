@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . clone-start-jobline start_jobline_no end_jobline_no file_to_clone submit_mode 
+# Usage: . clone-start-jobline.sh start_jobline_no end_jobline_no file_to_clone submit_mode
 # folders_to_reset partition/queue [delay_time_in_seconds] [quiet]
 #
 # Description: Creates many copies of a template job file.
@@ -30,7 +30,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . clone-start-jobline start_jobline_no end_jobline_no file_to_clone submit_mode folders_to_reset partition/queue delay_time_in_seconds [quiet]"
+usage="Usage: . clone-start-jobline.sh start_jobline_no end_jobline_no file_to_clone submit_mode folders_to_reset partition/queue delay_time_in_seconds [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
@@ -64,10 +64,10 @@ for i in $(seq ${1} ${2}); do
 done
 
 # Submitting the job files
-if [[ "${4}" = "submit.sh" ]]; then
+if [[ "${4}" = "submit" ]]; then
     cd slave
     for i in $(seq ${1} ${2}); do
-        . submit ../workflow/job-files/main/${i}.job ${partition}
+        . submit.sh ../workflow/job-files/main/${i}.job ${partition}
         if [ ! "${i}" = "${2}" ]; then
             sleep ${delay_time}
         fi
