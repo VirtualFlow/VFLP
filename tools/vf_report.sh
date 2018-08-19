@@ -68,12 +68,18 @@ docking_type_names=${line/"docking_type_names="}
 IFS=':' read -a docking_type_names <<< "$docking_type_names"
 tmp_dir=/tmp/vfvs_report_$(date | tr " :" "_")
 
+# Verbosity
+VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_VERBOSITY_COMMANDS
+if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
+    set -x
+fi
+
 # Folders
 mkdir -p tmp
 
 # Treating the input arguments
 category_flag="false"
-verbosity_flag="false"
 docking_type_name_flag="false"
 show_vs_statistics_flag="false"
 number_highest_scores_flag="false"

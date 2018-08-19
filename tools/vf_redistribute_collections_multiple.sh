@@ -39,6 +39,14 @@ nodes_per_job_new=$3
 job_no=$4
 collections_per_queue=$5
 output_folder=$6
+controlfile="../workflow/control/all.ctrl"
+
+# Verbosity
+VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_VERBOSITY_COMMANDS
+if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
+    set -x
+fi
 
 # Preparing the directory
 echo -e " *** Preparing the output directory ***\n"

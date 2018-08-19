@@ -68,6 +68,14 @@ dispersion_time_max=40
 # Each job has to wait a random amount of time in the dispersion interval.
 # The effect of this is that when two jobs arrive at the same time at the central task list, the random waiting time will disperse their access on the central task list in time
 
+verbosity_commands=debug
+# Possible values: standard, debug
+# This option mainly effects the screen output and the logfiles
+
+verbosity_logfilesfiles=debug
+# Possible values: standard, debug
+# This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
+
 
 *****************************************************************************************************************************************************************
 *****************************************************************    Ligand Preparation Options    **************************************************************

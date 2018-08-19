@@ -57,6 +57,11 @@ prepare_queue_files_tmp() {
     fi    
 }
 
+# Verbosity
+if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
+    set -x
+fi
+
 # Setting important variables
 export queue_no_2=${step_no}
 export queue_no_12="${queue_no_1}-${queue_no_2}"

@@ -50,6 +50,14 @@ last_jobline_no=${2}
 job_template=${3}
 line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
+controlfile="../workflow/control/all.ctrl"
+
+# Verbosity
+VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_VERBOSITY_COMMANDS
+if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
+    set -x
+fi
 
 # Formatting screen output
 echo "" 

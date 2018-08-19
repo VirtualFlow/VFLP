@@ -110,27 +110,27 @@ print_job_infos_end() {
 check_queue_end1() {
 
     # Determining the controlfile to use for this jobline
-    controlfile=""
+    VF_CONTROLFILE=""
     for file in $(ls ../workflow/control/*-* 2>/dev/null|| true); do
         file_basename=$(basename $file)
         jobline_range=${file_basename/.*}
         jobline_no_start=${jobline_range/-*}
         jobline_no_end=${jobline_range/*-}
         if [[ "${jobline_no_start}" -le "${jobline_no}" && "${jobline_no}" -le "${jobline_no_end}" ]]; then
-            export controlfile="${file}"
+            export VF_CONTROLFILE="${file}"
             break
         fi
     done
-    if [ -z "${controlfile}" ]; then
-        export controlfile="../workflow/control/all.ctrl"
+    if [ -z "${VF_CONTROLFILE}" ]; then
+        export VF_CONTROLFILE="../workflow/control/all.ctrl"
     fi
 
     # Checking if the queue should be stopped
-    line="$(cat ${controlfile} | grep "stop_after_current_docking=")"
+    line="$(cat ${VF_CONTROLFILE} | grep "stop_after_current_docking=")"
     stop_after_current_docking=${line/"stop_after_current_docking="}
     if [[ "${stop_after_current_docking}" == "yes" ]]; then
         echo
-        echo "This job line was stopped by the stop_after_current_docking flag in the controlfile ${controlfile}."
+        echo "This job line was stopped by the stop_after_current_docking flag in the controlfile ${VF_CONTROLFILE}."
         echo
         print_job_infos_end
         exit 0
@@ -159,11 +159,11 @@ check_queue_end1() {
 
 check_queue_end2() {
     check_queue_end1
-    line=$(cat ${controlfile} | grep "stop_after_job=")
+    line=$(cat ${VF_CONTROLFILE} | grep "stop_after_job=")
     stop_after_job=${line/"stop_after_job="}
     if [ "${stop_after_job}" = "yes" ]; then
         echo
-        echo "This job line was stopped by the stop_after_job flag in the controlfile ${controlfile}."
+        echo "This job line was stopped by the stop_after_job flag in the controlfile ${VF_CONTROLFILE}."
         echo
         print_job_infos_end
         exit 0
@@ -189,34 +189,41 @@ export LC_ALL=C
 
 
 # Determining the controlfile to use for this jobline
-controlfile=""
+VF_CONTROLFILE=""
 for file in $(ls ../workflow/control/*-* 2>/dev/null|| true); do
     file_basename=$(basename $file)
     jobline_range=${file_basename/.*}
     jobline_no_start=${jobline_range/-*}
     jobline_no_end=${jobline_range/*-}
     if [[ "${jobline_no_start}" -le "${jobline_no}" && "${jobline_no}" -le "${jobline_no_end}" ]]; then
-        export controlfile="${file}"
+        export VF_CONTROLFILE="${file}"
         break
     fi
 done
-if [ -z "${controlfile}" ]; then
-    export controlfile="../workflow/control/all.ctrl"
+if [ -z "${VF_CONTROLFILE}" ]; then
+    export VF_CONTROLFILE="../workflow/control/all.ctrl"
+fi
+
+# Verbosity
+VF_VERBOSITY_LOGFILES="$(grep -m 1 "^verbosity_logfiles=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_VERBOSITY_LOGFILES
+if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
+    set -x
 fi
 
 # Setting the job letter1
-line=$(cat ${controlfile} | grep -m 1 "^job_letter=")
+line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^job_letter=")
 export job_letter=${line/"job_letter="}
 
 # Setting the verbosity level
-line=$(cat ${controlfile} | grep -m 1 "^verbosity=")
+line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^verbosity=")
 export verbosity=${line/"verbosity="}
 if [[ "${verbosity}" == "debug" ]]; then
     set -x
 fi
 
 # Setting the error sensitivity
-line=$(cat ${controlfile} | grep -m 1 "^error_sensitivity=")
+line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^error_sensitivity=")
 export error_sensitivity=${line/"error_sensitivity="}
 if [[ "${error_sensitivity}" == "high" ]]; then
     set -uo pipefail
@@ -224,7 +231,7 @@ if [[ "${error_sensitivity}" == "high" ]]; then
 fi
 
 # Setting the error response
-line=$(cat ${controlfile} | grep -m 1 "^error_response=")
+line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^error_response=")
 export error_response=${line/"error_response="}
 
 # Checking if queue should be stopped
@@ -236,7 +243,7 @@ timelimit=${job_line/\#PBS -l walltime=}
 export timelimit_seconds="$(echo -n "${timelimit}" | awk -F ':' '{print $3 + $2 * 60 + $1 * 3600}')"
 
 # Getting the number of queues per step
-line=$(cat ${controlfile} | grep -m 1 "^queues_per_step=")
+line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^queues_per_step=")
 export queues_per_step=${line/"queues_per_step="}
 
 # Preparing the todo lists for the queues
