@@ -12,7 +12,7 @@
 #
 # Option: folders_to_reset
 #    Possible values: 
-#        Are the possible values for the folders_to_reset option of the reset-folders script.
+#        Are the possible values for the folders_to_reset option of the reset-folders.sh script.
 #        Anything else: no resetting of folders
 #
 # Option: quiet (optional)
@@ -39,7 +39,7 @@ Arguments:
     <end_jobline_no>:           Positive integer
     <job_template>:             Filename (with absolute or relative path) of the job templates in the template folder, depending on the batchsystem
     <submit mode>:              Whether the newly created job should be directly submitted to the batch system. Possible options: submit, nosubmit
-    <folder_to_reset>:          Useful for cleaning up the workflow and output files of previous runs if desired. Possible values are the same for the script slave/reset-folders (see the header of the file)
+    <folder_to_reset>:          Useful for cleaning up the workflow and output files of previous runs if desired. Possible values are the same for the script slave/reset-folders.sh (see the header of the file)
     <time delay_in_seconds>:    Time delay between submitted jobs (to disperse the jobs in time to prevent problems with the central task list)
 "
 
@@ -81,7 +81,7 @@ job_template=${3}
 
 # Cleaning up if specified
 cd slave
-. reset-folders ${folders_to_reset}
+. reset-folders.sh ${folders_to_reset}
 cd ..
 
 # Getting the batchsystem type
@@ -96,7 +96,7 @@ for i in $(seq ${start_jobline_no} ${end_jobline_no}); do
     cp ${job_template} ../workflow/job-files/main/${i}.job
     sed -i "s/-1\.1/-${i}\.1/g" ../workflow/job-files/main/${i}.job
     cd slave
-    . sync-jobfile ${i}
+    . sync-jobfile.sh ${i}
     cd ..
 done
 
@@ -107,7 +107,7 @@ echo ""
 if [[ "${submit_mode}" = "submit" ]]; then
     cd slave
     for i in $(seq ${start_jobline_no} ${end_jobline_no}); do
-        . submit ../workflow/job-files/main/${i}.job
+        . submit.sh ../workflow/job-files/main/${i}.job
         if [ ! "${i}" = "${end_jobline_no}" ]; then
             sleep ${delay_time}
         fi

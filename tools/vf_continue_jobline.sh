@@ -86,7 +86,7 @@ if [ -f tmp/jobs-to-continue ]; then
         k=$(( k + 1 ))
         cd slave
         echo "Continuing jobline ${jobline_no}"
-        . exchange-continue-jobline ${jobline_no} ${jobline_no} ${job_template} quiet
+        . exchange-continue-jobline.sh ${jobline_no} ${jobline_no} ${job_template} quiet
         cd ..
         if [ ! "${k}" = "${k_max}" ]; then
             sleep ${delay_time}
