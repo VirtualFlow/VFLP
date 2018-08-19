@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . exchange-jobfile template_file jobline_no [quiet]
+# Usage: . exchange-jobfile.sh template_file jobline_no [quiet]
 #
 # Description: Exchanges a jobfile in use with a new (template) jobfile.
 #
@@ -18,7 +18,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . exchange-jobfile template_file jobline_no [quiet]"
+usage="Usage: . exchange-jobfile.sh template_file jobline_no [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
@@ -42,7 +42,7 @@ fi
 
 # Copying the new job file
 cp ../${job_template} ../../workflow/job-files/main/${new_job_file}
-. copy-templates subjobfiles
+. copy-templates.sh subjobfiles
 
 # Changing the job number 1.1 (of template/new job file) to current job number
 sed -i "s/j-1.1/j-${job_no}/g" ../../workflow/job-files/main/${new_job_file}

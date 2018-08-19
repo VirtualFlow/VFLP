@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . submit jobfile partition/queue [quiet]
+# Usage: . submit.sh jobfile partition/queue [quiet]
 
 # Description: Submits a new job.
 #
@@ -18,7 +18,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="# Usage: . submit jobfile partition/queue [quiet]"
+usage="# Usage: . submit.sh jobfile partition/queue [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return

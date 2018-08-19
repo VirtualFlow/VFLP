@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 ##
-# Usage: . copy-templates templates [quiet]
+# Usage: . copy-templates.sh templates [quiet]
 #
 # Description: Copies the template-files from the ../templates folder to the proper places in the ../../workflow folder. 
 #
@@ -25,7 +25,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . copy-templates templates [quiet]"
+usage="Usage: . copy-templates.sh templates [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return

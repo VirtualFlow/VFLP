@@ -30,8 +30,8 @@ queues_per_step="${3}"
 # Hiding the todo.all list
 status="false";
 k="1"
-if [ ! -d /tmp/${USER}/ ]; then
-    mkdir /tmp/${USER}/
+if [ ! -d /tmp/${USER}/${jobline_no}/prepare-todolists/ ]; then
+    mkdir -p /tmp/${USER}/${jobline_no}/prepare-todolists/
 fi
 while [ "${status}" = "false" ]; do
     if mv ../../workflow/ligand-collections/todo/todo.all /tmp/${USER}/ 2>/dev/null; then
@@ -68,6 +68,11 @@ if [[ ! "$*" = *"quiet"* ]]; then
     echo
 fi
 
+# Copying the length file to tmp
+length_file="../${collection_folder}.length.all"
+length_file_temp="/tmp/${USER}/${jobline_no}/prepare-todolists/length.all"
+cp "${length_file}" "${length_file_temp}"
+
 # Getting the number of ligands which are already in the local todo lists
 ligands_todo=""
 for queue_no_2 in $(seq 1 ${nodes_per_job}); do
@@ -78,7 +83,7 @@ for queue_no_2 in $(seq 1 ${nodes_per_job}); do
         # Getting the current number of the ligands todo
         if [ -f "../../workflow/ligand-collections/todo/${queue_no}" ]; then
             for queue_collection in $(cat ../../workflow/ligand-collections/todo/${queue_no}); do
-                ligands_todo[${queue_no_2}0000${queue_no_3}]=$((ligands_todo[${queue_no_2}0000${queue_no_3}] + $(cat ../${collection_folder}.length/${queue_collection}) ))
+                ligands_todo[${queue_no_2}0000${queue_no_3}]=$((ligands_todo[${queue_no_2}0000${queue_no_3}] + $(fgrep "${queue_collection} " ${length_file_temp} | awk '{print $2}') ))
             done
         else             
             # If no local todo list exists create one
@@ -86,7 +91,7 @@ for queue_no_2 in $(seq 1 ${nodes_per_job}); do
         fi
         if [ -f "../../workflow/ligand-collections/current/${queue_no}" ]; then
             for queue_collection in $(cat ../../workflow/ligand-collections/current/${queue_no}); do
-                ligands_todo[${queue_no_2}0000${queue_no_3}]=$((ligands_todo[${queue_no_2}0000${queue_no_3}] + $(cat ../${collection_folder}.length/${queue_collection}) - $(wc -l ../../workflow/ligand-collections/ligand-lists/$(basename ${queue_collection} .txt).status | awk -F ' ' '{print $1	}') ))
+                ligands_todo[${queue_no_2}0000${queue_no_3}]=$((ligands_todo[${queue_no_2}0000${queue_no_3}] + $(fgrep "${queue_collection} " ${length_file_temp} | awk '{print $2}') - $(wc -l ../../workflow/ligand-collections/ligand-lists/$(basename ${queue_collection} .txt).status | awk -F ' ' '{print $1	}') ))
             done
         fi
     done
@@ -136,7 +141,7 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                     fi                    
                 else
                     echo "${next_ligand_collection}" >> ../../workflow/ligand-collections/todo/${queue_no}
-                    ligands_todo[${queue_no_2}0000${queue_no_3}]=$(( ${ligands_todo[${queue_no_2}0000${queue_no_3}]} + $(cat ../${collection_folder}.length/${next_ligand_collection}) ))
+                    ligands_todo[${queue_no_2}0000${queue_no_3}]=$(( ${ligands_todo[${queue_no_2}0000${queue_no_3}]} + $(fgrep "${next_ligand_collection} " ${length_file_temp} | awk '{print $2}') ))
                 fi
                 # Removing the new collection from the ligand-collections-todo file
                 sed -i "/${next_ligand_collection}/d" /tmp/${USER}/todo.all

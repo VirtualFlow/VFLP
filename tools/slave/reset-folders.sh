@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . reset-folders folders_to_reset [quiet]
+# Usage: . reset-folders.sh folders_to_reset [quiet]
 #
 # Description: Cleans the specified folders and resets them to the initial state.
 #
@@ -28,7 +28,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . reset-folders folders_to_reset [quiet]"
+usage="Usage: . reset-folders.sh folders_to_reset [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
@@ -151,6 +151,6 @@ if [[ "$1" = *"templates"* || "$1" = *"all"* ]]; then
     
     # Cleaning
     if [ "${confirm}" = "yes" ]; then
-        . copy-templates all
+        . copy-templates.sh all
     fi
 fi

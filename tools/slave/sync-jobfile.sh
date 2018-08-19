@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . sync-jobfile jobline_no
+# Usage: . sync-jobfile.sh jobline_no
 #
 # Description: Synchronizes the jobfile with the settings in the controlfile
 # (the global or local controlfile if existent).
@@ -16,7 +16,7 @@
 
 # Displaying help if first argument is -h
 if [ "${1}" = "-h" ]; then
-usage="Usage: . sync-jobfile jobline_no"
+usage="Usage: . sync-jobfile.sh jobline_no"
     echo "${usage}"
     return
 fi

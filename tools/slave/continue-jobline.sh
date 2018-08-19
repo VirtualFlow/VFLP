@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . continue-jobline jobline_no partition/queue sync_mode
+# Usage: . continue-jobline.sh jobline_no partition/queue sync_mode
 #
 # Description: Continues a jobline by adjusting the latest job script and submitting
 # it to the batchsystem.
@@ -20,7 +20,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . continue-jobline jobline_no batch_partition sync_mode"
+usage="Usage: . continue-jobline.sh jobline_no batch_partition sync_mode"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
@@ -52,7 +52,7 @@ new_job_no="${jobline_no}.${new_job_no_2}"
 
 # Syncing the workflow settings if specified
 if [ "${3}" = "sync" ]; then
-    . sync-jobfile ${jobline_no}
+    . sync-jobfile.sh ${jobline_no}
 fi
 
 # Changing the partition
@@ -71,5 +71,5 @@ sed -i "s/j-${old_job_no}/j-${new_job_no}/g" ../../workflow/job-files/main/${job
 sed -i "s/${old_job_no}_/${new_job_no}_/g" ../../workflow/job-files/main/${jobline_no}.job
 
 # Submitting new job
-. submit ../workflow/job-files/main/${jobline_no}.job ${partition}
+. submit.sh ../workflow/job-files/main/${jobline_no}.job ${partition}
 

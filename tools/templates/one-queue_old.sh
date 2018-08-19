@@ -118,8 +118,6 @@ next_ligand_collection() {
         # Setting some variables
         next_ligand_collection=$(head -n 1 ../workflow/ligand-collections/todo/${queue_no})
         next_ligand_collection_basename=${next_ligand_collection/.*}
-        next_ligand_collection_sub1=${next_ligand_collection/_*}
-        next_ligand_collection_sub2=${next_ligand_collection/*_}
         if grep "${next_ligand_collection}" ../workflow/ligand-collections/done/* &>/dev/null; then
             echo "This ligand collection was already finished. Trying next ligand collection."
         else 
@@ -127,8 +125,8 @@ next_ligand_collection() {
         fi
         # Removing the new collection from the ligand-collections-todo file
         sed -i "/${next_ligand_collection}/d" ../workflow/ligand-collections/todo/${queue_no}
-    done
-
+    done   
+                
     # Setting some variables
     next_ligand_collection_basename=${next_ligand_collection/.*}  
         
@@ -164,7 +162,7 @@ prepare_collection_files_tmp() {
     fi
     
     # Copying the required files
-    cp ${collection_folder}/${next_ligand_collection_sub1}/${next_ligand_collection_sub2} /tmp/${USER}/${queue_no}/input-files/ligands/smi/collections/${next_ligand_collection}
+    cp ${collection_folder}/${next_ligand_collection} /tmp/${USER}/${queue_no}/input-files/ligands/smi/collections/
 
     # Copying the required old output files if continuing old collection
     if [ "${new_collection}" = "false" ]; then
@@ -423,8 +421,6 @@ for i in $(seq 1 ${no_of_ligands}); do
         # Getting the name of the current ligand collection
         last_ligand_collection=$(cat ../workflow/ligand-collections/current/${queue_no})
         last_ligand_collection_basename=${last_ligand_collection/.*}
-        last_ligand_collection_sub1=${last_ligand_collection/_*}
-        last_ligand_collection_sub2=${last_ligand_collection/*_}
         
         # Checking if the collection.status.temp file exists due to abnormal abortion of job/queue
         # Removing old status.temp file if existent
@@ -438,11 +434,11 @@ for i in $(seq 1 ${no_of_ligands}); do
                 next_ligand=$(head -n 1 /tmp/${USER}/${queue_no}/input-files/ligands/smi/collections/${next_ligand_collection} |  awk -F ' ' '{print $2}')
             else
                 last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_basename}.status 2>/dev/null  | awk -F ':' '{print $1}' || true)
-                next_ligand=$(grep -A1 "${last_ligand}" ${collection_folder}/${last_ligand_collection_sub1}/${last_ligand_collection_sub2} | grep -v ${last_ligand} 2>/dev/null| awk -F ' ' '{print $2}' || true ) 
+                next_ligand=$(grep -A1 "${last_ligand}" ${collection_folder}/${last_ligand_collection} | grep -v ${last_ligand} 2>/dev/null| awk -F ' ' '{print $2}' || true ) 
             fi
         else
             last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_basename}.status.temp 2>/dev/null  | awk -F ':' '{print $1}' || true)
-            next_ligand=$(grep -A1 "${last_ligand}" ${collection_folder}/${last_ligand_collection_sub1}/${last_ligand_collection_sub2} | grep -v ${last_ligand} 2>/dev/null| awk -F ' ' '{print $2}' || true ) 
+            next_ligand=$(grep -A1 "${last_ligand}" ${collection_folder}/${last_ligand_collection} | grep -v ${last_ligand} 2>/dev/null| awk -F ' ' '{print $2}' || true ) 
         fi
         
         # Check if we can use the old collection

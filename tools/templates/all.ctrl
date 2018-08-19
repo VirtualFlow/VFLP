@@ -1,9 +1,9 @@
-#########################
-### Job Configuration ###
-#########################
+*****************************************************************************************************************************************************************
+***************************************************************    Job Resource Configuration    ****************************************************************
+*****************************************************************************************************************************************************************
 
 batchsystem=SLURM
-# SLURM or MT (for MOAB-TORQUE) are possible
+# Possible values: SLURM, TORQUE, PBS, LSF, SGE
 
 nodes_per_job=1 
 # equals steps per job bacause we start one step per node
@@ -22,9 +22,9 @@ timelimit=00-01:00:00
 # alway fill up with two digits per field (used be the job scripts)
 
 
-#########################
-### Workflow Options ####
-#########################
+*****************************************************************************************************************************************************************
+*********************************************************************    Workflow Options    ********************************************************************
+*****************************************************************************************************************************************************************
 
 ligands_per_queue=20000
 
@@ -36,6 +36,19 @@ ligands_per_refilling_step=1000
 
 collection_folder=../input-files/ligand-collections/zinc15.A.smiles
 # slash at the end is not required (optional)
+
+dispersion_time_min=10
+# One positive integer, resembling the time in seconds
+dispersion_time_max=40
+# One positive integer, resembling the time in seconds
+# The dispersion time is used when jobs try to access the central task list.
+# Each job has to wait a random amount of time in the dispersion interval.
+# The effect of this is that when two jobs arrive at the same time at the central task list, the random waiting time will disperse their access on the central task list in time
+
+
+*****************************************************************************************************************************************************************
+*****************************************************************    Ligand Preparation Options    **************************************************************
+*****************************************************************************************************************************************************************
 
 targetformat=mol2
 # any format supported by the obabel (Open Babel) commandline tool, using the file format identifiers used by obabel
@@ -50,10 +63,10 @@ targetformat_keep_individuals_compressed=no
 targetformat_keep_individuals_compressed_tar=yes
 
 
+*****************************************************************************************************************************************************************
+*******************************************************************    Terminating Variables    *****************************************************************
+*****************************************************************************************************************************************************************
 
-#############################
-### Terminating Variables ###
-#############################
 stop_after_ligand=no
 
 stop_after_collection=no

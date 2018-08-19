@@ -17,7 +17,7 @@
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
-usage="Usage: . auto-continue-jobline first_jobline_no last_jobline_no job_template partition delay_time_in_seconds [quiet]"
+usage="Usage: . auto-continue-jobline.sh first_jobline_no last_jobline_no job_template partition delay_time_in_seconds [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
@@ -48,7 +48,7 @@ if [ -f tmp/jobs-to-continue ]; then
     for jobline_no in $(cat tmp/jobs-to-continue); do
         k=$(( k + 1 ))
         cd slave
-        . exchange-continue-jobline ${jobline_no} ${jobline_no} ${3} ${4} quiet
+        . exchange-continue-jobline.sh ${jobline_no} ${jobline_no} ${3} ${4} quiet
         cd ..
         if [ ! "${k}" = "${k_max}" ]; then
             sleep ${delay_time}

@@ -8,12 +8,12 @@
 #
 # Option: submit_mode
 #    Possible values: 
-#        submit: job is submitted to the batch system.
+#        submit.sh: job is submitted to the batch system.
 #        anything else: no job is submitted to the batch system. 
 #
 # Option: folders_to_reset
 #    Possible values: 
-#        Are the possible values for the folders_to_reset option of the reset-folders script.
+#        Are the possible values for the folders_to_reset option of the reset-folders.sh script.
 #        Anything else: no resetting of folders
 #
 # Option: quiet (optional)
@@ -46,7 +46,7 @@ batchsystem="${line/batchsystem=}"
 
 # Cleaning up if specified
 cd slave
-. reset-folders ${5}
+. reset-folders.sh ${5}
 cd ..
 
 # Duplicating the main template job file and modifying the duplicates
@@ -64,7 +64,7 @@ for i in $(seq ${1} ${2}); do
 done
 
 # Submitting the job files
-if [[ "${4}" = "submit" ]]; then
+if [[ "${4}" = "submit.sh" ]]; then
     cd slave
     for i in $(seq ${1} ${2}); do
         . submit ../workflow/job-files/main/${i}.job ${partition}
