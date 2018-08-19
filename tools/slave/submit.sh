@@ -28,7 +28,7 @@ fi
 partition="${2}"
 
 # Getting the batchsystem type
-line=$(grep -m 1 batchsystem ../../workflow/control/all.ctrl)
+line=$(grep -m 1 "^batchsystem=" ../../workflow/control/all.ctrl)
 batchsystem="${line/batchsystem=}"
 
 # Submitting the job

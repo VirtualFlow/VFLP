@@ -182,9 +182,9 @@ if [ "${show_vs_statistics_flag}" == "false" ]; then
 fi
 
 # Getting the batchsystem type
-line=$(grep -m 1 "^batchsystem" ../workflow/control/all.ctrl)
+line=$(grep -m 1 "^batchsystem=" ../workflow/control/all.ctrl)
 batchsystem="${line/batchsystem=}"
-line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
+line=$(grep -m 1 "^job_letter=" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
 
 # Determining the docking type replicas

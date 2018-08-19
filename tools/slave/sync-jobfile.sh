@@ -25,7 +25,7 @@ fi
 jobline_no=${1}
 
 # Getting the batchsystem type
-line=$(grep -m 1 batchsystem ../../workflow/control/all.ctrl)
+line=$(grep -m 1 "^batchsystem=" ../../workflow/control/all.ctrl)
 batchsystem="${line/batchsystem=}"
 
 # Determining the batchsystem controlfile to use for this jobline
