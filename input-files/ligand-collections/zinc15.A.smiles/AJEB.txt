@@ -1,2 +1,0 @@
-smiles	zinc_id	inchikey	mwt	logp	reactive	purchasable	tranche_name	features
-CCCCCC(Cl)CCCCC	ZINC000104529128	MBRZKXSZTXEFSO-UHFFFAOYSA-N	190.758	4.754	30	40	AJEB	
