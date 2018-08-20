@@ -22,17 +22,10 @@
 # Option: delay_time_in_seconds
 #    Possible values: Any nonnegative integer
 #
-# Revision history:
-# 2015-12-05  Created (version 1.2)
-# 2015-12-05  Various improvements (version 1.9)
-# 2015-12-16  Adaption to version 2.1
-# 2016-07-16  Various improvements
-# 2017-03-18  Removing the partition as an argument (instead including it in the config file)
-#
 # ---------------------------------------------------------------------------
 
 #Checking the input arguments
-usage="Usage: vf_start_jobline.sh <VF_START_JOBLINE_NO> <VF_END_JOBLINE_NO> <job_template> <submit_mode> <folders_to_reset> <delay_time_in_seconds> [quiet]
+usage="Usage: vf_start_jobline.sh <start_jobline_no> <end_jobline_no> <job_template> <submit_mode> <folders_to_reset> <delay_time_in_seconds> [quiet]
 
 Arguments:
     <start_jobline_no>:         Positive integer

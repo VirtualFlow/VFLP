@@ -1,20 +1,16 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Description: Automatically finds the joblines with jobline numbers between first/last_VF_JOBLINE_NO which are not running and continues the jobline.
+# Description: Automatically finds the joblines with jobline numbers between first/last_jobline_no which are not running and continues the jobline.
 #
 # Option: quiet (optional)
 #    Possible values: 
 #        quiet: No information is displayed on the screen.
 #
-# Revision history:
-# 2015-12-28  Import of file from JANINA version 2.2 and adaption to STELLAR version 6.1
-# 2016-07-16  Various improvements
-#
 # ---------------------------------------------------------------------------
 
 #Checking the input arguments
-usage="Usage: vf_continue_jobline.sh first_VF_JOBLINE_NO last_VF_JOBLINE_NO job_template delay_time_in_seconds [quiet]"
+usage="Usage: vf_continue_jobline.sh first_jobline_no last_jobline_no job_template delay_time_in_seconds [quiet]"
 if [ "${1}" == "-h" ]; then
     echo -e "\n${usage}\n\n"
     exit 0 
@@ -45,8 +41,8 @@ error_response_nonstd() {
 trap 'error_response_nonstd $LINENO' ERR
 
 # Variables
-first_VF_JOBLINE_NO=${1}
-last_VF_JOBLINE_NO=${2}
+first_jobline_no=${1}
+last_jobline_no=${2}
 job_template=${3}
 line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
@@ -74,7 +70,7 @@ bin/sqs > tmp/jobs-all 2>/dev/null || true
 
 # Storing all joblines which have to be restarted
 echo "Checking which joblines are already in the batchsystem"
-for VF_JOBLINE_NO in $(seq ${first_VF_JOBLINE_NO} ${last_VF_JOBLINE_NO}); do
+for VF_JOBLINE_NO in $(seq ${first_jobline_no} ${last_jobline_no}); do
     if ! grep -q "${VF_JOB_LETTER}\-${VF_JOBLINE_NO}\."  tmp/jobs-all; then
         echo "Adding jobline ${VF_JOBLINE_NO} to the list of joblines to be continued."
         echo ${VF_JOBLINE_NO} >> "tmp/jobs-to-continue"

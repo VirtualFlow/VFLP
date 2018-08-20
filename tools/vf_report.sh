@@ -6,13 +6,6 @@
 # Description: Display current information about the virtual screening. The docking result 
 # part requires that the summary-files about the first poses are present/enabled in the workflow.
 #
-#
-# Revision history:
-# 2015-12-05  Created (version 1.2)
-# 2015-12-16  Adaption to version 2.1
-# 2016-07-16  Various improvements
-# 2017-04-03  Adoption to verson 9.1
-#
 # ---------------------------------------------------------------------------
 
 # Displaying the banner
@@ -324,7 +317,7 @@ if [[ "${category}" = "workflow" ]]; then
         for i in $(cat ../workflow/ligand-collections/var/todo.original); do
             echo -ne " Total number of ligands: ${ligands_total} (counting collection ${iteration}/${totalNo})\\r"
             queue_collection_basename=${i/.pdbqt.gz.tar}
-            noToAdd=$(grep "${queue_collection_basename} " ${collection_folder}.length.all 2>/dev/null  | awk '{print $2}')
+            noToAdd=$(grep "${queue_collection_basename} " ${collection_folder}.length 2>/dev/null  | awk '{print $2}')
             if [[ -z "${noToAdd// }" ]]; then   
             noToAdd=0
             fi
@@ -417,7 +410,7 @@ if [[ "${category}" = "workflow" ]]; then
         for i in $(cat ../workflow/ligand-collections/var/todo.original); do
             echo -ne " Total number of dockings to be carried out in the entire workflow: ${docking_runs_total} (counting collection ${iteration}/${totalNo})\\r"
             queue_collection_basename=${i/.pdbqt.gz.tar}
-            noToAdd=$(grep "${queue_collection_basename} " ${collection_folder}.length.all 2>/dev/null | awk '{print $2}')
+            noToAdd=$(grep "${queue_collection_basename} " ${collection_folder}.length 2>/dev/null | awk '{print $2}')
             if [[ -z "${noToAdd// }" ]]; then   
                 noToAdd=0
             fi

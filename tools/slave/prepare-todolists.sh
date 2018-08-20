@@ -207,8 +207,8 @@ if [[ ! "$*" = *"quiet"* ]]; then
 fi
 
 # Copying the length file to tmp
-length_file="../${collection_folder}.length.all"
-length_file_temp="/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/length.all"
+length_file="../${collection_folder}.length"
+length_file_temp="/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/length"
 cp "${length_file}" "${length_file_temp}"
 
 # Creating a temporary to-do file with the new ligand collections

@@ -1,7 +1,7 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
 #
-# Usage: . exchange-continue-jobline first_VF_JOBLINE_NO last_VF_JOBLINE_NO job_template [quiet]
+# Usage: . exchange-continue-jobline first_jobline_no last_jobline_no job_template [quiet]
 #
 # Description: Exchange jobfiles and continue a jobline which was already started.
 #
@@ -17,7 +17,7 @@
 #
 # ---------------------------------------------------------------------------
 # Displaying help if the first argument is -h
-usage="Usage: . exchange-continue-jobline first_VF_JOBLINE_NO last_VF_JOBLINE_NO job_template [quiet]"
+usage="Usage: . exchange-continue-jobline first_jobline_no last_jobline_no job_template [quiet]"
 if [ "${1}" == "-h" ]; then
    echo -e "\n${usage}\n\n"
    exit 0
@@ -39,8 +39,8 @@ trap 'error_response_nonstd $LINENO' ERR
 
 # Variables
 i=0
-first_VF_JOBLINE_NO=${1}
-last_VF_JOBLINE_NO=${2}
+first_jobline_no=${1}
+last_jobline_no=${2}
 job_template=${3}
 if [ -z  "${4}" ]; then
     quiet_mode="off"
@@ -49,7 +49,7 @@ else
 fi
 
 # Continuing the jobline
-for VF_JOBLINE_NO in $(seq ${first_VF_JOBLINE_NO} ${last_VF_JOBLINE_NO}); do
+for VF_JOBLINE_NO in $(seq ${first_jobline_no} ${last_jobline_no}); do
     i=$(( i + 1 ))
     . exchange-jobfile.sh ${job_template} ${VF_JOBLINE_NO} ${quiet_mode}
     . continue-jobline.sh ${VF_JOBLINE_NO} "sync"
