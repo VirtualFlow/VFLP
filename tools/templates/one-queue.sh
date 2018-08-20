@@ -62,7 +62,7 @@ update_ligand_list_start() {
 
 update_ligand_list_end_fail() {
     # Updating the ligand-list file
-    sed -i "s/${next_ligand}:processing/${next_ligand}:failed (${fail_reason})/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_basename}.status.temp
+    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:failed (${fail_reason})/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_basename}.status.temp
     
     # Printing some information
     echo
@@ -73,7 +73,7 @@ update_ligand_list_end_fail() {
 
 update_ligand_list_end_success() {
     # Updating the ligand-list file
-    sed -i "s/${next_ligand}:processing/${next_ligand}:completed${success_remark}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_basename}.status.temp
+    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:completed${success_remark}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_basename}.status.temp
     
     # Printing some information
     echo
@@ -120,13 +120,13 @@ next_ligand_collection() {
         next_ligand_collection_basename=${next_ligand_collection/.*}
         next_ligand_collection_sub1=${next_ligand_collection/_*}
         next_ligand_collection_sub2=${next_ligand_collection/*_}
-        if grep "${next_ligand_collection}" ../workflow/ligand-collections/done/* &>/dev/null; then
+        if grep -w "${next_ligand_collection}" ../workflow/ligand-collections/done/* &>/dev/null; then
             echo "This ligand collection was already finished. Trying next ligand collection."
         else 
             new_collection="true"
         fi
         # Removing the new collection from the ligand-collections-todo file
-        sed -i "/${next_ligand_collection}/d" ../workflow/ligand-collections/todo/${queue_no}
+        perl -ni -e "print unless /${next_ligand_collection}\b/" ../workflow/ligand-collections/todo/${queue_no}
     done
 
     # Setting some variables
@@ -585,7 +585,7 @@ for i in $(seq 1 ${no_of_ligands}); do
         fi
     fi
     # Modifying the header of the targetformat file
-    sed -i "s/REMARK  Name.*/REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    Created by Open Babel version ${obabel_version}${protonation_remark}\nREMARK    Prior preparation step 2: Conversion from smiles to pdb format by ${converter_3d}\nREMARK    Created on $(date)/g"  /tmp/${USER}/${queue_no}/output-files/ligands/incomplete/${targetformat}/${next_ligand_collection_basename}/${next_ligand}.${targetformat}
+    perl -pi -e  "s/REMARK  Name.*/REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    Created by Open Babel version ${obabel_version}${protonation_remark}\nREMARK    Prior preparation step 2: Conversion from smiles to pdb format by ${converter_3d}\nREMARK    Created on $(date)/g"  /tmp/${USER}/${queue_no}/output-files/ligands/incomplete/${targetformat}/${next_ligand_collection_basename}/${next_ligand}.${targetformat}
     trap 'error_response_std $LINENO' ERR
     # Checking if the smi files should be kept and in which format
     # Checking if the individual files should be added to a tar archive
