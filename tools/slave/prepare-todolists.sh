@@ -31,6 +31,13 @@ VF_QUEUES_PER_STEP="${3}"
 export LC_ALL=C
 todo_file_temp=/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/todo.all
 
+# Verbosity
+VF_VERBOSITY_LOGFILES="$(grep -m 1 "^verbosity_logfiles=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_VERBOSITY_LOGFILES
+if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
+    set -x
+fi
+
 # Printing some information
 echo -e "\n * Preparing the to-do lists for jobline ${VF_QUEUE_NO_1}\n"
 
