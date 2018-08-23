@@ -44,6 +44,13 @@ time_near_limit() {
 }
 trap 'time_near_limit' 1 2 3 9 10 12 15
 
+# Cleaning the queue folders
+clean_queue_files_tmp() {
+    cp /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ../workflow/output-files/queues/
+    rm -r /tmp/${USER}/${VF_QUEUE_NO}/
+}
+trap 'clean_queue_files_tmp' EXIT RETURN
+
 
 # Error reponse cxcalc
 error_response_cxcalc() {
@@ -265,13 +272,6 @@ clean_collection_files_tmp() {
     needs_cleaning=false
 }
 
-# Cleaning the queue folders
-clean_queue_files_tmp() {
-    cp /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ../workflow/output-files/queues/
-    rm -r /tmp/${USER}/${VF_QUEUE_NO}/
-}
-
-
 # Function for end of the queue
 end_queue() {
     if [[ "${ligand_index}" -gt "1" && "${new_collection}" == "false" ]] ; then
@@ -332,10 +332,6 @@ protonation_program_2="$(grep -m 1 "^protonation_program_2=" ${VF_CONTROLFILE} |
 conformation_program_1="$(grep -m 1 "^conformation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 conformation_program_2="$(grep -m 1 "^conformation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
-
-
-
-
 # Saving some information about the VF_CONTROLFILEs
 echo
 echo
@@ -353,7 +349,6 @@ cat ${VF_CONTROLFILE}
 echo
 echo
 
-
 # Setting the number of ligands to screen in this job
 line=$(cat ${VF_CONTROLFILE} | grep "ligands_per_queue=")
 no_of_ligands=${line/"ligands_per_queue="}
@@ -366,9 +361,6 @@ obabel_version="$(molconvert | grep -m 1 version | sed "s/.*version \([0-9. ]*\)
 # Getting the folder where the colections are
 line=$(cat ${VF_CONTROLFILE} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
-
-
-    
     
 # Loop for each ligand
 for ligand_index in $(seq 1 ${no_of_ligands}); do
@@ -421,7 +413,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     else
         # Getting the name of the current ligand collection
         last_ligand_collection=$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO})  
-        last_ligand_collection_tranch="${last_ligand_collection_ID/_*}"
+        last_ligand_collection_tranch="${last_ligand_collection/_*}"
         last_ligand_collection_ID="${last_ligand_collection/*_}"
         
         # Checking if this is the first ligand of this queue
