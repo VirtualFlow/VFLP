@@ -427,7 +427,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
             # Checking if the collection.status.tmp file exists due to abnormal abortion of job/queue
             # Removing old status.tmp file if existent
-            if [[ -f "../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp" ]]; then
+            if [[ -f "../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp" ]]; then
                 echo "The file ${last_ligand_collection_ID}.status.tmp exists already."
                 echo "This collection will be restarted."
                 rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp
@@ -487,7 +487,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
     # Getting the major molecular species (protonated state) at ph 7.4
     trap 'error_response_cxcalc' ERR
-    timeout 300 time_bin -a -o "/tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of cxcalc (user real system): %U %e %S" cxcalc majorms -H 7.4 /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk -F ' ' '{print $2}' > /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp  && printf "Ligand successfully protonated by cxcalc.\n\n"
+    timeout 300 time_bin -a -o "/tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of cxcalc (user real system): %U %e %S" cxcalc majorms -H 7.4 /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk -F ' ' '{print $2}' > /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp
     last_exit_code=$?
     # Checking if conversion successfull
     if [ "${last_exit_code}" -ne "0" ]; then
@@ -497,8 +497,10 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         error_response_cxcalc
         protonation_remark=""
     else
+        printf "Ligand successfully protonated by cxcalc.\n\n"
         protonation_remark="\nREMARK    Prior preparation step 1: Protonation in smiles format at pH 7.4 by cxcalc version ${cxcalc_version}"
     fi
+
     mv /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
     trap 'error_response_std $LINENO' ERR
 
