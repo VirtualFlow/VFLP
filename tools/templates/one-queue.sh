@@ -265,8 +265,8 @@ clean_collection_files_tmp() {
         fi
 
         # Moving the ligand list status tmp file
-        if [ -f ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status.tmp ]; then
-            mv ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status.tmp ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
+        if [ -f ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status.tmp ]; then
+            mv ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status.tmp ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status
         fi
     fi
     needs_cleaning=false
@@ -430,19 +430,19 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             if [[ -f "../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp" ]]; then
                 echo "The file ${last_ligand_collection_ID}.status.tmp exists already."
                 echo "This collection will be restarted."
-                rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp
+                rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp
                 
                 # Getting the name of the first ligand of the first collection
                 next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 1 | awk -F '/.' '{print $1}')
 
             else
-                last_ligand_entry=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null || true)
+                last_ligand_entry=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status 2>/dev/null || true)
                 last_ligand=$(echo ${last_ligand_entry} | awk -F ' ' '{print $1}')
                 next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '/.' '{print $1}')
             fi
         # Not first ligand of this queue
         else
-            last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp 2>/dev/null | awk -F ' ' '{print $1}' || true)
+            last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F ' ' '{print $1}' || true)
             next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '/.' '{print $1}')
         fi
         
