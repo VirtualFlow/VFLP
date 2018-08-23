@@ -310,27 +310,27 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
 fi
 
 # Setting if the smi files should be kept and in which format
-smi_keep_individuals="$(grep -m 1 "^smi_keep_individuals=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-smi_keep_individuals_tar="$(grep -m 1 "^smi_keep_individuals_tar=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+smi_keep_individuals="$(grep -m 1 "^smi_keep_individuals=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+smi_keep_individuals_tar="$(grep -m 1 "^smi_keep_individuals_tar=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Setting if the pdb files should be kept and in which format
-pdb_keep_individuals="$(grep -m 1 "^pdb_keep_individuals=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-pdb_keep_individuals_compressed="$(grep -m 1 "^pdb_keep_individuals_compressed=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-pdb_keep_individuals_compressed_tar="$(grep -m 1 "^pdb_keep_individuals_compressed_tar=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+pdb_keep_individuals="$(grep -m 1 "^pdb_keep_individuals=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+pdb_keep_individuals_compressed="$(grep -m 1 "^pdb_keep_individuals_compressed=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+pdb_keep_individuals_compressed_tar="$(grep -m 1 "^pdb_keep_individuals_compressed_tar=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Setting if the targetformat files should be kept and in which format
-targetformat_keep_individuals="$(grep -m 1 "^targetformat_keep_individuals=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-targetformat_keep_individuals_compressed="$(grep -m 1 "^targetformat_keep_individuals_compressed=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-targetformat_keep_individuals_compressed_tar="$(grep -m 1 "^targetformat_keep_individuals_compressed_tar=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+targetformat_keep_individuals="$(grep -m 1 "^targetformat_keep_individuals=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+targetformat_keep_individuals_compressed="$(grep -m 1 "^targetformat_keep_individuals_compressed=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+targetformat_keep_individuals_compressed_tar="$(grep -m 1 "^targetformat_keep_individuals_compressed_tar=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Setting the target output file format
-targetformat="$(grep -m 1 "^targetformat=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+targetformat="$(grep -m 1 "^targetformat=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Conversion programs
-protonation_program_1="$(grep -m 1 "^protonation_program_1=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-protonation_program_2="$(grep -m 1 "^protonation_program_2=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-3D_coordinate_program_1="$(grep -m 1 "^3D_coordinate_program_1=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-3D_coordinate_program_2="$(grep -m 1 "^3D_coordinate_program_2=" ../../../../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_program_1="$(grep -m 1 "^protonation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_program_2="$(grep -m 1 "^protonation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_program_1="$(grep -m 1 "^conformation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_program_2="$(grep -m 1 "^conformation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 
 

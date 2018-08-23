@@ -259,7 +259,7 @@ for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
                 if [ -f ../../workflow/ligand-collections/ligand-lists/${queue_collection_tranch}/${queue_collection_ID}.status ]; then
                     no_to_substract=$(cat ../../workflow/ligand-collections/ligand-lists/${queue_collection_tranch}/${queue_collection_ID}.* | awk '{print $1}' | uniq | wc -l)
                 else
-                    echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_substract}. Using value 0 for the length."
+                    echo -e " * Warning: Could not get the number of ligands to substract. Found value is: ${no_to_substract} \n * Using value 0 for the length."
                     no_to_substract=0
                 fi
                 ligands_todo[${queue_no_2}0000${queue_no_3}]=$((ligands_todo[${queue_no_2}0000${queue_no_3}] + ${no_to_add} - ${no_to_substract} ))
