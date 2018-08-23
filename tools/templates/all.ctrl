@@ -93,17 +93,42 @@ error_response=fail
 *****************************************************************    Ligand Preparation Options    **************************************************************
 *****************************************************************************************************************************************************************
 
+# Todo: input format choice
+
 targetformat=mol2
 # any format supported by the obabel (Open Babel) commandline tool, using the file format identifiers used by obabel
 
-smi_keep_individuals=no
-smi_keep_individuals_tar=yes
-pdb_keep_individuals=no
-pdb_keep_individuals_compressed=no
-pdb_keep_individuals_compressed_tar=yes
-targetformat_keep_individuals=no
-targetformat_keep_individuals_compressed=no
-targetformat_keep_individuals_compressed_tar=yes
+protonation_state_generation=true
+# Possible values:
+#     false
+#     true
+
+protonation_program_1=obabel
+protonation_program_2=obabel
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Possible values:
+#     obabel
+#     cxcalc
+#     none
+
+3D_coordinate_generation=true
+# Possible values:
+#     false
+#     true
+
+3D_coordinate_program_1=obabel
+3D_coordinate_program_2=obabel
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Possible values:
+#     obabel
+#     molconvert
+#     none
+
+chemaxon_license_file=${HOME}/downloads/ChemAxon/license.cxl
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# Possible values:
+#     <Absolute path to license file>: Shell variables can be used
+#     none
 
 
 *****************************************************************************************************************************************************************

@@ -32,7 +32,12 @@ Arguments:
     <end_jobline_no>:           Positive integer
     <job_template>:             Filename (with absolute or relative path) of the job templates in the template folder, depending on the batchsystem
     <submit mode>:              Whether the newly created job should be directly submitted to the batch system. Possible options: submit, nosubmit
-    <folder_to_reset>:          Useful for cleaning up the workflow and output files of previous runs if desired. Possible values are the same for the script slave/reset-folders.sh (see the header of the file)
+    <folder_to_reset>:          Useful for cleaning up the workflow and output files of previous runs if desired. Possible values:
+        workflow: Cleans the workflow folder
+        output: Cleans the output-files folder
+        templates: Copies all the template files
+        all: Cleans the workflow and the output-files folder
+        none: no cleaning
     <time delay_in_seconds>:    Time delay between submitted jobs (to disperse the jobs in time to prevent problems with the central task list)
 "
 

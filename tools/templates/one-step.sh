@@ -46,14 +46,14 @@ source ~/.bashrc
 
 prepare_queue_files_tmp() {
     # Creating the required folders    
-    if [ -d "/tmp/${USER}/${queue_no}/" ]; then
-        rm -r /tmp/${USER}/${queue_no}/
+    if [ -d "/tmp/${USER}/${VF_QUEUE_NO}/" ]; then
+        rm -r /tmp/${USER}/${VF_QUEUE_NO}/
     fi
-    mkdir -p /tmp/${USER}/${queue_no}/workflow/output-files/queues
+    mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues
     
     # Copying the requires files
-    if ls -1 ../workflow/output-files/queues/queue-${queue_no}.* > /dev/null 2>&1; then
-        cp ../workflow/output-files/queues/queue-${queue_no}.* /tmp/${USER}/${queue_no}/workflow/output-files/queues/
+    if ls -1 ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* > /dev/null 2>&1; then
+        cp ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/
     fi    
 }
 
@@ -62,37 +62,39 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
     set -x
 fi
 
-# Setting important variables
-export queue_no_2=${VF_STEP_NO}
-export VF_QUEUE_NO_12="${VF_QUEUE_NO_1}-${queue_no_2}"
-export little_time="false";
+# Setting and exporting variables
+export VF_QUEUE_NO_2=${VF_STEP_NO}
+export VF_QUEUE_NO_12="${VF_QUEUE_NO_1}-${VF_QUEUE_NO_2}"
+export VF_LITTLE_TIME="false";
 export VF_START_TIME_SECONDS
 export VF_TIMELIMIT_SECONDS
 export CHEMAXON_LICENSE_URL=/tmp/${USER}/ChemAxon/license.cxl
 pids=""
+chemaxon_license_file="$(grep -m 1 "^chemaxon_license_file=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
-# Copying the license file
-# Creating the required folders    
-if [ -d "/tmp/${USER}/ChemAxon/" ]; then
-    rm -r /tmp/${USER}/ChemAxon/*
-else 
-    mkdir -p /tmp/${USER}/ChemAxon/
+# Copying the license file if needed
+if [[ ! "${chemaxon_license_file}" == "none" ]] && [[ -n "${chemaxon_license_file}" ]]; then
+
+    # Creating the required folders
+    if [ -d "/tmp/${USER}/ChemAxon/" ]; then
+        rm -r /tmp/${USER}/ChemAxon/*
+    else
+        mkdir -p /tmp/${USER}/ChemAxon/
+    fi
+    cp $(eval echo ${chemaxon_license_file}) /tmp/${USER}/ChemAxon/
 fi
-cp ${HOME}/downloads/ChemAxon/license.cxl /tmp/${USER}/ChemAxon/
 
 # Starting the individual queues
 for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
-    export queue_no_3="${i}"
-    export queue_no="${VF_QUEUE_NO_12}-${queue_no_3}"
+    export VF_QUEUE_NO_3="${i}"
+    export VF_QUEUE_NO="${VF_QUEUE_NO_12}-${VF_QUEUE_NO_3}"
     prepare_queue_files_tmp
-    echo "Job step ${VF_STEP_NO} is starting queue ${queue_no} on host $(hostname)."
-    . ../workflow/job-files/sub/one-queue.sh >> /tmp/${USER}/${queue_no}/workflow/output-files/queues/queue-${queue_no}.out 2>&1 &
+    echo "Job step ${VF_STEP_NO} is starting queue ${VF_QUEUE_NO} on host $(hostname)."
+    . ../workflow/job-files/sub/one-queue.sh >> /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out 2>&1 &
     pids[$(( i - 1 ))]=$!
 done
 
 wait || true
 
 # Cleaning up
-
-
 exit 0
