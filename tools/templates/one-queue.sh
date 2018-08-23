@@ -213,7 +213,7 @@ prepare_collection_files_tmp() {
     tar -xf ${collection_folder}/${next_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz || true
     gunzip /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz
     # Extracting all the SMILES at the same time (faster)
-    tar -xvf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}
+    tar -xf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}
 
     # Copying the required old output files if continuing old collection
     if [ "${new_collection}" == "false" ]; then
@@ -407,7 +407,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             echo -e "***************** INFO END ******************\n"
         fi
         # Getting the name of the first ligand of the first collection
-        next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '.' '{print $1}')
+        next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '/.' '{print $1}')
 
     # Using the old collection
     else
@@ -423,7 +423,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             tar -xf ${collection_folder}/${last_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz || true
             gunzip /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
             # Extracting all the SMILES at the same time (faster)
-            tar -xvf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}
+            tar -xf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}
 
             # Checking if the collection.status.tmp file exists due to abnormal abortion of job/queue
             # Removing old status.tmp file if existent
@@ -433,17 +433,17 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
                 rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp
                 
                 # Getting the name of the first ligand of the first collection
-                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 1 | awk -F '.' '{print $1}')
+                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 1 | awk -F '/.' '{print $1}')
 
             else
                 last_ligand_entry=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null || true)
                 last_ligand=$(echo ${last_ligand_entry} | awk -F ' ' '{print $1}')
-                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '.' '{print $1}')
+                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '/.' '{print $1}')
             fi
         # Not first ligand of this queue
         else
             last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp 2>/dev/null | awk -F ' ' '{print $1}' || true)
-            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '.' '{print $1}')
+            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '/.' '{print $1}')
         fi
         
         # Check if we can use the old collection
@@ -470,7 +470,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             next_ligand_collection
             prepare_collection_files_tmp
             # Getting the first ligand of the new collection
-            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '.' '{print $1}')
+            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '/.' '{print $1}')
         fi
     fi
     
