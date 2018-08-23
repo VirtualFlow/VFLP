@@ -48,15 +48,15 @@ cpus_per_queue=1
 ligands_per_queue=200000
 # used as a limit of ligands per running queue (small values only useful for testing)
 
-ligands_todo_per_queue=80
+ligands_todo_per_queue=10000
 # used as a limit of ligands for the to-do lists
 # this value should be divisible by the next setting "ligands_todo_per_refilling_step"
 
-ligands_per_refilling_step=20
+ligands_per_refilling_step=1000
 # fill the to-do files of the queues with this number of ligands per refill step
 # a number roughly equal to the average of number of ligands per collection is recommended
 
-collection_folder=../input-files/ligand-collections/zinc15.A.smiles
+collection_folder=../../../collections/zinc15_20180805.smi.splitted3_tar_preview1
 # slash at the end is not required (optional)
 # relative pathname is required w.r.t. the folder tools/
 

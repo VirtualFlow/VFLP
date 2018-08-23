@@ -227,8 +227,7 @@ for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
         # Getting the current number of the ligands to-do
         if [ -f "../../workflow/ligand-collections/todo/${queue_no}" ]; then
             for queue_collection in $(cat ../../workflow/ligand-collections/todo/${queue_no}); do
-		        queue_collection_basename="$(basename ${queue_collection} .pdbqt.gz.tar)"
-		        no_to_add=$(fgrep "${queue_collection_basename} " ${length_file_temp} | awk '{print $2}')
+		        no_to_add=$(fgrep "${queue_collection} " ${length_file_temp} | awk '{print $2}')
                 if [ ! "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_add}. Using value 0 for the length."
                     no_to_add=0
@@ -242,18 +241,16 @@ for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
         fi
         if [ -f "../../workflow/ligand-collections/current/${queue_no}" ]; then
             for queue_collection in $(cat ../../workflow/ligand-collections/current/${queue_no}); do
-                queue_collection_basename="$(basename ${queue_collection} .pdbqt.gz.tar)"
-                queue_collection_sub1=${queue_collection/_*}
-                queue_collection_sub2=${queue_collection/*_}
-                queue_collection_sub2_basename=${queue_collection_basename/*_}
-                no_to_add=$(fgrep "${queue_collection_basename} " ${length_file_temp} | awk '{print $2}')
+                queue_collection_tranch=${queue_collection/_*}
+                queue_collection_ID=${queue_collection/*_}
+                no_to_add=$(fgrep "${queue_collection} " ${length_file_temp} | awk '{print $2}')
                 if [ ! "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_add}. Using value 0 for the length."
                     no_to_add=0
                 fi
                 no_to_substract=0
-                if [ -f ../../workflow/ligand-collections/ligand-lists/${queue_collection_sub1}/${queue_collection_sub2_basename}.status ]; then
-                    no_to_substract=$(cat ../../workflow/ligand-collections/ligand-lists/${queue_collection_sub1}/${queue_collection_sub2_basename}.* | awk '{print $1}' | uniq | wc -l)
+                if [ -f ../../workflow/ligand-collections/ligand-lists/${queue_collection_tranch}/${queue_collection_ID}.status ]; then
+                    no_to_substract=$(cat ../../workflow/ligand-collections/ligand-lists/${queue_collection_tranch}/${queue_collection_ID}.* | awk '{print $1}' | uniq | wc -l)
                 else
                     echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_substract}. Using value 0 for the length."
                     no_to_substract=0
@@ -305,9 +302,8 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                 fi
                 # Setting some variables
                 next_ligand_collection="$(head -n 1 ${todo_file_temp})"
-                next_ligand_collection_basename=${next_ligand_collection/.*}
                 echo "${next_ligand_collection}" >> ${todo_new_temp}
-                no_to_add=$(fgrep "${next_ligand_collection_basename} " ${length_file_temp} | awk '{print $2}')
+                no_to_add=$(fgrep "${next_ligand_collection} " ${length_file_temp} | awk '{print $2}')
                 if ! [ "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${next_ligand_collection}. Found value is: ${no_to_add}. Exiting."
                     exit 1
