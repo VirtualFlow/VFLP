@@ -210,7 +210,7 @@ prepare_collection_files_tmp() {
     fi
     
     # Copying the required files
-    tar --no-anchored -xf ${collection_folder}/${next_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/ ${next_ligand_collection_ID}.tar.gz || true
+    tar -xf ${collection_folder}/${next_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${next_ligand_collection_ID}.tar.gz || true
     gunzip /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz
     # Extracting all the SMILES at the same time (faster)
     tar -xvf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}
@@ -419,8 +419,8 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         # Checking if this is the first ligand of this queue
         if [ "${ligand_index}" = "1" ]; then
             # Extracting the last ligand collection
-            mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/
-            tar --no-anchored -xf ${collection_folder}/${last_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/ ${last_ligand_collection_ID}.tar.gz || true
+            mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/
+            tar -xf ${collection_folder}/${last_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${last_ligand_collection_ID}.tar.gz || true
             gunzip /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
             # Extracting all the SMILES at the same time (faster)
             tar -xvf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}
