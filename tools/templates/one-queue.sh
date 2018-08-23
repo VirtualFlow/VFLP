@@ -407,7 +407,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             echo -e "***************** INFO END ******************\n"
         fi
         # Getting the name of the first ligand of the first collection
-        next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '[/.]' '{print $1}')
+        next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '[/.]' '{print $2}')
 
     # Using the old collection
     else
@@ -433,17 +433,17 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
                 rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp
                 
                 # Getting the name of the first ligand of the first collection
-                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 1 | awk -F '[/.]' '{print $1}')
+                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 1 | awk -F '[/.]' '{print $2}')
 
             else
                 last_ligand_entry=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status 2>/dev/null || true)
                 last_ligand=$(echo ${last_ligand_entry} | awk -F ' ' '{print $1}')
-                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $1}')
+                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
             fi
         # Not first ligand of this queue
         else
             last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F ' ' '{print $1}' || true)
-            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $1}')
+            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
         fi
         
         # Check if we can use the old collection
@@ -470,7 +470,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             next_ligand_collection
             prepare_collection_files_tmp
             # Getting the first ligand of the new collection
-            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '[/.]' '{print $1}')
+            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 1 | awk -F '[/.]' '{print $2}')
         fi
     fi
     
