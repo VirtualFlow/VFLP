@@ -15,7 +15,9 @@ if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
     set -uo pipefail
     trap '' PIPE        # SIGPIPE = exit code 141, means broken pipe. Happens often, e.g. if head is listening and got all the lines it needs.
 fi
-
+# TODO: if output format is pdb, do not convert again
+# TODO: different input file format
+# TODO: choice of programs for conversion
 
 # Functions
 # Standard error response
@@ -26,12 +28,20 @@ error_response_std() {
     echo "Environment variables" 1>&2
     echo "----------------------------------" 1>&2
     env 1>&2
+
+    # Checking error response
     if [[ "${VF_ERROR_RESPONSE}" == "ignore" ]]; then
         echo -e "\n * Ignoring error. Trying to continue..."
     elif [[ "${VF_ERROR_RESPONSE}" == "next_job" ]]; then
+
+        # Cleaning up
+        clean_queue_files_tmp
         echo -e "\n * Trying to stop this queue without stopping the joblfine/causing a failure..."
         exit 0
     elif [[ "${VF_ERROR_RESPONSE}" == "fail" ]]; then
+
+        # Cleaning up
+        clean_queue_files_tmp
         exit 1
     fi
 }
