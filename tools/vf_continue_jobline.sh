@@ -4,7 +4,7 @@
 # Description: Automatically finds the joblines with jobline numbers between first/last_jobline_no which are not running and continues the jobline.
 #
 # Option: quiet (optional)
-#    Possible values: 
+#    Possible values:
 #        quiet: No information is displayed on the screen.
 #
 # ---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ bin/sqs > tmp/jobs-all 2>/dev/null || true
 # Storing all joblines which have to be restarted
 echo "Checking which joblines are already in the batchsystem"
 for VF_JOBLINE_NO in $(seq ${first_jobline_no} ${last_jobline_no}); do
-    if ! grep -q "${VF_JOB_LETTER}\-${VF_JOBLINE_NO}\."  tmp/jobs-all; then
+    if ! grep -q "${VF_JOBLETTER}\-${VF_JOBLINE_NO}\."  tmp/jobs-all; then
         echo "Adding jobline ${VF_JOBLINE_NO} to the list of joblines to be continued."
         echo ${VF_JOBLINE_NO} >> "tmp/jobs-to-continue"
     else

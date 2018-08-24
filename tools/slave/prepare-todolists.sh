@@ -8,7 +8,7 @@
 # Option: quiet (optional)
 #    Possible values:
 #        quiet: No information is displayed on the screen.
-##
+#
 # ---------------------------------------------------------------------------
 
 # Displaying help if the first argument is -h
@@ -29,7 +29,7 @@ VF_QUEUE_NO_1="${1}"
 VF_NODES_PER_JOB="${2}"
 VF_QUEUES_PER_STEP="${3}"
 export LC_ALL=C
-todo_file_temp=/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/todo.all
+todo_file_temp=/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/todo.all
 
 # Verbosity
 VF_VERBOSITY_LOGFILES="$(grep -m 1 "^verbosity_logfiles=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
@@ -116,7 +116,7 @@ clean_up() {
             echo -e "Also the file ../../workflow/ligand-collections/todo/todo.all.locked could not be moved back to ../../workflow/ligand-collections/todo/"
         fi
     fi
-    rm -r /tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/ || true
+    rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/ || true
 }
 date
 trap 'clean_up' EXIT
@@ -125,8 +125,8 @@ trap 'clean_up' EXIT
 status="false";
 k="1"
 max_iter=250
-if [ ! -d /tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/ ]; then
-    mkdir -p /tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/
+if [ ! -d /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/ ]; then
+    mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/
 fi
 modification_time_difference=0
 start_time_waiting="$(date +%s)"
@@ -215,11 +215,11 @@ fi
 
 # Copying the length file to tmp
 length_file="../${collection_folder}.length"
-length_file_temp="/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/length"
+length_file_temp="/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/length"
 cp "${length_file}" "${length_file_temp}"
 
 # Creating a temporary to-do file with the new ligand collections
-todo_new_temp="/tmp/${USER}/${VF_JOBLINE_NO}/prepare-todolists/todo.new"
+todo_new_temp="/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/todo.new"
 touch ${todo_new_temp}
 
 # Getting the number of ligands which are already in the local to-do lists

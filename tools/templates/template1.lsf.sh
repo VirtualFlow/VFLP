@@ -210,7 +210,7 @@ fi
 
 # Setting the job letter1
 line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^job_letter=")
-export VF_JOB_LETTER=${line/"job_letter="}
+export VF_JOBLETTER=${line/"job_letter="}
 
 # Setting the error sensitivity
 line=$(cat ${VF_CONTROLFILE} | grep -m 1 "error_sensitivity=")
@@ -273,7 +273,7 @@ cd ..
 # Changing the job name
 new_job_no_2=$((VF_VF_OLD_JOB_NO_2 + 1))
 new_job_no="${VF_JOBLINE_NO}.${new_job_no_2}"
-sed -i "s/^#BSUB -J ${VF_JOB_LETTER}-.*/#BSUB -J ${VF_JOB_LETTER}-${new_job_no}/g" ../workflow/job-files/main/${VF_JOBLINE_NO}.job
+sed -i "s/^#BSUB -J ${VF_JOBLETTER}-.*/#BSUB -J ${VF_JOBLETTER}-${new_job_no}/g" ../workflow/job-files/main/${VF_JOBLINE_NO}.job
 
 # Changing the output filenames
 sed -i "s|^#BSUB -oo ../workflow/output-files/jobs/job-${VF_OLD_JOB_NO}_%J.out|#BSUB -oo ../workflow/output-files/jobs/job-${new_job_no}_%J.out|g" ../workflow/job-files/main/${VF_JOBLINE_NO}.job

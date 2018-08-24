@@ -18,6 +18,7 @@ fi
 # TODO: if output format is pdb, do not convert again
 # TODO: different input file format
 # TODO: choice of programs for conversion
+# TODO: Arbitrary tempdir
 
 # Functions
 # Standard error response
@@ -56,8 +57,8 @@ trap 'time_near_limit' 1 2 3 9 10 12 15
 
 # Cleaning the queue folders
 clean_queue_files_tmp() {
-    cp /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ../workflow/output-files/queues/
-    rm -r /tmp/${USER}/${VF_QUEUE_NO}/
+    cp /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ../workflow/output-files/queues/
+    rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/
 }
 trap 'clean_queue_files_tmp' EXIT RETURN
 
@@ -198,36 +199,36 @@ prepare_collection_files_tmp() {
     trap 'error_response_std $LINENO' ERR
     
     # Creating the required folders
-    if [ ! -d "/tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
-        mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
-    elif [ "$(ls -A "/tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}")" ]; then
-        rm -r /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
+    if [ ! -d "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
+        mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
+    elif [ "$(ls -A "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}")" ]; then
+        rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
     fi
-    if [ ! -d "/tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
-        mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
-    elif [ "$(ls -A "/tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}")" ]; then
-        rm -r /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
+    if [ ! -d "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
+        mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
+    elif [ "$(ls -A "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}")" ]; then
+        rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
     fi
-    if [ ! -d "/tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
-        mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
-    elif [ "$(ls -A "/tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/")" ]; then
-        rm -r /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
+    if [ ! -d "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
+        mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
+    elif [ "$(ls -A "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/")" ]; then
+        rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
     fi
-    if [ ! -d "/tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
-        mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
-    elif [ "$(ls -A "/tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/")" ]; then
-        rm -r /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
+    if [ ! -d "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
+        mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
+    elif [ "$(ls -A "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/")" ]; then
+        rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
     fi
     
     # Copying the required files
-    tar -xf ${collection_folder}/${next_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz || true
-    gunzip /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz
+    tar -xf ${collection_folder}/${next_ligand_collection_tranch}.tar -C /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz || true
+    gunzip /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz
     # Extracting all the SMILES at the same time (faster)
-    tar -xf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}
+    tar -xf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar -C /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}
 
     # Copying the required old output files if continuing old collection
     if [ "${new_collection}" == "false" ]; then
-        cp ../output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/
+        cp ../output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/
     fi
     if [[ -f  ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status ]]; then
         mv ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status.tmp
@@ -256,12 +257,12 @@ clean_collection_files_tmp() {
         if [ "${collection_complete}" = "true" ]; then
 
             # Compressing the collection and saving in the complete folder
-            mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_tranch}/
-            tar -cvzf /tmp/${USER}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz -C /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/ ${local_ligand_collection_ID}
+            mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_tranch}/
+            tar -cvzf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz -C /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/ ${local_ligand_collection_ID}
 
             # Adding the completed collection archive to the tranch archive
             mkdir  -p ../output-files/complete/${targetformat}/
-            tar -rf ../output-files/complete/${targetformat}/${local_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/output-files/complete/${targetformat} ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz || true
+            tar -rf ../output-files/complete/${targetformat}/${local_ligand_collection_tranch}.tar -C /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/complete/${targetformat} ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz || true
             
             # Cleaning up
             rm -r ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
@@ -271,7 +272,7 @@ clean_collection_files_tmp() {
             mkdir -p ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
 
             # Copying the files which should be kept in the permanent storage location
-            cp /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/* ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
+            cp /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/* ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
         fi
 
         # Moving the ligand list status tmp file
@@ -294,7 +295,7 @@ end_queue() {
 
 # Checking the pdb file for 3D coordinates
 check_pdb_3D() {
-    no_nonzero_coord="$(grep "HETATM" /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb | awk -F ' ' '{print $6,$7,$8}' | tr -d '0.\n\+\- ' | wc -m)"
+    no_nonzero_coord="$(grep "HETATM" /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb | awk -F ' ' '{print $6,$7,$8}' | tr -d '0.\n\+\- ' | wc -m)"
     if [ "${no_nonzero_coord}" -eq "0" ]; then
         echo "The pdb file only contains zero coordinates."
         return 1
@@ -305,7 +306,7 @@ check_pdb_3D() {
 
 # Checking the pdbqt file for 3D coordinates
 check_pdbqt_3D() {
-    no_nonzero_coord="$(grep "ATOM" /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdbqt/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdbqt | awk -F ' ' '{print $6,$7,$8}' | tr -d '0.\n\-\+ ' | wc -m)"
+    no_nonzero_coord="$(grep "ATOM" /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdbqt/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdbqt | awk -F ' ' '{print $6,$7,$8}' | tr -d '0.\n\-\+ ' | wc -m)"
     if [ "${no_nonzero_coord}" -eq "0" ]; then
         echo "The pdbqt file only contains zero coordinates."
         return 1
@@ -417,7 +418,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             echo -e "***************** INFO END ******************\n"
         fi
         # Getting the name of the first ligand of the first collection
-        next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+        next_ligand=$(tar -tf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
 
     # Using the old collection
     else
@@ -429,11 +430,11 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         # Checking if this is the first ligand of this queue
         if [ "${ligand_index}" = "1" ]; then
             # Extracting the last ligand collection
-            mkdir -p /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/
-            tar -xf ${collection_folder}/${last_ligand_collection_tranch}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz || true
-            gunzip /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
+            mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/
+            tar -xf ${collection_folder}/${last_ligand_collection_tranch}.tar -C /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz || true
+            gunzip /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
             # Extracting all the SMILES at the same time (faster)
-            tar -xf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar -C /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}
+            tar -xf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar -C /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}
 
             # Checking if the collection.status.tmp file exists due to abnormal abortion of job/queue
             # Removing old status.tmp file if existent
@@ -443,17 +444,17 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
                 rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp
                 
                 # Getting the name of the first ligand of the first collection
-                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+                next_ligand=$(tar -tf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
 
             else
                 last_ligand_entry=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status 2>/dev/null || true)
                 last_ligand=$(echo ${last_ligand_entry} | awk -F ' ' '{print $1}')
-                next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
+                next_ligand=$(tar -tf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
             fi
         # Not first ligand of this queue
         else
             last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F ' ' '{print $1}' || true)
-            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
+            next_ligand=$(tar -tf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
         fi
         
         # Check if we can use the old collection
@@ -480,7 +481,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             next_ligand_collection
             prepare_collection_files_tmp
             # Getting the first ligand of the new collection
-            next_ligand=$(tar -tf /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+            next_ligand=$(tar -tf /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
         fi
     fi
     
@@ -497,13 +498,13 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
     # Getting the major molecular species (protonated state) at ph 7.4
     trap 'error_response_cxcalc' ERR
-    timeout 300 time_bin -a -o "/tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of cxcalc (user real system): %U %e %S" cxcalc majorms -H 7.4 /tmp/${USER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk -F ' ' '{print $2}' > /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp
+    timeout 300 time_bin -a -o "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of cxcalc (user real system): %U %e %S" cxcalc majorms -H 7.4 /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk -F ' ' '{print $2}' > /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp
     last_exit_code=$?
     # Checking if conversion successfull
     if [ "${last_exit_code}" -ne "0" ]; then
         error_response_cxcalc
         echo "cxcalc was interrupted by the timeout command."
-    elif tail -n 3 /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error'; then
+    elif tail -n 3 /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error'; then
         error_response_cxcalc
         protonation_remark=""
     else
@@ -511,23 +512,23 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         protonation_remark="\nREMARK    Prior preparation step 1: Protonation in smiles format at pH 7.4 by cxcalc version ${cxcalc_version}"
     fi
 
-    mv /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+    mv /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
     trap 'error_response_std $LINENO' ERR
 
     # Converting smiles to pdb
     # Trying conversion with molconvert
     trap 'error_response_molconvert' ERR
     echo "Trying to convert the ligand with molconvert."
-    timeout 300 time_bin -a -o "/tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of molconvert (user real system): %U %e %S" molconvert pdb:+H -3:{nofaulty} /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -o /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1
+    timeout 300 time_bin -a -o "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of molconvert (user real system): %U %e %S" molconvert pdb:+H -3:{nofaulty} /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -o /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1
     last_exit_code=$?
     # Checking if conversion successfull
     if [ "${last_exit_code}" -ne "0" ]; then
         error_response_molconvert
         echo "molconvert was interrupted by the timeout command."
-    elif tail -n 3 /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E'failed|timelimit|error' &>/dev/null; then
+    elif tail -n 3 /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E'failed|timelimit|error' &>/dev/null; then
         error_response_molconvert
         echo "Grep detected one of the following words in the last three lines of the output file: failed, timelimit, error"
-    elif [ ! -f /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+    elif [ ! -f /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
         error_response_molconvert
         echo "The output file ${next_ligand}.pdb could not be found."
     elif ! check_pdb_3D; then
@@ -539,24 +540,24 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     if [ "${error_molconvert}" = "false" ]; then
         printf "The ligand was successfully converted from smi to pdb by molconvert.\n"
         # Modifying the header of the pdb file and correction of the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb | sed "s/PROTEIN.*/Small molecule (ligand)/g" | sed "s/Marvin/Created by ChemAxon's JChem (molconvert version ${molconvert_version})${protonation_remark}/" | sed "s/REVDAT.*/REMARK    Created on $(date)/" | sed "s/NONE//g" | sed "s/ UNK / LIG /g" | sed "s/COMPND.*/COMPND    ZINC ID: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' > /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
-        mv /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb
+        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb | sed "s/PROTEIN.*/Small molecule (ligand)/g" | sed "s/Marvin/Created by ChemAxon's JChem (molconvert version ${molconvert_version})${protonation_remark}/" | sed "s/REVDAT.*/REMARK    Created on $(date)/" | sed "s/NONE//g" | sed "s/ UNK / LIG /g" | sed "s/COMPND.*/COMPND    ZINC ID: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' > /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+        mv /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb
         converter_3d="molconvert version ${molconvert_version}"
 
     # If conversion failed trying conversion again with obabel
     else
         printf "\nTrying to convert the ligand again with obabel.\n"
         trap 'error_response_obabel1' ERR
-        timeout 300 time_bin -a -o "/tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of obabel (user real system): %U %e %S" obabel --gen3d -ismi /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1 | sed "s/1 molecule converted/The ligand was successfully converted from smi to pdb by obabel.\n/" >  /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+        timeout 300 time_bin -a -o "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of obabel (user real system): %U %e %S" obabel --gen3d -ismi /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1 | sed "s/1 molecule converted/The ligand was successfully converted from smi to pdb by obabel.\n/" >  /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
         last_exit_code=$?
         # Checking if conversion successfull
         if [ "${last_exit_code}" -ne "0" ]; then
             error_response_obabel1
             echo "obabel was interrupted by the timeout command."
-        elif tail -n 3 /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error' &>/dev/null; then
+        elif tail -n 3 /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error' &>/dev/null; then
             error_response_obabel1
             echo "Grep detected one of the following words in the last three lines of the output file: failed, timelimit, error"
-        elif [ ! -f /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+        elif [ ! -f /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
             error_response_obabel1
             echo "The output file ${next_ligand}.pdb could not be found."
         elif ! check_pdb_3D; then
@@ -564,8 +565,8 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             echo "The output file ${next_ligand}.pdb exists but does contain only 2D coordinates."
         fi                
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)      
-        sed '/COMPND/d' /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}//${next_ligand}.pdb | sed "s/AUTHOR.*/HEADER    Small molecule (ligand)\nCOMPND    ZINC ID: ${next_ligand}\nAUTHOR    Created by Open Babel version ${obabel_version}${protonation_remark}\nREMARK    Created on $(date)/" > /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
-        mv /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/$${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb
+        sed '/COMPND/d' /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}//${next_ligand}.pdb | sed "s/AUTHOR.*/HEADER    Small molecule (ligand)\nCOMPND    ZINC ID: ${next_ligand}\nAUTHOR    Created by Open Babel version ${obabel_version}${protonation_remark}\nREMARK    Created on $(date)/" > /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+        mv /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/$${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb
         printf "The ligand was successfully converted from smi to pdb by obabel.\n"
         converter_3d="obabel version ${obabel_version}"
     fi
@@ -573,16 +574,16 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     
     # Converting pdb to target the format
     trap 'error_response_obabel2' ERR
-    timeout 300 time_bin -a -o "/tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of obabel (user real system): %U %e %S" obabel -ipdb /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} -O /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} 2>&1 | uniq | sed "s/1 molecule converted/The ligand was successfully converted from pdb to the targetformat by obabel./"
+    timeout 300 time_bin -a -o "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of obabel (user real system): %U %e %S" obabel -ipdb /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} -O /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} 2>&1 | uniq | sed "s/1 molecule converted/The ligand was successfully converted from pdb to the targetformat by obabel./"
     last_exit_code=$?
     # Checking if conversion successfull
     if [ "${last_exit_code}" -ne "0" ]; then
         error_response_obabel2
         echo "obabel was interrupted by the timeout command."
-    elif tail -n 3 /tmp/${USER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error'; then
+    elif tail -n 3 /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error'; then
         echo "Grep detected one of the following words in the last three lines of the output file: failed, timelimit, error"
         error_response_obabel2
-    elif [ ! -f /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} ]; then
+    elif [ ! -f /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} ]; then
         echo "The output file ${next_ligand}.${targetformat} could not be found."
         error_response_obabel2
     elif [ "${targetformat}" = "pdbqt" ] ; then
@@ -592,7 +593,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         fi
 
         # Modifying the header of the targetformat file
-        perl -pi -e  "s/REMARK  Name.*/REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    Created by Open Babel version ${obabel_version}${protonation_remark}\nREMARK    Prior preparation step 2: Conversion from smiles to pdb format by ${converter_3d}\nREMARK    Created on $(date)/g"  /tmp/${USER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
+        perl -pi -e  "s/REMARK  Name.*/REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    Created by Open Babel version ${obabel_version}${protonation_remark}\nREMARK    Prior preparation step 2: Conversion from smiles to pdb format by ${converter_3d}\nREMARK    Created on $(date)/g"  /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
     fi
 
     # Setting the standard error trap
