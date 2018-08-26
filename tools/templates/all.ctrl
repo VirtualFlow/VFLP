@@ -60,6 +60,12 @@ collection_folder=../../../collections/zinc15_20180805.smi.splitted3_tar_preview
 # slash at the end is not required (optional)
 # relative pathname is required w.r.t. the folder tools/
 
+minimum_time_remaining=10
+# In minutes
+# A new job if the time left until the end of the walltime is smaller than the timelimit
+# This is checked before each ligand is screened
+# Thus the timelimit should be larger than the maximum time which is needed to process one ligand
+
 dispersion_time_min=10
 # One positive integer, resembling the time in seconds
 dispersion_time_max=40
@@ -88,6 +94,12 @@ error_response=fail
 #     next_job  : end this job and start new job
 #     fail      : exit workflow with failure (exit code 1)
 
+tempdir=/tmp
+# The directory which is used for the temporary workflow files
+# Should be a very fast filesystem not part of the distributed cluster filesystem, e.g. a local ramfs (as normally provided by ${VF_TMPDIR})
+# The directory does only need to be available on the node on which the job step/queue is running
+# In the tempdir, a subfolder named ${USER} will automatically be created
+
 
 *****************************************************************************************************************************************************************
 *****************************************************************    Ligand Preparation Options    **************************************************************
@@ -96,7 +108,8 @@ error_response=fail
 # Todo: input format choice
 
 targetformat=mol2
-# any format supported by the obabel (Open Babel) commandline tool, using the file format identifiers used by obabel
+# Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
+# A complete list can be obtained by running the command "obabel -L formats"
 
 protonation_state_generation=true
 # Possible values:
@@ -106,28 +119,47 @@ protonation_state_generation=true
 protonation_program_1=obabel
 protonation_program_2=obabel
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Setting only required if protonation_state_generation=true
 # Possible values:
 #     obabel
 #     cxcalc
-#     none
+#     none (only for protonation_program_2)
 
-3D_coordinate_generation=true
+protonation_obligatory=true
+# Setting only required if protonation_state_generation=true
+# Possible values:
+#     true: Successful protonation of the ligand is mandatory (unsuccessful protonation leads to the omission of this ligand).
+#     false: The ligand will continue to be processed even if the protonation step fails. This might light to protonation states which are unphysiological.
+
+protonation_pH_value=7.4
+# Setting only required if protonation_state_generation=true
+# Possible values: floating point number between 0.0 and 14.0
+
+conformation_generation=true
+# Generation of 3D conformation/coordinates of the ligand
 # Possible values:
 #     false
 #     true
 
-3D_coordinate_program_1=obabel
-3D_coordinate_program_2=obabel
+conformation_program_1=obabel
+conformation_program_2=obabel
+# Setting only required if conformation_generation=true
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
 # Possible values:
 #     obabel
 #     molconvert
-#     none
+#     none (only possible for conformation_program_2)
+
+conformation_obligatory=true
+# Setting only required if conformation_generation=true
+# Possible values:
+#     true: Successful 3D conformation generation of the ligand is mandatory (unsuccessful conformation generation leads to the omission of this ligand).
+#     false: The ligand will continue to be processed even if the conformation generation step fails.
 
 chemaxon_license_file=${HOME}/downloads/ChemAxon/license.cxl
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Possible values:
-#     <Absolute path to license file>: Shell variables can be used
+#     <Absolute path to license file>: Shell variables can be used such as $HOME
 #     none
 
 
@@ -135,7 +167,7 @@ chemaxon_license_file=${HOME}/downloads/ChemAxon/license.cxl
 *******************************************************************    Terminating Variables    *****************************************************************
 *****************************************************************************************************************************************************************
 
-stop_after_ligand=no
+stop_after_current_ligand=no
 
 stop_after_collection=no
 

@@ -59,7 +59,7 @@ export LANG=C
 line=$(cat ${VF_CONTROLFILE} | grep "^docking_type_names=")
 docking_type_names=${line/"docking_type_names="}
 IFS=':' read -a docking_type_names <<< "$docking_type_names"
-tmp_dir=/tmp/vfvs_report_$(date | tr " :" "_")
+tmp_dir=${VF_TMPDIR}/vfvs_report_$(date | tr " :" "_")
 
 # Verbosity
 VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
