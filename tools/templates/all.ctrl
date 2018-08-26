@@ -56,7 +56,7 @@ ligands_per_refilling_step=1000
 # fill the to-do files of the queues with this number of ligands per refill step
 # a number roughly equal to the average of number of ligands per collection is recommended
 
-collection_folder=../../../collections/zinc15_20180805.smi.splitted3_tar_preview1
+collection_folder=../input-files/ligands/zinc15_20180825_preview
 # slash at the end is not required (optional)
 # relative pathname is required w.r.t. the folder tools/
 
