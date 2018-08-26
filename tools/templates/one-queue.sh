@@ -179,7 +179,6 @@ next_ligand_collection() {
 
 # Preparing the folders and files in ${VF_TMPDIR}
 prepare_collection_files_tmp() {
-    trap 'error_response_std $LINENO' ERR
 
     # Creating the required folders
     if [ ! -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
@@ -220,9 +219,13 @@ prepare_collection_files_tmp() {
 
 # Stopping this queue because there is no more ligand collection to be screened
 no_more_ligand_collection() {
+
+    # Printing some information
     echo
     echo "This queue is stopped because there is no more ligand collection."
     echo
+
+    # Ending the queue
     end_queue 0
 }
 
@@ -641,14 +644,13 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
                 next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
 
             else
-                last_ligand_entry=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status 2>/dev/null || true)
-                last_ligand=$(echo ${last_ligand_entry} | awk -F ' ' '{print $1}')
-                next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
+                last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status | awk -F '[: ,/]' '{print $1}' 2>/dev/null || true)
+                next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/\.]' '{print $2}')
             fi
         # Not first ligand of this queue
         else
             last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
-            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
+            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/\.]' '{print $2}')
         fi
 
         # Check if we can use the old collection
@@ -738,6 +740,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     pdb_conformation_remark=""
     pdb_generation_remark=""
     pdbqt_generation_remark=""
+    success_remark=""
 
 
     # Changing error trap
@@ -807,6 +810,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
                 # Variables
                 pdb_protonation_remark="\nREMARK    WARNING: Molecule was not protonated at physiological pH (protonation with both obabel and cxcalc has failed)"
+                success_remark="protonation failed"
 
                 # Copying the unprotonated ligand
                 cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
@@ -879,6 +883,11 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
                 # Variables
                 pdb_conformation_remark="\nREMARK    WARNING: 3D conformation could not be generated (both obabel and molconvert failed)"
+                if [ -z ${success_remark} ]; then
+                    success_remark="3D conformation generation failed"
+                else
+                    success_remark="${success_remark}, 3D conformation generation failed"
+                fi
             fi
         fi
     fi
