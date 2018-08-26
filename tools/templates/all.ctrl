@@ -107,9 +107,17 @@ tempdir=/tmp
 
 # Todo: input format choice
 
+chemaxon_license_file=${HOME}/downloads/ChemAxon/license.cxl
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# Possible values:
+#     <Absolute path to license file>: Shell variables can be used such as $HOME
+#     none
+
 targetformat=mol2
 # Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
 # A complete list can be obtained by running the command "obabel -L formats"
+
+***************************************************************    Protonation State Generation    **************************************************************
 
 protonation_state_generation=true
 # Possible values:
@@ -135,6 +143,8 @@ protonation_pH_value=7.4
 # Setting only required if protonation_state_generation=true
 # Possible values: floating point number between 0.0 and 14.0
 
+******************************************************************    Conformation Generation    ****************************************************************
+
 conformation_generation=true
 # Generation of 3D conformation/coordinates of the ligand
 # Possible values:
@@ -155,12 +165,6 @@ conformation_obligatory=true
 # Possible values:
 #     true: Successful 3D conformation generation of the ligand is mandatory (unsuccessful conformation generation leads to the omission of this ligand).
 #     false: The ligand will continue to be processed even if the conformation generation step fails.
-
-chemaxon_license_file=${HOME}/downloads/ChemAxon/license.cxl
-# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
-# Possible values:
-#     <Absolute path to license file>: Shell variables can be used such as $HOME
-#     none
 
 
 *****************************************************************************************************************************************************************
