@@ -91,8 +91,7 @@ if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
 fi
 
 # Getting the batchsystem type
-line=$(grep -m 1 "^batchsystem=" ../workflow/control/all.ctrl)
-batchsystem="${line/batchsystem=}"
+batchsystem="$(grep -m 1 "^batchsystem=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Formatting screen output
 echo "" 

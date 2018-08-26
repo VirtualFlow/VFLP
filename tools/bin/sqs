@@ -8,9 +8,10 @@ else
     exit 1
 fi
 
-line=$(grep -m 1 "^batchsystem" ../workflow/control/all.ctrl)
-batchsystem="${line/batchsystem=}"
+# Variables
+batchsystem="$(grep -m 1 "^batchsystem=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
+# Checking batchsystem type
 if [ "${batchsystem}" == "SLURM" ]; then
     squeue -l | grep ${USER:0:8}
 elif [ "${batchsystem}" == "MTP" ]; then

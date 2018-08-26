@@ -39,16 +39,14 @@ trap 'error_response_nonstd $LINENO' ERR
 VF_JOBLINE_NO=${1}
 
 # Getting the batchsystem type
-line=$(grep -m 1 "^batchsystem" ../../workflow/control/all.ctrl)
-batchsystem="${line/batchsystem=}"
+batchsystem="$(grep -m 1 "^batchsystem=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 
 # Printing some information
 echo -e "Syncing the jobfile of jobline ${VF_JOBLINE_NO} with the controlfile file ${VF_CONTROLFILE}."
 
 # Syncing the number of nodes
-line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^nodes_per_job=")
-nodes_per_job_new=${line/"nodes_per_job="}
+nodes_per_job_new="$(grep -m 1 "^nodes_per_job=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${batchsystem}" = "SLURM" ]; then
     job_line=$(grep -m 1 "nodes=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)
     VF_NODES_PER_JOB_old=${job_line/"#SBATCH --nodes="}
@@ -61,8 +59,7 @@ elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
 fi
 
 # Syncing the number of cpus per step
-line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "cpus_per_step=")
-cpus_per_step_new=${line/"cpus_per_step="}
+cpus_per_step_new="$(grep -m 1 "^cpus_per_step=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${batchsystem}" = "SLURM" ]; then
     job_line="$(grep -m 1 "cpus-per-task=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)"
     cpus_per_step_old=${job_line/"#SBATCH --cpus-per-task="}
@@ -80,7 +77,7 @@ fi
 
 # Syncing the timelimit
 line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^timelimit=")
-timelimit_new=${line/"timelimit="}
+timelimit_new="$(grep -m 1 "^timelimit=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${batchsystem}" == "SLURM" ]; then
     job_line=$(grep -m 1 "^#SBATCH \-\-time=" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job)
     timelimit_old=${job_line/"#SBATCH --time="}
@@ -101,7 +98,7 @@ fi
 
 # Syncing the partition
 line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^partition=")
-partition_new=${line/"partition="}
+partition_new="$(grep -m 1 "^partition=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${batchsystem}" = "SLURM" ]; then
     sed -i "s/--partition=.*/--partition=${partition_new}/g" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
 elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
@@ -114,7 +111,7 @@ fi
 
 # Syncing the job letter
 line=$(cat ../${VF_CONTROLFILE} | grep -m 1 "^job_letter=")
-job_letter_new=${line/"job_letter="}
+job_letter_new="$(grep -m 1 "^job_letter=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${batchsystem}" = "SLURM" ]; then
     sed -i "s/^#SBATCH --job-name=[a-zA-Z]/#SBATCH --job-name=${job_letter_new}/g" ../../workflow/job-files/main/${VF_JOBLINE_NO}.job
 elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then

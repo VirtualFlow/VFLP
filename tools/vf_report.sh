@@ -175,14 +175,12 @@ if [ "${show_vs_statistics_flag}" == "false" ]; then
 fi
 
 # Getting the batchsystem type
-line=$(grep -m 1 "^batchsystem=" ../workflow/control/all.ctrl)
-batchsystem="${line/batchsystem=}"
-line=$(grep -m 1 "^job_letter=" ../workflow/control/all.ctrl)
-job_letter=${line/"job_letter="}
+batchsystem="$(grep -m 1 "^batchsystem=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+job_letter="$(grep -m 1 "^job_letter=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Determining the docking type replicas
 line=$(cat ${VF_CONTROLFILE} | grep "^docking_type_replicas=")
-docking_type_replicas_total=${line/"docking_type_replicas="}
+docking_type_replicas_total="$(grep -m 1 "^docking_type_replicas=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 IFS=':' read -a docking_type_replicas_total <<< "$docking_type_replicas_total"
 
 docking_runs_perligand=0
