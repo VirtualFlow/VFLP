@@ -6,7 +6,7 @@
 # ---------------------------------------------------------------------------
 
 # Setting the verbosity level
-if [[ "${VF_VERBOSITY}" == "debug" ]]; then
+if [[ "${VF_VERBOSITY_LOGFILES}" == "debug" ]]; then
     set -x
 fi
 
@@ -31,17 +31,30 @@ error_response_std() {
 
     # Checking error response
     if [[ "${VF_ERROR_RESPONSE}" == "ignore" ]]; then
+
+        # Printing some information
         echo -e "\n * Ignoring error. Trying to continue..."
+
     elif [[ "${VF_ERROR_RESPONSE}" == "next_job" ]]; then
 
         # Cleaning up
         clean_queue_files_tmp
-        echo -e "\n * Trying to stop this queue without stopping the joblfine/causing a failure..."
+
+        # Printing some information
+        echo -e "\n * Trying to stop this queue and causing the jobline to fail..."
+
+        # Exiting
         exit 0
+
     elif [[ "${VF_ERROR_RESPONSE}" == "fail" ]]; then
 
         # Cleaning up
         clean_queue_files_tmp
+
+        # Printing some information
+        echo -e "\n * Trying to stop this queue and causing the jobline to fail..."
+
+        # Exiting
         exit 1
     fi
 }
@@ -148,7 +161,7 @@ next_ligand_collection() {
     # Updating the ligand-collection files
     echo "${next_ligand_collection}" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
 
-    if [ "${VF_VERBOSITY}" == "debug" ]; then
+    if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
         echo -e "\n***************** INFO **********************"
         echo ${VF_QUEUE_NO}
         ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
@@ -572,7 +585,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     # Checking the conditions for using a new collection
     if [[ "${queue_collection_file_exists}" = "false" ]] || [[ "${queue_collection_file_exists}" = "true" && ! "$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} | tr -d '[:space:]')" ]]; then
 
-        if [ "${VF_VERBOSITY}" == "debug" ]; then
+        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
             echo -e "\n***************** INFO **********************"
             echo ${VF_QUEUE_NO}
             ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
@@ -581,7 +594,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             echo -e "***************** INFO END ******************\n"
         fi
         next_ligand_collection
-        if [ "${VF_VERBOSITY}" == "debug" ]; then
+        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
             echo -e "\n***************** INFO **********************"
             echo ${VF_QUEUE_NO}
             ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
@@ -590,7 +603,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             echo -e "***************** INFO END ******************\n"
         fi
         prepare_collection_files_tmp
-        if [ "${VF_VERBOSITY}" == "debug" ]; then
+        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
             echo -e "\n***************** INFO **********************"
             echo ${VF_QUEUE_NO}
             ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
@@ -930,6 +943,10 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
     # Updating the ligand list
     update_ligand_list_end_success
+
+    # Variables
+    needs_cleaning=true
+
 done
 
 # Cleaning up everything

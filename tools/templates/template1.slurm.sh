@@ -56,19 +56,28 @@ echo
 # Functions
 # Standard error response
 error_response_std() {
+
+    # Printing some informatoin
     echo "Error was trapped" 1>&2
     echo "Error in bash script $0" 1>&2
     echo "Error on line $1" 1>&2
     echo "Environment variables" 1>&2
     echo "----------------------------------" 1>&2
     env 1>&2
-    if [[ "${VF_ERROR_RESPONSE}" == "ignore" ]]; then
-        echo -e "\n Ignoring error. Trying to continue..."
-    elif [[ "${VF_ERROR_RESPONSE}" == "next_job" ]]; then
-        echo -e "\n Ignoring error. Trying to continue and start next job..."
+
+    # Checking error response type
+    if [[ "${VF_ERROR_RESPONSE}" == "ignore" ]] || [[ "${VF_ERROR_RESPONSE}" == "next_job" ]]; then
+
+        # Printing some information
+        echo -e "\n * Trying to continue..."
+
     elif [[ "${VF_ERROR_RESPONSE}" == "fail" ]]; then
-        echo -e "\n Stopping jobline."
+
+        # Printing some information
+        echo -e "\n * Trying to stop this queue and causing the jobline to fail..."
         print_job_infos_end
+
+        # Exiting
         exit 1
     fi
 }

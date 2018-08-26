@@ -12,15 +12,38 @@
 # ---------------------------------------------------------------------------
 
 # Functions
-# Standard error response 
+# Standard error response
 error_response_std() {
+
+    # Printint some information
     echo "Error was trapped" 1>&2
     echo "Error in bash script $(basename ${BASH_SOURCE[0]})" 1>&2
     echo "Error on line $1" 1>&2
-    echo "Environment variables" 1>&2 
+    echo "Environment variables" 1>&2
     echo "----------------------------------" 1>&2
     env 1>&2
-    exit 0
+
+    # Checking error response
+    if [[ "${VF_ERROR_RESPONSE}" == "ignore" ]]; then
+
+        # Printing some information
+        echo -e "\n * Ignoring error. Trying to continue..."
+    elif [[ "${VF_ERROR_RESPONSE}" == "next_job" ]]; then
+
+        # Printing some information
+        echo -e "\n * Trying to stop this queue without causing the jobline to fail..."
+
+        # Exiting
+        exit 0
+
+    elif [[ "${VF_ERROR_RESPONSE}" == "fail" ]]; then
+
+        # Printing some information
+        echo -e "\n * Trying to stop this queue and causing the jobline to fail..."
+
+        # Exiting
+        exit 1
+    fi
 }
 trap 'error_response_std $LINENO' ERR
 
