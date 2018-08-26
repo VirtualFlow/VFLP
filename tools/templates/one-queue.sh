@@ -100,7 +100,7 @@ next_ligand_collection() {
     # Checking if this jobline should be stopped now
     line=$(cat ${VF_CONTROLFILE} | grep "^stop_after_collection=")
     stop_after_collection=${line/"stop_after_collection="}
-    if [ "${stop_after_collection}" = "yes" ]; then
+    if [ "${stop_after_collection}" = "true" ]; then
         echo
         echo "This job line was stopped by the stop_after_collection flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
@@ -292,7 +292,7 @@ cxcalc_protonate() {
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
-    # Checking if conversion successfull
+    # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Protonation with cxcalc failed. cxcalc was interrupted by the timeout command..."
     elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found'; then
@@ -315,10 +315,10 @@ obabel_protonate() {
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
-    # Checking if conversion successfull
+    # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Protonation with obabel failed. obabel was interrupted by the timeout command..."
-    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found'; then
+    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found'; then
         echo " * Warning: Protonation with obabel failed. An error flag was detected in the log files..."
     elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
         echo " * Warning: Protonation with cxcalc failed. No valid SMILES file was generated (empty or nonexistent)..."
@@ -334,7 +334,7 @@ molconvert_generate_conformation() {
 
     # Converting SMILES to 3D PDB
     # Trying conversion with molconvert
-    echo "Trying to convert the ligand with molconvert."
+    echo " * Trying to convert the ligand with molconvert."
     trap '' ERR
     timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of molconvert (user real system): %U %e %S" molconvert pdb:+H -3:{nofaulty} ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -o ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1
     last_exit_code=$?
@@ -344,7 +344,7 @@ molconvert_generate_conformation() {
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Conformation generation with molconvert failed. Molconvert was interrupted by the timeout command..."
     elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E'ffailed|timelimit|error|no such file|not found' &>/dev/null; then
-        echo " * Warning:  Conformation generation with molconvert failed. An error flag was detected in the log files..."
+        echo " * Warning: Conformation generation with molconvert failed. An error flag was detected in the log files..."
     elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
         echo " * Warning: Conformation generation with molconvert failed. No valid PDB file was generated (empty or nonexistent)..."
     elif ! check_pdb_3D; then
@@ -369,17 +369,17 @@ obabel_generate_conformation(){
 
     # Converting SMILES to 3D PDB
     # Trying conversion with obabel
-    printf "\nTrying to convert the ligand again with obabel.\n"
+    echo " * Trying to convert the ligand again with obabel."
     trap '' ERR
     timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of obabel (user real system): %U %e %S" obabel --gen3d -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1 | sed "s/1 molecule converted/The ligand was successfully converted from smi to pdb by obabel.\n/" >  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
-    # Checking if conversion successfull
+    # Checking if conversion c
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Conformation generation with obabel failed. Open Babel was interrupted by the timeout command..."
-    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found' &>/dev/null; then
-        echo " * Warning:  Conformation generation with obabel failed. An error flag was detected in the log files..."
+    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found' &>/dev/null; then
+        echo " * Warning: Conformation generation with obabel failed. An error flag was detected in the log files..."
     elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
         echo " * Warning: Conformation generation with obabel failed. No valid PDB file was generated (empty or nonexistent)..."
     elif ! check_pdb_3D; then
@@ -404,13 +404,13 @@ obabel_generate_pdb() {
 
     # Converting SMILES to PDB
     # Trying conversion with obabel
-    printf "\nTrying to convert the ligand to the PDB format (without 3D coordinate generation) with obabel.\n"
+    echo " * Trying to convert the ligand to the PDB format (without 3D coordinate generation) with obabel."
     trap '' ERR
     timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of obabel (user real system): %U %e %S" obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1 | sed "s/1 molecule converted/The ligand was successfully converted from smi to pdb by obabel.\n/" >  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
-    # Checking if conversion successfull
+    # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: PDB generation with obabel failed. Open Babel was interrupted by the timeout command..."
     elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found' &>/dev/null; then
@@ -435,12 +435,13 @@ obabel_generate_pdb() {
 obabel_generate_targetformat() {
 
     # Converting pdb to target the format
+    echo " * Trying to convert the ligand to the target format (without 3D coordinate generation) with obabel."
     trap '' ERR
     timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of obabel (user real system): %U %e %S" obabel -ipdb ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} 2>&1 | uniq | sed "s/1 molecule converted/The ligand was successfully converted from pdb to the targetformat by obabel./"
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
-    # Checking if conversion successfull
+    # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Target format generation with obabel failed. Open Babel was interrupted by the timeout command..."
     elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|not found'; then
@@ -478,8 +479,8 @@ minimum_time_remaining="$(grep -m 1 "^minimum_time_remaining=" ${VF_CONTROLFILE}
 obabel_version="$(obabel -V | awk '{print $1, $2, $3}')"
 
 # Protonation settings
-protonation_generation="$(grep -m 1 "^protonation_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-if [ "${protonation_generation}" == "true" ]; then
+protonation_state_generation="$(grep -m 1 "^protonation_state_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+if [ "${protonation_state_generation}" == "true" ]; then
 
     # Variables
     protonation_program_1="$(grep -m 1 "^protonation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
@@ -569,7 +570,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         perl -ni -e "print unless /^$/" ../workflow/ligand-collections/current/${VF_QUEUE_NO}
     fi
     # Checking the conditions for using a new collection
-    if [[ "${queue_collection_file_exists}" = "false" ]] || [[ "${queue_collection_file_exists}" = "true" && ! $(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} | tr -d '[:space:]') ]]; then
+    if [[ "${queue_collection_file_exists}" = "false" ]] || [[ "${queue_collection_file_exists}" = "true" && ! "$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} | tr -d '[:space:]')" ]]; then
 
         if [ "${VF_VERBOSITY}" == "debug" ]; then
             echo -e "\n***************** INFO **********************"
@@ -619,8 +620,8 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             # Checking if the collection.status.tmp file exists due to abnormal abortion of job/queue
             # Removing old status.tmp file if existent
             if [[ -f "../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp" ]]; then
-                echo "The file ${last_ligand_collection_ID}.status.tmp exists already."
-                echo "This collection will be restarted."
+                echo " * INFO: The file ${last_ligand_collection_ID}.status.tmp exists already."
+                echo " * INFO: This collection will be restarted."
                 rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp
 
                 # Getting the name of the first ligand of the first collection
@@ -633,7 +634,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             fi
         # Not first ligand of this queue
         else
-            last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F ' ' '{print $1}' || true)
+            last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
             next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
         fi
 
@@ -694,9 +695,9 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     # Checking if this queue line should be stopped immediately
     line=$(cat ${VF_CONTROLFILE} | grep "^stop_after_current_ligand=")
     stop_after_current_ligand=${line/"stop_after_current_ligand="}
-    if [ "${stop_after_current_ligand}" = "yes" ]; then
+    if [ "${stop_after_current_ligand}" = "true" ]; then
         echo
-        echo "This queue was stopped by the stop_after_current_ligand flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
+        echo " * INFO: This queue will be stopped due to the stop_after_current_ligand flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         end_queue 0
     fi
@@ -704,14 +705,14 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     # Checking if there is enough time left for a new ligand
     if [[ "${VF_LITTLE_TIME}" = "true" ]]; then
         echo
-        echo "This queue was ended because a signal was caught indicating this queue should stop now."
+        echo " * INFO: This queue will be ended because a signal was caught indicating this queue should stop now."
         echo
         end_queue 0
     fi
 
     if [[ "$((VF_TIMELIMIT_SECONDS - $(date +%s ) + VF_START_TIME_SECONDS )) " -lt "${minimum_time_remaining}" ]]; then
         echo
-        echo "This queue was ended because there were less than the minimum time remaining (${minimum_time_remaining} s) for the job (by internal calculation)."
+        echo " * INFO: This queue will be ended because there is less than the minimum time remaining (${minimum_time_remaining} s) for the job (by internal calculation)."
         echo
         end_queue 0
     fi
@@ -730,7 +731,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
     trap 'error_response_conversion $LINENO' ERR
     # Protonation
-    if [ "${protonation_generation}" == "true" ]; then
+    if [ "${protonation_state_generation}" == "true" ]; then
 
         # Variables
         protonation_success="false"

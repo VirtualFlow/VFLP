@@ -79,7 +79,9 @@ verbosity_commands=debug
 # This option mainly effects the screen output and the logfiles
 
 verbosity_logfiles=debug
-# Possible values: standard, debug
+# Possible values:
+#   * standard
+#   * debug : activates the set -x option
 # This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
 
 error_sensitivity=normal
@@ -171,8 +173,20 @@ conformation_obligatory=true
 *******************************************************************    Terminating Variables    *****************************************************************
 *****************************************************************************************************************************************************************
 
-stop_after_current_ligand=no
+stop_after_current_ligand=false
+# Determines whether the queue is stopped after the ligand currenty (or next) in progress
+# Possible values:
+#   * false : The queue will continue to process ligands as long as there are ligands remaining for the queue
+#   * true : No new ligand will be started after the current ligand is completed
 
-stop_after_collection=no
+stop_after_collection=false
+# Determines whether the queue is stopped after the current collection is completed
+# Possible values:
+#   * false : A new collection will be started if the current collection is completed and if there are collections remaining
+#   * true : No new collection will be started after the current collection is completed
 
-stop_after_job=no
+stop_after_job=false
+# Determines whether the queue is stopped after the current job is completed
+# Possible values:
+#   * false : A new job will be submitted if there are more ligands in the current collection or unprocessed collections remaining
+#   * true : No new job is submitted after the current job has ended
