@@ -42,8 +42,7 @@ output_folder=$5
 export VF_CONTROLFILE="../workflow/control/all.ctrl"
 
 # Verbosity
-VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-export VF_VERBOSITY_COMMANDS
+export VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
     set -x
 fi

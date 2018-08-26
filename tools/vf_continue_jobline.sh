@@ -44,8 +44,9 @@ trap 'error_response_nonstd $LINENO' ERR
 first_jobline_no=${1}
 last_jobline_no=${2}
 job_template=${3}
-export VF_JOBLETTER="$(grep -m 1 "^job_letter=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 export VF_CONTROLFILE="../workflow/control/all.ctrl"
+export VF_JOBLETTER="$(grep -m 1 "^job_letter=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+
 
 # Verbosity
 VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
