@@ -304,12 +304,172 @@ check_pdb_3D() {
     fi
 }
 
-# Checking the pdbqt file for 3D coordinates
-check_pdbqt_3D() {
-    no_nonzero_coord="$(grep "ATOM" /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdbqt/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdbqt | awk -F ' ' '{print $6,$7,$8}' | tr -d '0.\n\-\+ ' | wc -m)"
-    if [ "${no_nonzero_coord}" -eq "0" ]; then
-        echo "The pdbqt file only contains zero coordinates."
-        return 1
+# Protonation with cxcalc
+cxcalc_protonate() {
+
+    # Carrying out the protonation
+    trap '' ERR
+    timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of cxcalc (user real system): %U %e %S" cxcalc majorms -H ${protonation_pH_value} ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk -F ' ' '{print $2}' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+    last_exit_code=$?
+    trap 'error_response_std $LINENO' ERR
+
+    # Checking if conversion successfull
+    if [ "${last_exit_code}" -ne "0" ]; then
+        echo " * Warning: Protonation with cxcalc failed. cxcalc was interrupted by the timeout command..."
+    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found'; then
+        echo " * Warning: Protonation with cxcalc failed. An error flag was detected in the log files..."
+    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
+        echo " * Warning: Protonation with cxcalc failed. No valid SMILES file was generated..."
+    else
+        echo " * Info: Ligand successfully protonated by cxcalc."
+        protonation_success="true"
+        pdb_protonation_remark="\nREMARK    Protonation in the SMILES format at pH 7.4 was carried out by molconvert version ${obabel_version}"
+    fi
+}
+
+# Protonation with obabel
+obabel_protonate() {
+
+    # Carrying out the protonation
+    trap '' ERR
+    timeout 300 bin/time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of obabel (user real system): %U %e %S" obabel -p ${protonation_pH_value} -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -osmi -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+    last_exit_code=$?
+    trap 'error_response_std $LINENO' ERR
+
+    # Checking if conversion successfull
+    if [ "${last_exit_code}" -ne "0" ]; then
+        echo " * Warning: Protonation with obabel failed. obabel was interrupted by the timeout command..."
+    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found'; then
+        echo " * Warning: Protonation with obabel failed. An error flag was detected in the log files..."
+    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
+        echo " * Warning: Protonation with cxcalc failed. No valid SMILES file was generated (empty or nonexistent)..."
+    else
+        echo " * Info: Ligand successfully protonated by obabel."
+        protonation_success="true"
+        pdb_protonation_remark="\nREMARK    Protonation in the SMILES format at pH 7.4 was carried out by obabel version ${obabel_version}"
+    fi
+}
+
+# Conformation generation with molconvert
+molconvert_generate_conformation() {
+
+    # Converting SMILES to 3D PDB
+    # Trying conversion with molconvert
+    echo "Trying to convert the ligand with molconvert."
+    trap '' ERR
+    timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of molconvert (user real system): %U %e %S" molconvert pdb:+H -3:{nofaulty} ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -o ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1
+    last_exit_code=$?
+    trap 'error_response_std $LINENO' ERR
+
+    # Checking if conversion successful
+    if [ "${last_exit_code}" -ne "0" ]; then
+        echo " * Warning: Conformation generation with molconvert failed. Molconvert was interrupted by the timeout command..."
+    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E'ffailed|timelimit|error|no such file|not found' &>/dev/null; then
+        echo " * Warning:  Conformation generation with molconvert failed. An error flag was detected in the log files..."
+    elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+        echo " * Warning: Conformation generation with molconvert failed. No valid PDB file was generated (empty or nonexistent)..."
+    elif ! check_pdb_3D; then
+        echo " * Warning: The output PDB file exists but does not contain 3D coordinates."
+    else
+        # Printing some information
+        echo " * Info: 3D conformation successfully generated with molconvert."
+
+        # Variables
+        conformation_success="true"
+        pdb_conformation_remark="\nREMARK    Generation of the 3D conformation was carried out by molconvert version ${molconvert_version}"
+        conformation_program_used="molconvert version ${molconvert_version}"
+
+        # Modifying the header of the pdb file and correction of the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
+        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb | sed "s/PROTEIN.*/Small molecule (ligand)/g" | sed "s/Marvin/Created by ChemAxon's JChem (molconvert version ${molconvert_version})${pdb_conformation_remark}${protonation_remark}/" | sed "s/REVDAT.*/REMARK    Created on $(date)/" | sed "s/NONE//g" | sed "s/ UNK / LIG /g" | sed "s/COMPND.*/COMPND    ZINC ID: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+        mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    fi
+}
+
+# Conformation generation with obabel
+obabel_generate_conformation(){
+
+    # Converting SMILES to 3D PDB
+    # Trying conversion with obabel
+    printf "\nTrying to convert the ligand again with obabel.\n"
+    trap '' ERR
+    timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of obabel (user real system): %U %e %S" obabel --gen3d -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1 | sed "s/1 molecule converted/The ligand was successfully converted from smi to pdb by obabel.\n/" >  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+    last_exit_code=$?
+    trap 'error_response_std $LINENO' ERR
+
+    # Checking if conversion successfull
+    if [ "${last_exit_code}" -ne "0" ]; then
+        echo " * Warning: Conformation generation with obabel failed. Open Babel was interrupted by the timeout command..."
+    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found' &>/dev/null; then
+        echo " * Warning:  Conformation generation with obabel failed. An error flag was detected in the log files..."
+    elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+        echo " * Warning: Conformation generation with obabel failed. No valid PDB file was generated (empty or nonexistent)..."
+    elif ! check_pdb_3D; then
+        echo " * Warning: The output PDB file exists but does not contain 3D coordinates."
+    else
+        # Printing some information
+        echo " * Info: 3D conformation successfully generated with obabel."
+
+        # Variables
+        conformation_success="true"
+        pdb_conformation_remark="\nREMARK    Generation of the 3D conformation was carried out by obabel version ${obabel_version}"
+        conformation_program_used="obabel version ${obabel_version}"
+
+        # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
+        sed '/COMPND/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}//${next_ligand}.pdb | sed "s/AUTHOR.*/HEADER    Small molecule (ligand)\nCOMPND    ZINC ID: ${next_ligand}\nAUTHOR    Created by Open Babel version ${obabel_version}${pdb_conformation_remark}${protonation_remark}\nREMARK    Created on $(date)/" > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+        mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/$${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    fi
+}
+
+# PDB generation with obabel
+obabel_generate_pdb() {
+
+    # Converting SMILES to PDB
+    # Trying conversion with obabel
+    printf "\nTrying to convert the ligand to the PDB format (without 3D coordinate generation) with obabel.\n"
+    trap '' ERR
+    timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "Timings of obabel (user real system): %U %e %S" obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb 2>&1 | sed "s/1 molecule converted/The ligand was successfully converted from smi to pdb by obabel.\n/" >  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+    last_exit_code=$?
+    trap 'error_response_std $LINENO' ERR
+
+    # Checking if conversion successfull
+    if [ "${last_exit_code}" -ne "0" ]; then
+        echo " * Warning: PDB generation with obabel failed. Open Babel was interrupted by the timeout command..."
+    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|no such file|not found' &>/dev/null; then
+        echo " * Warning:  PDB generation with obabel failed. An error flag was detected in the log files..."
+    elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+        echo " * Warning: PDB generation with obabel failed. No valid PDB file was generated (empty or nonexistent)..."
+    else
+        # Printing some information
+        echo " * Info: PDB file successfully generated with obabel."
+
+        # Variables
+        pdb_generation_success="true"
+        pdb_generation_remark="\nREMARK    Generation of the the PDB file (without conformation generation) was carried out by obabel version ${obabel_version}"
+
+        # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
+        sed '/COMPND/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}//${next_ligand}.pdb | sed "s/AUTHOR.*/HEADER    Small molecule (ligand)\nCOMPND    ZINC ID: ${next_ligand}\nAUTHOR    Created by Open Babel version ${obabel_version}${pdb_generation_remark}${protonation_remark}\nREMARK    Created on $(date)/" > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
+        mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/$${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    fi
+}
+
+# Target format generation with obabel
+obabel_generate_targetformat() {
+
+    # Converting pdb to target the format
+    trap '' ERR
+    timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of obabel (user real system): %U %e %S" obabel -ipdb ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} 2>&1 | uniq | sed "s/1 molecule converted/The ligand was successfully converted from pdb to the targetformat by obabel./"
+    last_exit_code=$?
+    trap 'error_response_std $LINENO' ERR
+
+    # Checking if conversion successfull
+    if [ "${last_exit_code}" -ne "0" ]; then
+        echo " * Warning: Target format generation with obabel failed. Open Babel was interrupted by the timeout command..."
+    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -i -E 'failed|timelimit|error|not found'; then
+        echo " * Warning:  Target format generation with obabel failed. An error flag was detected in the log files..."
+    elif [ ! -f ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} ]; then
+        echo " * Warning: PDB generation with obabel failed. No valid PDB file was generated (empty or nonexistent)..."
+    elif [[ "${targetformat}" == "pdbqt" ]] && ! check_pdb_3D ; then
+        echo " * Warning: The output PDBQT file exists but does not contain 3D coordinates."
     else
         return 0
     fi
