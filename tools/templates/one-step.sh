@@ -46,14 +46,14 @@ source ~/.bashrc
 
 prepare_queue_files_tmp() {
     # Creating the required folders    
-    if [ -d "/tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/" ]; then
-        rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/
+    if [ -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/" ]; then
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/
     fi
-    mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues
+    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues
     
     # Copying the requires files
     if ls -1 ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* > /dev/null 2>&1; then
-        cp ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/
+        cp ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/
     fi    
 }
 
@@ -68,20 +68,22 @@ export VF_QUEUE_NO_12="${VF_QUEUE_NO_1}-${VF_QUEUE_NO_2}"
 export VF_LITTLE_TIME="false";
 export VF_START_TIME_SECONDS
 export VF_TIMELIMIT_SECONDS
-export CHEMAXON_LICENSE_URL=/tmp/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/license.cxl
 pids=""
 chemaxon_license_file="$(grep -m 1 "^chemaxon_license_file=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
-# Copying the license file if needed
+# Copying the ChemAxon license file if needed
 if [[ ! "${chemaxon_license_file}" == "none" ]] && [[ -n "${chemaxon_license_file}" ]]; then
 
     # Creating the required folders
-    if [ -d "/tmp/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/" ]; then
-        rm -r /tmp/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/*
+    if [ -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/" ]; then
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/*
     else
-        mkdir -p /tmp/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
+        mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
     fi
-    cp $(eval echo ${chemaxon_license_file}) /tmp/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
+    cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
+
+    # Adjusting the CHEMAXON environment variable
+    export CHEMAXON_LICENSE_URL=$(eval echo ${chemaxon_license_file})
 fi
 
 # Starting the individual queues
@@ -90,11 +92,18 @@ for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
     export VF_QUEUE_NO="${VF_QUEUE_NO_12}-${VF_QUEUE_NO_3}"
     prepare_queue_files_tmp
     echo "Job step ${VF_STEP_NO} is starting queue ${VF_QUEUE_NO} on host $(hostname)."
-    . ../workflow/job-files/sub/one-queue.sh >> /tmp/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out 2>&1 &
+    . ../workflow/job-files/sub/one-queue.sh >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out 2>&1 &
     pids[$(( i - 1 ))]=$!
 done
 
-wait || true
+# Checking if all queues exited without error ("wait" waits for all of them, but always returns 0)
+exit_code=0
+for pid in ${pids[@]}; do
+    wait $pid || let "exit_code=1"
+done
+if [ "$exit_code" == "1" ]; then
+    error_response_std
+fi
 
 # Cleaning up
 exit 0

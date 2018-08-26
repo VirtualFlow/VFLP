@@ -119,11 +119,11 @@ check_queue_end1() {
     fi
 
     # Checking if the queue should be stopped
-    line="$(cat ${VF_CONTROLFILE} | grep "stop_after_current_docking=")"
-    stop_after_current_docking=${line/"stop_after_current_docking="}
-    if [[ "${stop_after_current_docking}" == "yes" ]]; then
+    line="$(cat ${VF_CONTROLFILE} | grep "stop_after_current_ligand=")"
+    stop_after_current_ligand=${line/"stop_after_current_ligand="}
+    if [[ "${stop_after_current_ligand}" == "yes" ]]; then
         echo
-        echo "This job line was stopped by the stop_after_current_docking flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
+        echo "This job line was stopped by the stop_after_current_ligand flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         print_job_infos_end
         exit 0
@@ -163,9 +163,9 @@ check_queue_end2() {
     fi
 }
 
-# Creating the /tmp/${USER} folder if not present
-if [ ! -d "/tmp/${USER}" ]; then
-    mkdir -p /tmp/${USER}
+# Creating the ${VF_TMPDIR}/${USER} folder if not present
+if [ ! -d "${VF_TMPDIR}/${USER}" ]; then
+    mkdir -p ${VF_TMPDIR}/${USER}
 fi
 
 # Setting important variables
@@ -205,6 +205,9 @@ export VF_VERBOSITY_LOGFILES
 if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
     set -x
 fi
+
+# Tempdir
+VF_TMPDIR="$(grep -m 1 "^tempdir=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Setting the job letter1
 line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^job_letter=")
