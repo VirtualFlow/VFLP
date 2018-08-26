@@ -5,3 +5,6 @@ tasks.xml
 *.pyc
 .dropbox.attr
 *.attr
+input-files
+workflow
+output-files
