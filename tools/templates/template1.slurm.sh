@@ -212,6 +212,10 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
     set -x
 fi
 
+# Setting the error response
+line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^error_response=")
+export VF_ERROR_RESPONSE=${line/"error_response="}
+
 # VF_TMPDIR
 export VF_TMPDIR="$(grep -m 1 "^tempdir=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 # Creating the ${VF_TMPDIR}/${USER} folder if not present
@@ -231,10 +235,6 @@ if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
     set -uo pipefail
     trap '' PIPE        # SIGPIPE = exit code 141, means broken pipe. Happens often, e.g. if head is listening and got all the lines it needs.
 fi
-
-# Setting the error response
-line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^error_response=")
-export VF_ERROR_RESPONSE=${line/"error_response="}
 
 # Checking if the queue should be stopped
 check_queue_end1

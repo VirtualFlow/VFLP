@@ -118,7 +118,6 @@ clean_up() {
     fi
     rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/ || true
 }
-date
 trap 'clean_up' EXIT
 
 # Hiding the to-do.all list
