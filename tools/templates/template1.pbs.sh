@@ -170,11 +170,6 @@ check_queue_end2() {
     fi
 }
 
-# Creating the ${VF_TMPDIR}/${USER} folder if not present
-if [ ! -d "${VF_TMPDIR}/${USER}" ]; then
-    mkdir -p ${VF_TMPDIR}/${USER}
-fi
-
 # Setting important variables
 export VF_NODES_PER_JOB=${PBS_NUM_NODES}
 export VF_OLD_JOB_NO=${PBS_JOBNAME:2}
@@ -211,8 +206,12 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
     set -x
 fi
 
-# Tempdir
-VF_TMPDIR="$(grep -m 1 "^tempdir=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+# VF_TMPDIR
+export VF_TMPDIR="$(grep -m 1 "^tempdir=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+# Creating the ${VF_TMPDIR}/${USER} folder if not present
+if [ ! -d "${VF_TMPDIR}/${USER}" ]; then
+    mkdir -p ${VF_TMPDIR}/${USER}
+fi
 
 # Setting the job letter1
 line=$(cat ${VF_CONTROLFILE} | grep -m 1 "^job_letter=")
