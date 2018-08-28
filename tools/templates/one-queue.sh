@@ -83,9 +83,10 @@ update_ligand_list_end_fail() {
 
     # Variables
     fail_reason="${1}"
+    total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:failed (${fail_reason})/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status.tmp
+    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:failed:(${fail_reason}):${total_time_ms}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status.tmp
 
     # Printing some information
     echo
@@ -95,13 +96,17 @@ update_ligand_list_end_fail() {
 }
 
 update_ligand_list_end_success() {
+
+    # Variables
+    total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
+
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:completed${success_remark}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status.tmp
+    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:succeeded:${protonation_program}:${conformation_program}:${total_time_ms}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection}.status.tmp
 
     # Printing some information
     echo
     echo "Ligand ${next_ligand} completed successfully on $(date)."
-    echo "Total time for this ligand in ms: $(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
+    echo "Total time for this ligand in ms: ${total_time_ms}"
     echo
 }
 
@@ -319,6 +324,7 @@ cxcalc_protonate() {
         echo " * Info: Ligand successfully protonated by cxcalc."
         protonation_success="true"
         pdb_protonation_remark="\nREMARK    Protonation in the SMILES format at pH 7.4 was carried out by cxcalc version ${cxcalc_version}"
+        protonation_program="cxcalc"
     fi
 }
 
@@ -342,6 +348,7 @@ obabel_protonate() {
         echo " * Info: Ligand successfully protonated by obabel."
         protonation_success="true"
         pdb_protonation_remark="\nREMARK    Protonation in the SMILES format at pH 7.4 was carried out by obabel version ${obabel_version}"
+        protonation_program="obabel"
     fi
 }
 
@@ -372,6 +379,7 @@ molconvert_generate_conformation() {
         # Variables
         conformation_success="true"
         pdb_conformation_remark="\nREMARK    Generation of the 3D conformation was carried out by molconvert version ${molconvert_version}"
+        conformation_program="molconvert"
 
         # Modifying the header of the pdb file and correction of the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
         sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb | sed "s/PROTEIN.*/Small molecule (ligand)/g" | sed "s/Marvin/Created by ChemAxon's JChem (molconvert version ${molconvert_version})${pdb_conformation_remark}${protonation_remark}/" | sed "s/REVDAT.*/REMARK    Created on $(date)/" | sed "s/NONE//g" | sed "s/ UNK / LIG /g" | sed "s/COMPND.*/COMPND    ZINC ID: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
@@ -406,6 +414,7 @@ obabel_generate_conformation(){
         # Variables
         conformation_success="true"
         pdb_conformation_remark="\nREMARK    Generation of the 3D conformation was carried out by obabel version ${obabel_version}"
+        conformation_program="obabel"
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
         sed '/COMPND/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}//${next_ligand}.pdb | sed "s/AUTHOR.*/HEADER    Small molecule (ligand)\nCOMPND    ZINC ID: ${next_ligand}\nAUTHOR    Created by Open Babel version ${obabel_version}${pdb_conformation_remark}${protonation_remark}\nREMARK    Created on $(date)/" > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
@@ -754,12 +763,10 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     pdb_conformation_remark=""
     pdb_generation_remark=""
     pdbqt_generation_remark=""
-    success_remark=""
+    protonation_program=""
+    conformation_program=""
 
 
-    # Changing error trap
-
-    trap 'error_response_conversion $LINENO' ERR
     # Protonation
     if [ "${protonation_state_generation}" == "true" ]; then
 
@@ -824,12 +831,15 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
                 # Variables
                 pdb_protonation_remark="\nREMARK    WARNING: Molecule was not protonated at physiological pH (protonation with both obabel and cxcalc has failed)"
-                success_remark="protonation failed"
+                protonation_program="protonation failed"
 
                 # Copying the unprotonated ligand
                 cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/smi/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
             fi
         fi
+    else
+        # Variables
+        protonation_program="none (protonation disabled)"
     fi
 
 
@@ -897,13 +907,12 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
                 # Variables
                 pdb_conformation_remark="\nREMARK    WARNING: 3D conformation could not be generated (both obabel and molconvert failed)"
-                if [ -z ${success_remark} ]; then
-                    success_remark="3D conformation generation failed"
-                else
-                    success_remark="${success_remark}, 3D conformation generation failed"
-                fi
+                conformation_program="conformation generation failed"
             fi
         fi
+    else
+        # Variables
+        conformation_program="none (conformation-generation disabled)"
     fi
 
 
@@ -968,7 +977,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     update_ligand_list_end_success
 
     # Variables
-    needs_cleaning=true
+    needs_cleaning="true"
 
 done
 
