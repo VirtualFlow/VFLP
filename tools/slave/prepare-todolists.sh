@@ -11,6 +11,8 @@
 #
 # ---------------------------------------------------------------------------
 
+# TODO: improve second backup mecha (copying back)
+
 # Displaying help if the first argument is -h
 usage="Usage: . prepare-todolists.sh jobline_no nodes_per_job queues_per_step [quiet]"
 if [ "${1}" = "-h" ]; then

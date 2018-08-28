@@ -103,10 +103,10 @@ if [[ ! "${chemaxon_license_file}" == "none" ]] && [[ -n "${chemaxon_license_fil
     else
         mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
     fi
-    cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
+    cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/license.cxl
 
     # Adjusting the CHEMAXON environment variable
-    export CHEMAXON_LICENSE_URL=$(eval echo ${chemaxon_license_file})
+    export CHEMAXON_LICENSE_URL=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/license.cxl"
 fi
 
 # Starting the individual queues

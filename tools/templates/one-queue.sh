@@ -171,7 +171,7 @@ next_ligand_collection() {
     fi
 
     # Creating the subfolder in the ligand-lists folder
-    mkdir -p ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/
+    mkdir -p ../workflow/ligand-collections/ligand-lists
 
     # Printing some information
     echo "The new ligand collection is ${next_ligand_collection}."
@@ -318,7 +318,7 @@ cxcalc_protonate() {
     else
         echo " * Info: Ligand successfully protonated by cxcalc."
         protonation_success="true"
-        pdb_protonation_remark="\nREMARK    Protonation in the SMILES format at pH 7.4 was carried out by molconvert version ${cxcalc_version}"
+        pdb_protonation_remark="\nREMARK    Protonation in the SMILES format at pH 7.4 was carried out by cxcalc version ${cxcalc_version}"
     fi
 }
 
@@ -451,7 +451,7 @@ obabel_generate_pdb() {
 obabel_generate_targetformat() {
 
     # Converting pdb to target the format
-    echo " * Trying to convert the ligand to the target format (without 3D coordinate generation) with obabel."
+    echo " * Trying to convert the ligand to the target format (${targetformat}) witih obabel (without 3D coordinate generation)"
     trap '' ERR
     timeout 300 time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of obabel (user real system): %U %e %S" obabel -ipdb ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/pdb/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} 2>&1 | uniq | sed "s/1 molecule converted/The ligand was successfully converted from pdb to the targetformat by obabel./"
     last_exit_code=$?
@@ -468,7 +468,7 @@ obabel_generate_targetformat() {
         echo " * Warning: The output PDBQT file exists but does not contain valid coordinates."
     else
         # Printing some information
-        echo " * Info: targetformat file successfully generated with obabel."
+        echo " * Info: targetformat (${targetformat}) file successfully generated with obabel."
 
         # Variables
         targetformat_generation_success="true"
@@ -561,12 +561,10 @@ echo
 echo
 
 # Setting the number of ligands to screen in this job
-line=$(cat ${VF_CONTROLFILE} | grep "ligands_per_queue=")
-no_of_ligands=${line/"ligands_per_queue="}
+no_of_ligands="$(grep -m 1 "^ligands_per_queue=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Getting the folder where the colections are
-line=$(cat ${VF_CONTROLFILE} | grep "collection_folder=" | sed 's/\/$//g')
-collection_folder=${line/"collection_folder="}
+collection_folder="$(grep -m 1 "^collection_folder=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Loop for each ligand
 for ligand_index in $(seq 1 ${no_of_ligands}); do
@@ -645,12 +643,28 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
             else
                 last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status | awk -F '[: ,/]' '{print $1}' 2>/dev/null || true)
-                next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/\.]' '{print $2}')
+                last_ligand_status=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status | awk -F '[: ,/]' '{print $2}' 2>/dev/null || true)
+
+                # Checking if the last ligand was in the status processing. In this case we will try to process the ligand again since the last process might have not have the chance to complete its tasks.
+                if [ "${last_ligand_status}" == "processing" ]; then
+                    sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status # Might not work for VFVS due to multiple replicas
+                    next_ligand="${last_ligand}"
+                else
+                    next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
+                fi
             fi
         # Not first ligand of this queue
         else
             last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
-            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/\.]' '{print $2}')
+            last_ligand_status=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $2}' || true)
+
+            # Checking if the last ligand was in the status processing. In this case we will try to process the ligand again since the last process might have not have the chance to complete its tasks.
+            if [ "${last_ligand_status}" == "processing" ]; then
+                sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection}.status # Might not work for VFVS due to multiple replicas
+                next_ligand="${last_ligand}"
+            else
+                next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
+            fi
         fi
 
         # Check if we can use the old collection
@@ -930,7 +944,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         targetformat_generation_success="false"
 
         # Printing information
-        echo " * Info: Starting the attempt to convert ligand into the target format with obabel"
+        echo " * Info: Starting the attempt to convert ligand into the target format (${targetformat}) with obabel"
 
         # Attempting the target format generation with obabel
         obabel_generate_targetformat
@@ -939,7 +953,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         if [ "${targetformat_generation_success}" == "false" ]; then
 
             # Printing some information
-            echo " * Warning: Ligand will be skipped since a successful target format generation is mandatory."
+            echo " * Warning: Ligand will be skipped since a successful target format (${targetformat}) generation is mandatory."
 
             # Updating the ligand list
             update_ligand_list_end_fail "target format generation"
