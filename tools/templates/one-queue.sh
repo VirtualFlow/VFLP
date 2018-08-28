@@ -313,7 +313,7 @@ cxcalc_protonate() {
         echo " * Warning: Protonation with cxcalc failed. cxcalc was interrupted by the timeout command..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found'; then
         echo " * Warning: Protonation with cxcalc failed. An error flag was detected in the log files..."
-    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
+    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
         echo " * Warning: Protonation with cxcalc failed. No valid SMILES file was generated..."
     else
         echo " * Info: Ligand successfully protonated by cxcalc."
