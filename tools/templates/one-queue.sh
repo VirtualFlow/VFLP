@@ -502,7 +502,7 @@ if [ "${protonation_state_generation}" == "true" ]; then
     protonation_program_1="$(grep -m 1 "^protonation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     protonation_program_2="$(grep -m 1 "^protonation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     protonation_obligatory="$(grep -m 1 "^protonation_obligatory=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    protonation_pH_value="$(grep -m 1 "^protonation_obligatory=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    protonation_pH_value="$(grep -m 1 "^protonation_pH_value=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
     # Interdependent variables
     if [[ "${protonation_program_1}" ==  "cxcalc" ]] || [[ "${protonation_program_2}" ==  "cxcalc" ]]; then
@@ -788,7 +788,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             echo " * Info: Starting second protonation attempt with ${protonation_program_2} (protonation_program_2)"
 
             # Determining protonation_program_2
-            case "${protonation_program_1}" in
+            case "${protonation_program_2}" in
                 cxcalc)
                     # Attempting the protonation with cxcalc
                     cxcalc_protonate
