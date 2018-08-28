@@ -99,7 +99,7 @@ if [[ ! "${chemaxon_license_file}" == "none" ]] && [[ -n "${chemaxon_license_fil
 
     # Creating the required folders
     if [ -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/" ]; then
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/*
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/* &>/dev/null || true
     else
         mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
     fi
