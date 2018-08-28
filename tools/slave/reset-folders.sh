@@ -55,7 +55,7 @@ if [[ "$1" = *"output"* || "$1" = *"all"* ]]; then
             echo
             echo "Cleaning the output-files folder."
         fi
-        if [ "$(ls -A /path/to/directory 2>/dev/null)" ]; then
+        if [ "$(ls -A ../../output-files 2>/dev/null)" ]; then
             rm -r ../../output-files/* 2>/dev/null
         fi
         mkdir -p ../../output-files/
