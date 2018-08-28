@@ -27,12 +27,12 @@
 #SBATCH --output=../workflow/output-files/jobs/job-1.1_%j.out           # File to which standard out will be written
 #SBATCH --error=../workflow/output-files/jobs/job-1.1_%j.out            # File to which standard err will be written
 #SBATCH --signal=10@300
-##SBATCH --constraint="holyib"
+#SBATCH --constraint="holyib"
 ##SBATCH --constraint="scratch2"
 
 # Loading Modules
 module load centos6/0.0.1-fasrc01
-module load java/java-1.8.0_45-fasrc01
+module load java/1.8.0_45-fasrc01
 
 module load openbabel/2.3.2-fasrc02
 
