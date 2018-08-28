@@ -10,7 +10,7 @@ job_letter=r
 batchsystem=SLURM
 # Possible values: SLURM, TOQRUE, PBS, LSF, SGE
 
-partition=priority
+partition=shared
 # also called queue
 
 timelimit=00-12:00:00
@@ -56,7 +56,7 @@ ligands_per_refilling_step=1000
 # fill the to-do files of the queues with this number of ligands per refill step
 # a number roughly equal to the average of number of ligands per collection is recommended
 
-collection_folder=../input-files/ligand-databases/zinc15_20180825_preview
+collection_folder=../../../collections/zinc15_20180825.smi.splitted1000_ind_tgz_tar
 # slash at the end is not required (optional)
 # relative pathname is required w.r.t. the folder tools/
 
