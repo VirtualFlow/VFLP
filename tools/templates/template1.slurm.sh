@@ -30,6 +30,9 @@
 ##SBATCH --constraint="holyib"
 ##SBATCH --constraint="scratch2"
 
+# Loading Modules
+module load java
+
 # Job Information
 ##################################################################################
 

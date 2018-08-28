@@ -115,7 +115,7 @@ chemaxon_license_file=${HOME}/.chemaxon-license.cxl
 #     <Absolute path to license file>: Shell variables can be used such as $HOME
 #     none
 
-targetformat=mol2
+targetformat=pdbqt
 # Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
 # A complete list can be obtained by running the command "obabel -L formats"
 
@@ -126,7 +126,7 @@ protonation_state_generation=true
 #     false
 #     true
 
-protonation_program_1=obabel
+protonation_program_1=cxcalc
 protonation_program_2=obabel
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
 # Setting only required if protonation_state_generation=true
@@ -153,7 +153,7 @@ conformation_generation=true
 #     false
 #     true
 
-conformation_program_1=obabel
+conformation_program_1=molconvert
 conformation_program_2=obabel
 # Setting only required if conformation_generation=true
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
