@@ -109,7 +109,7 @@ tempdir=/tmp
 
 # Todo: input format choice
 
-chemaxon_license_file=${HOME}/downloads/ChemAxon/license.cxl
+chemaxon_license_file=${HOME}/.chemaxon-license.cxl
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Possible values:
 #     <Absolute path to license file>: Shell variables can be used such as $HOME
