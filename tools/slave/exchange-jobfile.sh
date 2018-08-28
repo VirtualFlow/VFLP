@@ -37,13 +37,30 @@ error_response_nonstd() {
 }
 trap 'error_response_nonstd $LINENO' ERR
 
+
+# Determining the controlfile to use for this jobline
+export VF_JOBLINE_NO=${2}
+VF_CONTROLFILE=""
+for file in $(ls ../../workflow/control/*-* 2>/dev/null || true); do
+    file_basename=$(basename $file)
+    jobline_range=${file_basename/.*}
+    VF_JOBLINE_NO_START=${jobline_range/-*}
+    VF_JOBLINE_NO_END=${jobline_range/*-}
+    if [[ "${VF_JOBLINE_NO_START}" -le "${VF_JOBLINE_NO}" && "${VF_JOBLINE_NO}" -le "${VF_JOBLINE_NO_END}" ]]; then
+        export VF_CONTROLFILE="${file}"
+        break
+    fi
+done
+if [ -z "${VF_CONTROLFILE}" ]; then
+    export VF_CONTROLFILE="../workflow/control/all.ctrl"
+fi
+
 # Getting the batchsystem type
 batchsystem="$(grep -m 1 "^batchsystem=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Getting the jobline number and the current job number
-VF_JOBLINE_NO=${2}
 job_template=${1}
-new_job_file=${2}.job
+new_job_file=${VF_JOBLINE_NO}.job
 if [ "${batchsystem}" = "SLURM" ]; then
     line=$(cat ../../workflow/job-files/main/${new_job_file} | grep -m 1 "job\-name=")
     job_no=${line/"#SBATCH --job-name=[a-zA-Z]-"}

@@ -122,7 +122,7 @@ check_queue_end1() {
 
     # Determining the VF_CONTROLFILE to use for this jobline
     VF_CONTROLFILE=""
-    for file in $(ls ../workflow/control/*-* 2>/dev/null|| true); do
+    for file in $(ls ../workflow/control/*-* 2>/dev/null || true); do
         file_basename=$(basename $file)
         jobline_range=${file_basename/.*}
         VF_JOBLINE_NO_START=${jobline_range/-*}

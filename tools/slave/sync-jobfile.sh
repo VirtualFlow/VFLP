@@ -38,6 +38,22 @@ trap 'error_response_nonstd $LINENO' ERR
 # Variables
 VF_JOBLINE_NO=${1}
 
+# Determining the controlfile to use for this jobline
+VF_CONTROLFILE=""
+for file in $(ls ../../workflow/control/*-* 2>/dev/null || true); do
+    file_basename=$(basename $file)
+    jobline_range=${file_basename/.*}
+    VF_JOBLINE_NO_START=${jobline_range/-*}
+    VF_JOBLINE_NO_END=${jobline_range/*-}
+    if [[ "${VF_JOBLINE_NO_START}" -le "${VF_JOBLINE_NO}" && "${VF_JOBLINE_NO}" -le "${VF_JOBLINE_NO_END}" ]]; then
+        export VF_CONTROLFILE="${file}"
+        break
+    fi
+done
+if [ -z "${VF_CONTROLFILE}" ]; then
+    export VF_CONTROLFILE="../workflow/control/all.ctrl"
+fi
+
 # Getting the batchsystem type
 batchsystem="$(grep -m 1 "^batchsystem=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
