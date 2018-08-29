@@ -270,8 +270,8 @@ clean_collection_files_tmp() {
             fi
 
             # Cleaning up
-            rm ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status
-            rm -r ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
+            rm ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status || true
+            rm -r ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/ || true
 
         else
             # Compressing the collection and saving in the complete folder
