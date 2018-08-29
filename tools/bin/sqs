@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# has to be run in the tools folder
+
 # Variables
 if [ -f ../workflow/control/all.ctrl ]; then
     controlfile="../workflow/control/all.ctrl"
@@ -9,7 +11,7 @@ else
 fi
 
 # Variables
-batchsystem="$(grep -m 1 "^batchsystem=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+batchsystem="$(grep -m 1 "^batchsystem=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Checking batchsystem type
 if [ "${batchsystem}" == "SLURM" ]; then
