@@ -19,8 +19,8 @@
 #SBATCH --job-name=h-1.1
 #SBATCH --mail-user=cgorgulla@crystal.harvard.edu
 #SBATCH --mail-type=fail
-#SBATCH --time=01-00:00:00
-#SBATCH --mem-per-cpu=500
+#SBATCH --time=00-12:00:00
+#SBATCH --mem-per-cpu=1500
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=main
