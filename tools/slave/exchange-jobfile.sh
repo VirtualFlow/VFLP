@@ -63,7 +63,7 @@ batchsystem="$(grep -m 1 "^batchsystem=" ${controlfile} | tr -d '[[:space:]]' | 
 
 # Getting the jobline number and the current job number
 job_template=${1}
-new_job_file=${controlfile}.job
+new_job_file=${jobline_no}.job
 if [ "${batchsystem}" = "SLURM" ]; then
     line=$(cat ../../workflow/job-files/main/${new_job_file} | grep -m 1 "job\-name=")
     job_no=${line/"#SBATCH --job-name=[a-zA-Z]-"}
