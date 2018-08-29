@@ -76,7 +76,7 @@ trap 'clean_queue_files_tmp' EXIT RETURN
 
 # Writing the ID of the next ligand to the current ligand list
 update_ligand_list_start() {
-    echo "${next_ligand}:processing" >> ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${local_ligand_collection_ID}.status.tmp
+    echo "${next_ligand}:processing" >> ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status.tmp
 }
 
 update_ligand_list_end_fail() {
@@ -86,7 +86,7 @@ update_ligand_list_end_fail() {
     total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:failed:(${fail_reason}):${total_time_ms}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${local_ligand_collection_ID}.status.tmp
+    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:failed:(${fail_reason}):${total_time_ms}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status.tmp
 
     # Printing some information
     echo
@@ -101,7 +101,7 @@ update_ligand_list_end_success() {
     total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:succeeded:${protonation_program}:${conformation_program}:${total_time_ms}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${local_ligand_collection_ID}.status.tmp
+    perl -pi -e "s/${next_ligand}:processing/${next_ligand}:succeeded:${protonation_program}:${conformation_program}:${total_time_ms}/g" ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status.tmp
 
     # Printing some information
     echo
