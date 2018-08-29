@@ -653,21 +653,21 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
             # Checking if the collection.status.tmp file exists due to abnormal abortion of job/queue
             # Removing old status.tmp file if existent
-            if [[ -f "../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status.tmp" ]]; then
+            if [[ -f "../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp" ]]; then
                 echo " * INFO: The file ${last_ligand_collection_ID}.status.tmp exists already."
                 echo " * INFO: This collection will be restarted."
-                rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status.tmp
+                rm ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp
 
                 # Getting the name of the first ligand of the first collection
                 next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
 
             else
-                last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status | awk -F '[: ,/]' '{print $1}' 2>/dev/null || true)
-                last_ligand_status=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status | awk -F '[: ,/]' '{print $2}' 2>/dev/null || true)
+                last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status | awk -F '[: ,/]' '{print $1}' 2>/dev/null || true)
+                last_ligand_status=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status | awk -F '[: ,/]' '{print $2}' 2>/dev/null || true)
 
                 # Checking if the last ligand was in the status processing. In this case we will try to process the ligand again since the last process might have not have the chance to complete its tasks.
                 if [ "${last_ligand_status}" == "processing" ]; then
-                    sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status # Might not work for VFVS due to multiple replicas
+                    sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status # Might not work for VFVS due to multiple replicas
                     next_ligand="${last_ligand}"
                 else
                     next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
@@ -675,12 +675,12 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             fi
         # Not first ligand of this queue
         else
-            last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
-            last_ligand_status=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $2}' || true)
+            last_ligand=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
+            last_ligand_status=$(tail -n 1 ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp 2>/dev/null | awk -F '[:. ]' '{print $2}' || true)
 
             # Checking if the last ligand was in the status processing. In this case we will try to process the ligand again since the last process might have not have the chance to complete its tasks.
             if [ "${last_ligand_status}" == "processing" ]; then
-                sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${local_ligand_collection_ID}.status # Might not work for VFVS due to multiple replicas
+                sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status # Might not work for VFVS due to multiple replicas
                 next_ligand="${last_ligand}"
             else
                 next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
