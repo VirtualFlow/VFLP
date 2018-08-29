@@ -3,8 +3,7 @@
 #
 # Usage: vf_report.sh workflow-status-mode virtual-screening-results-mode
 #
-# Description: Display current information about the virtual screening. The docking result 
-# part requires that the summary-files about the first poses are present/enabled in the workflow.
+# Description: Display current information about the workflow.
 #
 # ---------------------------------------------------------------------------
 
@@ -33,37 +32,34 @@ clean_up() {
 trap 'clean_up' EXIT
 
 # Variables
-usage="\nUsage: vf_report.sh [-h] -c category [-v verbosity] [-d docking-type-name] [-s] [-n number-of-compounds]
+usage="\nUsage: vf_report.sh [-h] -c category [-v verbosity]
 
 Options:
     -h: Display this help
     -c: Possible categories are:
             workflow: Shows information about the status of the workflow and the batchsystem.
     -v: Specifies the verbosity level of the output. Possible values are 1-3 (default 1)
-    -d: Specifies the docking type name (as defined in the all.ctrl file) 
-    -s: Specifies if statistical information should be shown about the virtual screening results (in the vs category)
-        Possible values: true, false
-        Default value: true
-    -n: Specifies the number of highest scoring compounds to be displayed (in the vs category)
-        Possible values: Non-negative integer
-        Default value: 0
 
 "
 help_info="The -h option can be used to get more information on how to use this script."
-export VF_CONTROLFILE="../workflow/control/all.ctrl"
-line=$(cat ${VF_CONTROLFILE} | grep "collection_folder=" | sed 's/\/$//g')
+controlfile="../workflow/control/all.ctrl"
+line=$(cat ${controlfile} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
 export LC_ALL=C
 export LANG=C
+
+# Getting the batchsystem type
+line=$(grep -m 1 "^batchsystem" ../workflow/control/all.ctrl)
+batchsystem="${line/batchsystem=}"
+line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
+job_letter=${line/"job_letter="}
+
 # Determining the names of each docking type
-line=$(cat ${VF_CONTROLFILE} | grep "^docking_type_names=")
-docking_type_names=${line/"docking_type_names="}
-IFS=':' read -a docking_type_names <<< "$docking_type_names"
-tmp_dir=${VF_TMPDIR}/vfvs_report_$(date | tr " :" "_")
+tmp_dir=/tmp/${USER}/vfvs_report_$(date | tr " :" "_")
 
 # Verbosity
-export VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
+verbosity="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+if [ "${verbosity}" = "debug" ]; then
     set -x
 fi
 
@@ -75,7 +71,7 @@ category_flag="false"
 docking_type_name_flag="false"
 show_vs_statistics_flag="false"
 number_highest_scores_flag="false"
-while getopts ':hc:v:d:n:s:' option; do
+while getopts ':hc:v:' option; do
     case "$option" in
         h)  echo -e "$usage"
             exit 0
@@ -98,41 +94,6 @@ while getopts ':hc:v:d:n:s:' option; do
             fi
             verbosity_flag=true
             ;;
-        d)  docking_type_name=$OPTARG
-            for name in ${docking_type_names[@]};do
-                if [ "${docking_type_name}" == "${name}" ]; then
-                    docking_type_name_flag="true"
-                fi
-            done
-
-           if [[ "${docking_type_name_flag}" == "false" ]]; then
-                echo -e "\nAn unsupported docking_type_name (${docking_type_name}) has been specified via the -d option."
-                echo -e "In the control-file $VF_CONTROLFILE the following docking type names are specified: ${docking_type_names[@]}"
-                echo -e "${help_info}\n"
-                echo -e "Cleaning up and exiting...\n\n"   
-                exit 1
-            fi
-            ;;
-        s)  show_vs_statistics=$OPTARG
-            if ! [[ "${show_vs_statistics}" == "true" || "${show_vs_statistics}" == "false"  ]]; then
-                echo -e "\nAn invalid value (${show_vs_statistics}) has been specified via the -s option."
-                echo -e "The value has to be true or false."
-                echo -e "${help_info}\n"
-                echo -e "Cleaning up and exiting...\n\n"   
-                exit 1
-            fi
-            show_vs_statistics_flag=true
-            ;;
-        n)  number_highest_scores=$OPTARG
-            if ! [[ "${number_highest_scores[@]}" -gt 0  ]]; then
-                echo -e "\nAn invalid number of highest scoring compounds (${number_highest_scores}) has been specified via the -n option."
-                echo -e "The number has to be a non-negative integer."
-                echo -e "${help_info}\n"
-                echo -e "Cleaning up and exiting...\n\n"   
-                exit 1
-            fi 
-            number_highest_scores_flag=true
-            ;;
         :)  printf "\nMissing argument for option -%s\n" "$OPTARG" >&2
             echo -e "\n${help_info}\n"
             echo -e "Cleaning up and exiting...\n\n"   
@@ -154,38 +115,15 @@ if [ "${category_flag}" == "false" ]; then
     echo -e "${help_info}\n"
     echo -e "Cleaning up and exiting...\n\n"   
     exit 1
-elif [ "${category_flag}" == "true" ]; then
-    if [[ "${category}" == "vs" &&  "${docking_type_name_flag}" == "false" ]]; then 
-        echo -e "\nThe option -d which specifies the docking type name was not specified, but it is required for this category (vs)."
-        echo -e "In the control-file $VF_CONTROLFILE the following docking type names are specified: ${docking_type_names[@]}"
-        echo -e "${help_info}\n"
-        echo -e "Cleaning up and exiting...\n\n"   
-        exit 1
-    fi
 fi  
 if [ "${verbosity_flag}" == "false" ]; then
     verbosity=1
 fi
-if [ "${number_highest_scores}" == "false" ]; then
-    number_highest_scores=0
-fi
-if [ "${show_vs_statistics_flag}" == "false" ]; then
-    show_vs_statistics="true"
-fi
 
 # Getting the batchsystem type
-batchsystem="$(grep -m 1 "^batchsystem=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-job_letter="$(grep -m 1 "^job_letter=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+batchsystem="$(grep -m 1 "^batchsystem=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+job_letter="$(grep -m 1 "^job_letter=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
-# Determining the docking type replicas
-line=$(cat ${VF_CONTROLFILE} | grep "^docking_type_replicas=")
-docking_type_replicas_total="$(grep -m 1 "^docking_type_replicas=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-IFS=':' read -a docking_type_replicas_total <<< "$docking_type_replicas_total"
-
-docking_runs_perligand=0
-for value in ${docking_type_replicas_total[@]}; do 
-    docking_runs_perligand=$((docking_runs_perligand+value))
-done
 
 if [[ "${category}" = "workflow" ]]; then
     # Displaying the information
@@ -347,7 +285,7 @@ if [[ "${category}" = "workflow" ]]; then
     totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
     iteration=1
     for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands with at least one docking run successfully completed: ${ligands_success} (counting tranch ${iteration}/${totalNo})\\r"        
+        echo -ne " Number of ligands successfully completed: ${ligands_success} (counting tranch ${iteration}/${totalNo})\\r"
         for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
             noToAdd="$(grep -h "success" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)"
             if [[ -z "${noToAdd// }" ]]; then 
@@ -357,7 +295,7 @@ if [[ "${category}" = "workflow" ]]; then
         done
         iteration=$((iteration + 1))             
     done
-    echo -ne " Number of ligands with at least one docking run successfully completed: ${ligands_success}                                                \\r"
+    echo -ne " Number of ligands successfully completed: ${ligands_success}                                                \\r"
     echo
     
     ligands_processing=0
@@ -381,7 +319,7 @@ if [[ "${category}" = "workflow" ]]; then
     totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
     iteration=1
     for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands in which at least one docking run failed: ${ligands_failed} (counting tranch ${iteration}/${totalNo}) \\r"    
+        echo -ne " Number of ligands failed: ${ligands_failed} (counting tranch ${iteration}/${totalNo}) \\r"
         for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
             noToAdd="$(grep -h "failed" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l  || true)"
             if [[ -z "${noToAdd// }" ]]; then 
@@ -391,117 +329,9 @@ if [[ "${category}" = "workflow" ]]; then
         done
         iteration=$((iteration + 1))    
     done
-    echo -ne " Number of ligands in which at least one docking run failed: ${ligands_failed}                                                              \\r"
+    echo -ne " Number of ligands failed: ${ligands_failed}                                                              \\r"
     echo
-    echo 
-    
-    echo 
-    echo "                                           Docking Runs    "
-    echo "................................................................................................"
-    echo
-    echo " Docking runs per ligand: ${docking_runs_perligand}"
-    if [[ "$verbosity" -gt "2" ]]; then
-        docking_runs_total=0
-        totalNo=$(grep -c "" ../workflow/ligand-collections/var/todo.original 2>/dev/null || true)
-        iteration=1
-        for i in $(cat ../workflow/ligand-collections/var/todo.original); do
-            echo -ne " Total number of dockings to be carried out in the entire workflow: ${docking_runs_total} (counting collection ${iteration}/${totalNo})\\r"
-            queue_collection_basename=${i/.pdbqt.gz.tar}
-            noToAdd=$(grep "${queue_collection_basename} " ${collection_folder}.length 2>/dev/null | awk '{print $2}')
-            if [[ -z "${noToAdd// }" ]]; then   
-                noToAdd=0
-            fi
-            if [ ! "${noToAdd}" -eq "${noToAdd}" ]; then
-                noToAdd=0
-            fi
-            docking_runs_total=$((${docking_runs_total} + ${noToAdd} * ${docking_runs_perligand})) 2>/dev/null || true
-            iteration=$((iteration + 1))
-        done
-        echo -ne " Total number of dockings to be carried out in the entire workflow: ${docking_runs_total}                                                \\r"
-        echo
-    fi
-    
-    docking_runs_done=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of docking runs started: ${docking_runs_done} (counting tranch ${iteration}/${totalNo}) \\r"
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -c "" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null || true)" 
-            if [ -z "${noToAdd// }" ]; then 
-                noToAdd=0
-            fi
-            if [ ! "${noToAdd}" -eq "${noToAdd}" ]; then
-                noToAdd=0
-            fi
-            docking_runs_done=$((${docking_runs_done} + ${noToAdd})) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))
-    done
-    echo -ne " Number of docking runs started: ${docking_runs_done}                                                     \\r"
-    echo
-    
-    docking_runs_success=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of  docking runs successfully completed: ${docking_runs_success} (counting tranch ${iteration}/${totalNo})\\r"        
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -c "success" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null || true)"
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi            
-            if [ ! "${noToAdd}" -eq "${noToAdd}" ]; then
-                noToAdd=0
-            fi
-        docking_runs_success=$((${docking_runs_success} +  noToAdd)) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))             
-    done
-    echo -ne " Number of docking runs successfully completed: ${docking_runs_success}                                                \\r"
     echo
 
-    docking_runs_inprocess=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of  docking runs in process: ${docking_runs_inprocess} (counting tranch ${iteration}/${totalNo}) \\r"        
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -c "processing" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null || true)"
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi            
-            if [ ! "${noToAdd}" -eq "${noToAdd}" ]; then
-                noToAdd=0
-            fi
-            docking_runs_inprocess=$((${docking_runs_inprocess} + ${noToAdd})) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))   
-    done
-    echo -ne " Number of docking runs in state processing: ${docking_runs_inprocess}                                               \\r"
-    echo
-    
-    docking_runs_failed=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of  docking runs failed: ${docking_runs_failed} (counting tranch ${iteration}/${totalNo}) \\r"    
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -c "failed" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null || true)"
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi
-            if [ ! "${noToAdd}" -eq "${noToAdd}" ]; then
-                noToAdd=0
-            fi
-            docking_runs_failed=$((${docking_runs_failed} + ${noToAdd} ))
-        done
-        iteration=$((iteration + 1))    
-    done
-    echo -ne " Number of docking runs failed: ${docking_runs_failed}                                                              \\r"
-    echo    
-    echo
+    echo -e "\n\n"
 fi
-
-echo -e "\n\n"

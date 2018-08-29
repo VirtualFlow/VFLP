@@ -38,7 +38,6 @@ error_response_nonstd() {
 trap 'error_response_nonstd $LINENO' ERR
 
 
-
 # Variables
 jobline_no=${2}
 
@@ -50,12 +49,12 @@ for file in $(ls ../../workflow/control/*-* 2>/dev/null || true); do
     jobline_no_start=${jobline_range/-*}
     jobline_no_end=${jobline_range/*-}
     if [[ "${jobline_no_start}" -le "${jobline_no}" && "${jobline_no}" -le "${jobline_no_end}" ]]; then
-        export controlfile="${file}"
+        controlfile="${file}"
         break
     fi
 done
 if [ -z "${controlfile}" ]; then
-    export controlfile="../../workflow/control/all.ctrl"
+    controlfile="../../workflow/control/all.ctrl"
 fi
 
 # Getting the batchsystem type
