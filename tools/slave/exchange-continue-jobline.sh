@@ -49,10 +49,10 @@ else
 fi
 
 # Continuing the jobline
-for VF_JOBLINE_NO in $(seq ${first_jobline_no} ${last_jobline_no}); do
+for jobline_no in $(seq ${first_jobline_no} ${last_jobline_no}); do
     i=$(( i + 1 ))
-    . exchange-jobfile.sh ${job_template} ${VF_JOBLINE_NO} ${quiet_mode}
-    . continue-jobline.sh ${VF_JOBLINE_NO} "sync"
+    . exchange-jobfile.sh ${job_template} ${jobline_no} ${quiet_mode}
+    . continue-jobline.sh ${jobline_no} "sync"
 done
 
 # Displaying some information if no quiet option

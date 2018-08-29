@@ -27,21 +27,19 @@ if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
 fi
 
 # Variables
-VF_QUEUE_NO_1="${1}"
-VF_NODES_PER_JOB="${2}"
-VF_QUEUES_PER_STEP="${3}"
+queue_no_1="${1}"
+nodes_per_job="${2}"
+queues_per_step="${3}"
 export LC_ALL=C
 todo_file_temp=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/todo.all
 
-# Verbosity
-VF_VERBOSITY_LOGFILES="$(grep -m 1 "^verbosity_logfiles=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-export VF_VERBOSITY_LOGFILES
+# Verbosity (the script is only called by the job scripts)
 if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
     set -x
 fi
 
 # Printing some information
-echo -e "\n * Preparing the to-do lists for jobline ${VF_QUEUE_NO_1}\n"
+echo -e "\n * Preparing the to-do lists for jobline ${queue_no_1}\n"
 
 # Standard error response
 error_response_std() {
@@ -150,7 +148,7 @@ while [[ "${status}" = "false" ]]; do
         date
         if mv ../../workflow/ligand-collections/todo/todo.all ${todo_file_temp}  2>/dev/null; then
             cp ${todo_file_temp} ../../workflow/ligand-collections/todo/todo.all.locked
-            cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.locked.bak.${VF_QUEUE_NO_1}
+            cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.locked.bak.${queue_no_1}
             status="true"
             trap 'error_response_std $LINENO' ERR
         fi
@@ -226,10 +224,10 @@ touch ${todo_new_temp}
 # Getting the number of ligands which are already in the local to-do lists
 ligands_todo=""
 queue_collection_numbers=""
-for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
+for queue_no_2 in $(seq 1 ${nodes_per_job}); do
     # Loop for each queue of the node
-    for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
-        queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
+    for queue_no_3 in $(seq 1 ${queues_per_step}); do
+        queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
         ligands_todo[${queue_no_2}0000${queue_no_3}]=0
         queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=0
         # Getting the current number of the ligands to-do
@@ -274,10 +272,10 @@ done
 if [[ ! "$*" = *"quiet"* ]]; then
     echo "Starting the (re)filling of the todolists of the queues."
     echo
-    for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
+    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
         # Loop for each queue of the node
-        for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
-            queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
+        for queue_no_3 in $(seq 1 ${queues_per_step}); do
+            queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
             echo "Before (re)filling the todolists the queue ${queue_no} had ${ligands_todo[${queue_no_2}0000${queue_no_3}]} ligands todo distributed in ${queue_collection_numbers[${queue_no_2}0000${queue_no_3}]} collections."
         done
     done
@@ -292,10 +290,10 @@ no_collections_beginning=${no_collections_remaining}
 for refill_step in $(seq 1 ${no_of_refilling_steps}); do
     step_limit=$((${refill_step} * ${ligands_per_refilling_step}))
     # Loop for each node
-    for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
+    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
         # Loop for each queue of the node
-        for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
-            queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
+        for queue_no_3 in $(seq 1 ${queues_per_step}); do
+            queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
             cat /dev/null > ${todo_new_temp}
 
             while [ "${ligands_todo[${queue_no_2}0000${queue_no_3}]}" -lt "${step_limit}" ]; do
@@ -333,10 +331,10 @@ done
 
 # Printing some infos about the to-do lists of this queue after the refilling
 if [[ ! "$*" = *"quiet"* ]]; then
-    for queue_no_2 in $(seq 1 ${VF_NODES_PER_JOB}); do
+    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
         # Loop for each queue of the node
-        for queue_no_3 in $(seq 1 ${VF_QUEUES_PER_STEP}); do
-            queue_no="${VF_QUEUE_NO_1}-${queue_no_2}-${queue_no_3}"
+        for queue_no_3 in $(seq 1 ${queues_per_step}); do
+            queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
             echo "After (re)filling the todolists the queue ${queue_no} has ${ligands_todo[${queue_no_2}0000${queue_no_3}]} ligands todo distributed in ${queue_collection_numbers[${queue_no_2}0000${queue_no_3}]} collections."
         done
     done
