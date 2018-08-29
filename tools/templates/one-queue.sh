@@ -16,6 +16,8 @@ if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
     trap '' PIPE        # SIGPIPE = exit code 141, means broken pipe. Happens often, e.g. if head is listening and got all the lines it needs.
 fi
 # TODO: different input file format
+# TODO: Test with storing logfile
+# TODO: Test restating
 
 # Functions
 # Standard error response
@@ -265,10 +267,10 @@ clean_collection_files_tmp() {
                 # Directory preparation
                 mkdir  -p ../output-files/complete/logfiles/
                 tar -rf ../output-files/complete/logfiles/${local_ligand_collection_tranch}.tar -C ../workflow/ligand-collections/ligand-lists/ ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status || true
-                rm ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status
             fi
 
             # Cleaning up
+            rm ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status
             rm -r ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
 
         else
