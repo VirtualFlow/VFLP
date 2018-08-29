@@ -138,60 +138,60 @@ if [[ "${category}" = "workflow" ]]; then
     echo
     echo " Number of jobfiles in the workflow/jobfiles/main folder: $(ls ../workflow/job-files/main | wc -l)"
     if [[ "${batchsystem}" == "SLURM" || "${batchsystem}" == "LSF" ]]; then
-        echo " Number of joblines in the batch system: $(bin/sqs 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system: $(bin/sqs 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -c "" 2>/dev/null || true)"
     fi
     if [ "${batchsystem}" = "SLURM" ]; then
-        queues=$(squeue -l 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | awk '{print $2}' | sort | uniq | tr "\n" " " )
-        echo " Number of joblines in the batch system currently running: $(squeue -l 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i "RUNNING" | grep -c "" 2>/dev/null || true)"
+        queues=$(squeue -l 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | awk '{print $2}' | sort | uniq | tr "\n" " " )
+        echo " Number of joblines in the batch system currently running: $(squeue -l 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i "RUNNING" | grep -c "" 2>/dev/null || true)"
         for queue in ${queues}; do
-            echo '  * Number of joblines in queue "'"${queue}"'"'" currently running: $(squeue -l | grep "${queue}.*RUN" | grep "${VF_JOBLETTER}\-" | grep ${USER:0:8} | wc -l)"
+            echo '  * Number of joblines in queue "'"${queue}"'"'" currently running: $(squeue -l | grep "${queue}.*RUN" | grep "${job_letter}\-" | grep ${USER:0:8} | wc -l)"
         done
-        echo " Number of joblines in the batch system currently not running: $(squeue -l 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i -v "RUNNING" | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system currently not running: $(squeue -l 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i -v "RUNNING" | grep -c "" 2>/dev/null || true)"
         for queue in ${queues}; do
-            echo '  * Number of joblines in queue "'"${queue}"'"'" currently not running: $(squeue -l | grep ${USER:0:8} | grep "${VF_JOBLETTER}\-" | grep "${queue}" | grep -v RUN | wc -l)"
+            echo '  * Number of joblines in queue "'"${queue}"'"'" currently not running: $(squeue -l | grep ${USER:0:8} | grep "${job_letter}\-" | grep "${queue}" | grep -v RUN | wc -l)"
         done 
     elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
-        echo " Number of joblines in the batch system currently running: $(qstat 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i " R " | grep -c "" 2>/dev/null || true)"
-        echo " Number of joblines in the batch system currently not running: $(qstat 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i -v " R " | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system currently running: $(qstat 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i " R " | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system currently not running: $(qstat 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i -v " R " | grep -c "" 2>/dev/null || true)"
 
-        queues=$(qstat 2>/dev/null | grep "${VF_JOBLETTER}\-" 2>/dev/null | grep "${USER:0:8}" | awk '{print $6}' | sort | uniq | tr "\n" " " )
-        echo " Number of joblines in the batch system currently running: $(qstat 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i " R " | grep -c "" 2>/dev/null || true)"
+        queues=$(qstat 2>/dev/null | grep "${job_letter}\-" 2>/dev/null | grep "${USER:0:8}" | awk '{print $6}' | sort | uniq | tr "\n" " " )
+        echo " Number of joblines in the batch system currently running: $(qstat 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i " R " | grep -c "" 2>/dev/null || true)"
         for queue in ${queues}; do
-            echo '  * Number of joblines in queue "'"${queue}"'"'" currently running: $(qstat | grep ${USER:0:8} | grep "${VF_JOBLETTER}\-" | grep " R .*${queue}" | wc -l)"
+            echo '  * Number of joblines in queue "'"${queue}"'"'" currently running: $(qstat | grep ${USER:0:8} | grep "${job_letter}\-" | grep " R .*${queue}" | wc -l)"
         done
-        echo " Number of joblines in the batch system currently not running: $(qstat 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i -v " R " | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system currently not running: $(qstat 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i -v " R " | grep -c "" 2>/dev/null || true)"
         for queue in ${queues}; do
-            echo '  * Number of joblines in queue "'"${queue}"'"'" currently not running: $(qstat | grep ${USER:0:8} | grep "${queue}" | grep "${VF_JOBLETTER}\-" | grep -v " R " | wc -l)"
+            echo '  * Number of joblines in queue "'"${queue}"'"'" currently not running: $(qstat | grep ${USER:0:8} | grep "${queue}" | grep "${job_letter}\-" | grep -v " R " | wc -l)"
         done 
     elif  [ "${batchsystem}" = "LSF" ]; then
-        echo " Number of joblines in the batch system currently running: $(bin/sqs 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i "RUN" | grep -c "" 2>/dev/null || true)"
-        queues=$(bin/sqs 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | awk '{print $4}' | sort | uniq | tr "\n" " " )
+        echo " Number of joblines in the batch system currently running: $(bin/sqs 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i "RUN" | grep -c "" 2>/dev/null || true)"
+        queues=$(bin/sqs 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | awk '{print $4}' | sort | uniq | tr "\n" " " )
         for queue in ${queues}; do
-            echo ' *  Number of joblines in queue "'"${queue}"'"'" currently running: $(bin/sqs | grep "RUN.*${queue}" | grep "${VF_JOBLETTER}\-" | wc -l)"
+            echo ' *  Number of joblines in queue "'"${queue}"'"'" currently running: $(bin/sqs | grep "RUN.*${queue}" | grep "${job_letter}\-" | wc -l)"
         done
-        echo " Number of joblines in the batch system currently not running: $(bin/sqs 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i -v "RUN" | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system currently not running: $(bin/sqs 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i -v "RUN" | grep -c "" 2>/dev/null || true)"
         for queue in ${queues}; do
-            echo ' *  Number of joblines in queue "'"${queue}"'"'" currently not running: $(bin/sqs | grep  -v "RUN" | grep "${queue}" | grep "${VF_JOBLETTER}\-" | wc -l)"
+            echo ' *  Number of joblines in queue "'"${queue}"'"'" currently not running: $(bin/sqs | grep  -v "RUN" | grep "${queue}" | grep "${job_letter}\-" | wc -l)"
         done
 
     elif  [ "${batchsystem}" = "SGE" ]; then
-        echo " Number of joblines in the batch system currently running: $(bin/sqs 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i " r " | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system currently running: $(bin/sqs 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i " r " | grep -c "" 2>/dev/null || true)"
         queues=$(qconf -sql)
         for queue in ${queues}; do
-            echo ' *  Number of joblines in queue "'"${queue}"'"'" currently running: $(bin/sqs | grep " r .*${queue}" | grep "${VF_JOBLETTER}\-" | wc -l)"
+            echo ' *  Number of joblines in queue "'"${queue}"'"'" currently running: $(bin/sqs | grep " r .*${queue}" | grep "${job_letter}\-" | wc -l)"
         done
-        echo " Number of joblines in the batch system currently not running: $(bin/sqs 2>/dev/null | grep "${VF_JOBLETTER}\-" | grep "${USER:0:8}" | grep -i  " qw " | grep -c "" 2>/dev/null || true)"
+        echo " Number of joblines in the batch system currently not running: $(bin/sqs 2>/dev/null | grep "${job_letter}\-" | grep "${USER:0:8}" | grep -i  " qw " | grep -c "" 2>/dev/null || true)"
     fi
     if [[ "$verbosity" -gt "3" ]]; then
         echo " Number of collections which are currently assigend to more than one queue: $(awk -F '.' '{print $1}' ../workflow/ligand-collections/current/* 2>/dev/null | sort -S 80% | uniq -c | grep " [2-9] " | grep -c "" 2>/dev/null || true)"
     fi
     if [[ "${batchsystem}" == "LSF" || "${batchsystem}" == "SLURM" || "{batchsystem}" == "SGE" ]]; then
         if [[ "${batchsystem}" == "SLURM" ]]; then
-            squeue -o "%.18i %.9P %.8j %.8u %.8T %.10M %.9l %.6D %R %C" | grep RUN | grep "${USER:0:8}" | grep "${VF_JOBLETTER}\-" | awk '{print $10}' > tmp/report.tmp
+            squeue -o "%.18i %.9P %.8j %.8u %.8T %.10M %.9l %.6D %R %C" | grep RUN | grep "${USER:0:8}" | grep "${job_letter}\-" | awk '{print $10}' > tmp/report.tmp
         elif [[ "${batchsystem}" == "LSF" ]]; then
-            bin/sqs | grep RUN | grep "${USER:0:8}" | grep "${VF_JOBLETTER}\-" | awk -F " *" '{print $6}' > tmp/report.tmp
+            bin/sqs | grep RUN | grep "${USER:0:8}" | grep "${job_letter}\-" | awk -F " *" '{print $6}' > tmp/report.tmp
         elif [[ "${batchsystem}" == "SGE" ]]; then
-            bin/sqs | grep " r " | grep "${USER:0:8}" | grep "${VF_JOBLETTER}\-" | awk '{print $7}' > tmp/report.tmp
+            bin/sqs | grep " r " | grep "${USER:0:8}" | grep "${job_letter}\-" | awk '{print $7}' > tmp/report.tmp
         fi
         sumCores='0'
         while IFS='' read -r line || [[ -n  "${line}" ]]; do 
