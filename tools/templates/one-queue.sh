@@ -17,7 +17,7 @@ if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
 fi
 # TODO: different input file format
 # TODO: Test with storing logfile
-# TODO: Test restating
+# TODO: Change ligand-lists/todo /current ... to subfolders
 
 # Functions
 # Standard error response
@@ -217,7 +217,8 @@ prepare_collection_files_tmp() {
 
     # Copying the required old output files if continuing old collection
     if [ "${new_collection}" == "false" ]; then
-        cp -r ../output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/
+        cp ../output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/
+        tar -xvzf ../output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/
     fi
     if [[ -f  ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status ]]; then
         mv ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status.tmp
@@ -274,11 +275,12 @@ clean_collection_files_tmp() {
             rm -r ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/ || true
 
         else
-            # Compressing the collection and saving in the complete folder
-            mkdir -p ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
+            # Compressing the collecion
+            tar -cvzf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/ ${local_ligand_collection_ID}
 
             # Copying the files which should be kept in the permanent storage location
-            cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/* ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}/
+            mkdir -p ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/
+            cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/
         fi
 
     fi
@@ -682,7 +684,7 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
             # Checking if the last ligand was in the status processing. In this case we will try to process the ligand again since the last process might have not have the chance to complete its tasks.
             if [ "${last_ligand_status}" == "processing" ]; then
-                sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status # Might not work for VFVS due to multiple replicas
+                sed -i "/${last_ligand}:processing/d" ../workflow/ligand-collections/ligand-lists/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status.tmp # Might not work for VFVS due to multiple replicas
                 next_ligand="${last_ligand}"
             else
                 next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -A 1 "${last_ligand}" | grep -v ${last_ligand} | awk -F '[/.]' '{print $2}')
