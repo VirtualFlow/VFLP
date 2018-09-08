@@ -76,7 +76,11 @@ delay_time=${6}
 folders_to_reset=${5}
 submit_mode=${4}
 job_template=${3}
-export VF_CONTROLFILE="../workflow/control/all.ctrl"
+if [ -f ../workflow/control/all.ctrl ]; then
+    export VF_CONTROLFILE="../workflow/control/all.ctrl"
+else
+    export VF_CONTROLFILE="templates/all.ctrl"
+fi
 
 # Verbosity
 VF_VERBOSITY_COMMANDS="$(grep -m 1 "^verbosity_commands=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
