@@ -18,6 +18,8 @@ fi
 # TODO: different input file format
 # TODO: Test with storing logfile
 # TODO: Change ligand-lists/todo /current ... to subfolders
+# TODO: add ligand info into each completed collection -> creating correct sums and faster
+
 
 # Functions
 # Standard error response
@@ -217,7 +219,6 @@ prepare_collection_files_tmp() {
 
     # Copying the required old output files if continuing old collection
     if [ "${new_collection}" == "false" ]; then
-        cp ../output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/
         tar -xvzf ../output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/
     fi
     if [[ -f  ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status ]]; then
@@ -269,6 +270,13 @@ clean_collection_files_tmp() {
                 mkdir  -p ../output-files/complete/logfiles/
                 tar -rf ../output-files/complete/logfiles/${local_ligand_collection_tranch}.tar -C ../workflow/ligand-collections/ligand-lists/ ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status || true
             fi
+
+            # Updating the ligand collection files
+            echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
+            ligands_started="$(wc -l ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
+            ligands_succeeded="$(grep -c succeeded ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
+            ligands_failed="$(grep -c failed ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
+            echo "${local_ligand_collection} was completed by queue ${VF_QUEUE_NO} on $(date). Ligands started:${ligands_started} succeeded:${ligands_succeeded} failed:${ligands_failed}" >> ../workflow/ligand-collections/done/${VF_QUEUE_NO}
 
             # Cleaning up
             rm ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status || true
@@ -708,9 +716,6 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
             if [ ! "${ligand_index}" = "1" ]; then
                clean_collection_files_tmp ${last_ligand_collection}
             fi
-            # Updating the ligand collection files
-            echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
-            echo "${last_ligand_collection} was completed by queue ${VF_QUEUE_NO} on $(date)" >> ../workflow/ligand-collections/done/${VF_QUEUE_NO}
             # Getting the next collection if there is one more
             next_ligand_collection
             prepare_collection_files_tmp

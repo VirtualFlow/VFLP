@@ -262,40 +262,15 @@ if [[ "${category}" = "workflow" ]]; then
         echo -ne " Total number of ligands: ${ligands_total}                                                 \\r"
         echo
     fi
-    
-    ligands_done=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands started: ${ligands_done} (counting tranch ${iteration}/${totalNo}) \\r"    
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(cat ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)" 
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi
-            ligands_done=$((${ligands_done} + ${noToAdd})) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))
-    done
-    
-    echo -ne " Number of ligands started: ${ligands_done}                                                     \\r"
+
+    # Ligands started
+    ligands_started="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l || true)"
+    echo -ne " Number of ligands started: ${ligands_started}"
     echo
     
-    ligands_success=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands successfully completed: ${ligands_success} (counting tranch ${iteration}/${totalNo})\\r"
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -h "succeeded" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)"
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi            
-        ligands_success=$((${ligands_success} +  noToAdd)) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))             
-    done
-    echo -ne " Number of ligands successfully completed: ${ligands_success}                                                \\r"
+    # Ligands successfully completed
+    ligands_success="$(grep -ho "succeeded:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l || true)"
+    echo -ne " Number of ligands successfully completed: ${ligands_success}"
     echo
     
     ligands_processing=0
@@ -315,21 +290,9 @@ if [[ "${category}" = "workflow" ]]; then
     echo -ne " Number of ligands in state processing: ${ligands_processing}                                               \\r"
     echo
 
-    ligands_failed=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands failed: ${ligands_failed} (counting tranch ${iteration}/${totalNo}) \\r"
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -h "failed" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l  || true)"
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi            
-            ligands_failed=$((${ligands_failed} + ${noToAdd} ))
-        done
-        iteration=$((iteration + 1))    
-    done
-    echo -ne " Number of ligands failed: ${ligands_failed}                                                              \\r"
+    # Ligands failed
+    ligands_failed="$(grep -ho "failed:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l || true)"
+    echo -ne " Number of ligands failed: ${ligands_failed}"
     echo
     echo
 
