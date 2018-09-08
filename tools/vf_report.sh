@@ -262,9 +262,99 @@ if [[ "${category}" = "workflow" ]]; then
         echo -ne " Total number of ligands: ${ligands_total}                                                 \\r"
         echo
     fi
+    
+    ligands_started=0
+    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
+    iteration=1
+    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
+        echo -ne " Number of ligands started: ${ligands_started} (counting tranch ${iteration}/${totalNo}) \\r"    
+        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
+            noToAdd="$(cat ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)" 
+            if [[ -z "${noToAdd// }" ]]; then 
+                noToAdd=0
+            fi
+            ligands_started=$((${ligands_started} + ${noToAdd})) 2>/dev/null || true
+        done
+        iteration=$((iteration + 1))
+    done
+    noToAdd="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+    if [[ -z "${noToAdd// }" ]]; then
+        noToAdd=0
+    fi
+    ligands_started=$((ligands_started+noToAdd)) 2>/dev/null || true
+    echo -ne " Number of ligands started: ${ligands_started}                                                     \\r"
+    echo
+    
+    ligands_success=0
+    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
+    iteration=1
+    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
+        echo -ne " Number of ligands successfully completed: ${ligands_success} (counting tranch ${iteration}/${totalNo})\\r"
+        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
+            noToAdd="$(grep -h "succeeded" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)"
+            if [[ -z "${noToAdd// }" ]]; then 
+                noToAdd=0
+            fi            
+        ligands_success=$((${ligands_success} +  noToAdd)) 2>/dev/null || true
+        done
+        iteration=$((iteration + 1))             
+    done
+    noToAdd="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+    if [[ -z "${noToAdd// }" ]]; then
+        noToAdd=0
+    fi
+    ligands_success=$((ligands_success+noToAdd)) 2>/dev/null || true
+    echo -ne " Number of ligands successfully completed: ${ligands_success}                                                \\r"
+    echo
+    
+    ligands_processing=0
+    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
+    iteration=1
+    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
+        echo -ne " Number of ligands processing: ${ligands_processing} (counting tranch ${iteration}/${totalNo}) \\r"        
+        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
+            noToAdd="$(grep -h "processing" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)"
+            if [[ -z "${noToAdd// }" ]]; then 
+                noToAdd=0
+            fi            
+            ligands_processing=$((${ligands_processing} + ${noToAdd})) 2>/dev/null || true
+        done
+        iteration=$((iteration + 1))   
+    done
+    echo -ne " Number of ligands in state processing: ${ligands_processing}                                               \\r"
+    echo
+
+    ligands_failed=0
+    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
+    iteration=1
+    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
+        echo -ne " Number of ligands failed: ${ligands_failed} (counting tranch ${iteration}/${totalNo}) \\r"
+        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
+            noToAdd="$(grep -h "failed" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l  || true)"
+            if [[ -z "${noToAdd// }" ]]; then 
+                noToAdd=0
+            fi            
+            ligands_failed=$((${ligands_failed} + ${noToAdd} ))
+        done
+        iteration=$((iteration + 1))    
+    done
+    noToAdd="$(grep -ho "failed:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+    if [[ -z "${noToAdd// }" ]]; then
+        noToAdd=0
+    fi
+    ligands_failed=$((ligands_failed+noToAdd)) 2>/dev/null || true
+    echo -ne " Number of ligands failed: ${ligands_failed}                                                              \\r"
+    echo
+    echo
+
+    echo -e "\n\n"
+fi
+
+
+
 
     # Ligands started
-    ligands_started="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l || true)"
+    
     echo -ne " Number of ligands started: ${ligands_started}"
     echo
     
@@ -295,6 +385,3 @@ if [[ "${category}" = "workflow" ]]; then
     echo -ne " Number of ligands failed: ${ligands_failed}"
     echo
     echo
-
-    echo -e "\n\n"
-fi
