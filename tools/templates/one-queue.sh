@@ -273,7 +273,7 @@ clean_collection_files_tmp() {
 
             # Updating the ligand collection files
             echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
-            ligands_started="$(wc -l ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
+            ligands_started="$(wc -l < ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
             ligands_succeeded="$(grep -c succeeded ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
             ligands_failed="$(grep -c failed ../workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
             echo "${local_ligand_collection} was completed by queue ${VF_QUEUE_NO} on $(date). Ligands started:${ligands_started} succeeded:${ligands_succeeded} failed:${ligands_failed}" >> ../workflow/ligand-collections/done/${VF_QUEUE_NO}
