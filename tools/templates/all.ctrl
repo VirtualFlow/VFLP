@@ -48,7 +48,7 @@ cpus_per_queue=1
 ligands_per_queue=200000
 # used as a limit of ligands per running queue (small values only useful for testing)
 
-ligands_todo_per_queue=10000
+ligands_todo_per_queue=50000
 # used as a limit of ligands for the to-do lists
 # this value should be divisible by the next setting "ligands_todo_per_refilling_step"
 
@@ -162,8 +162,8 @@ conformation_generation=true
 #   * false
 #   * true
 
-conformation_program_1=molconvert
-conformation_program_2=obabel
+conformation_program_1=obabel
+conformation_program_2=molconvert
 # Setting only required if conformation_generation=true
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
 # Possible values:
