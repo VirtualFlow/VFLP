@@ -109,10 +109,11 @@ tempdir=/tmp
 
 # Todo: input format choice
 
-chemaxon_license_file=${HOME}/.chemaxon-license.cxl
+chemaxon_license_file=${PWD}/packages/chemaxon-license.cxl
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# Should be stored on the cluster filesystem (rather than the $HOME directory due to performance issues)
 # Possible values:
-#   * <Absolute path to license file>: Shell variables can be used such as $HOME
+#   * <Absolute path to license file>: Shell variables can be used such as $HOME or $PWD (the tools/ directory of the workflow)
 #   * none
 
 targetformat=pdbqt

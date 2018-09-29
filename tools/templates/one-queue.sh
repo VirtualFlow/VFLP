@@ -214,6 +214,16 @@ prepare_collection_files_tmp() {
     # Copying the required files
     tar -xf ${collection_folder}/${next_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz || true
     gunzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz
+
+
+    # Checking if the collection could be extracted
+    if [ ! -f ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar ]; then
+
+        # Raising an error
+        echo " * Error: The ligand collection ${next_ligand_collection_tranch}_${next_ligand_collection_ID} could not be prepared."
+        false
+    fi
+
     # Extracting all the SMILES at the same time (faster than individual for each ligand separately)
     tar -xf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}
 

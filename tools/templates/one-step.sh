@@ -94,19 +94,19 @@ export VF_TIMELIMIT_SECONDS
 pids=""
 chemaxon_license_file="$(grep -m 1 "^chemaxon_license_file=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
+# Preparing the JChem package
+mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/
+tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/ -xvzf packages/jchemsuite.tar.gz
+chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/jchemsuite/bin/*
+export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/jchemsuite/bin:$PATH"
 # Copying the ChemAxon license file if needed
 if [[ ! "${chemaxon_license_file}" == "none" ]] && [[ -n "${chemaxon_license_file}" ]]; then
 
-    # Creating the required folders
-    if [ -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/" ]; then
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/* &>/dev/null || true
-    else
-        mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/
-    fi
-    cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/license.cxl
+    # Copying the ChemAxon licence file
+    cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/license.cxl
 
-    # Adjusting the CHEMAXON environment variable
-    export CHEMAXON_LICENSE_URL="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/ChemAxon/license.cxl"
+    # Adjusting the CHEMAXON_LICENSE_URL environment variable
+    export CHEMAXON_LICENSE_URL="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/license.cxl"
 fi
 
 # Starting the individual queues
