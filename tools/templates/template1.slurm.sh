@@ -31,9 +31,12 @@
 ##SBATCH --constraint="scratch2"
 
 # Loading Modules
-module load centos6/0.0.1-fasrc01
-module load jdk/10.0.1-fasrc01
-module load openbabel/2.4.1-fasrc01
+# Odyssey
+#module load centos6/0.0.1-fasrc01
+#module load jdk/10.0.1-fasrc01
+#module load openbabel/2.4.1-fasrc01
+# O2
+#module load java
 
 # Job Information
 ##################################################################################
