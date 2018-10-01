@@ -48,7 +48,7 @@ bin/sqs > tmp/sqs.out || true
 
 # Loop for each jobfile
 counter=1
-for file in $(ls ../workflow/job-files/main/); do
+for file in $(ls -v ../workflow/job-files/main/); do
     VF_JOBLINE_NO=${file/.job}
     if ! grep -q "${VF_JOBLETTER}\-${VF_JOBLINE_NO}\." tmp/sqs.out; then
         vf_continue_jobline.sh ${VF_JOBLINE_NO} ${VF_JOBLINE_NO} ${job_template} 1
