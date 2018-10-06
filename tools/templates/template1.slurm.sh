@@ -186,7 +186,6 @@ check_queue_end2() {
     fi
 }
 
-
 # Setting important variables
 job_line=$(grep -m 1 "job-name=" $0)
 jobname=${job_line/"#SBATCH --job-name="}

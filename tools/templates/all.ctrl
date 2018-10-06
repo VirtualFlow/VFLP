@@ -36,7 +36,7 @@ queues_per_step=1
 # Not yet available for SGE (always set to 1)
 
 cpus_per_queue=1
-# Should equal the number: cpus-per-step/queues-per-step
+# Should be equal or higher than <cpus-per-step/queues-per-step>
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
 
@@ -159,6 +159,18 @@ conformation_program_2=obabel
 #   * molconvert
 #   * none (only possible for conformation_program_2)
 
+molconvert_3D_options=-3:{fast}
+# Setting only required if conformation_generation=true and one of the programs used is molconvert
+# 3D conformation generation options for molconvert.
+# See also the help text printed by molconvert for additional information
+# Possible values:
+#   * -3
+#   *  3{fine}     Find low energy conformer Leave failed fragments intact
+#           S{fast}     Fast clean, if failed, perform fine clean,
+#                       accept any generated structure (default)
+#           S{nofaulty} Same as S{fast}, but leave failed fragments intact.
+
+
 conformation_obligatory=true
 # Setting only required if conformation_generation=true
 # Possible values:
@@ -173,7 +185,7 @@ targetformat=pdbqt
 # A complete list can be obtained by running the command "obabel -L formats"
 
 
-*****************************************************************    ChemAxon Related Packages    ***************************************************************
+*******************************************************************    JChem-Related Packages    ****************************************************************
 
 jchem_package_filename=jchemsuite.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
