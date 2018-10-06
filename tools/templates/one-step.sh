@@ -69,14 +69,14 @@ source ~/.bashrc
 
 prepare_queue_files_tmp() {
     # Creating the required folders    
-    if [ -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/" ]; then
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/
+    if [ -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/" ]; then
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/
     fi
-    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues
+    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues
     
     # Copying the requires files
     if ls -1 ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* > /dev/null 2>&1; then
-        cp ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/
+        cp ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/
     fi    
 }
 
@@ -92,21 +92,72 @@ export VF_LITTLE_TIME="false";
 export VF_START_TIME_SECONDS
 export VF_TIMELIMIT_SECONDS
 pids=""
-chemaxon_license_file="$(grep -m 1 "^chemaxon_license_file=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_state_generation="$(grep -m 1 "^protonation_state_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_program_1="$(grep -m 1 "^protonation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_program_2="$(grep -m 1 "^protonation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_generation="$(grep -m 1 "^conformation_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_program_1="$(grep -m 1 "^conformation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_program_2="$(grep -m 1 "^conformation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
-# Preparing the JChem package
-mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/
-tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/ -xvzf packages/jchemsuite.tar.gz
-chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/jchemsuite/bin/*
-export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/jchemsuite/bin:$PATH"
-# Copying the ChemAxon license file if needed
-if [[ ! "${chemaxon_license_file}" == "none" ]] && [[ -n "${chemaxon_license_file}" ]]; then
+# Preparing the JChem and associated packages if JChem is used
+if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_1}" == "cxcalc" || "${protonation_program_2}" == "cxcalc" )) || ( "${conformation_generation}" == "true" && ( "${conformation_program_1}" == "molconvert" || "${conformation_program_2}" == "molconvert" )) ]]; then
 
-    # Copying the ChemAxon licence file
-    cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/license.cxl
+    # Preparing the JChem Package
+    chemaxon_license_file="$(grep -m 1 "^chemaxon_license_file=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    jchem_package_filename="$(grep -m 1 "^jchem_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/
+    tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/ -xvzf packages/${jchem_package_filename}
+    #chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/bin/*
+    #export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/bin:$PATH"
 
-    # Adjusting the CHEMAXON_LICENSE_URL environment variable
-    export CHEMAXON_LICENSE_URL="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/packages/chemaxon/license.cxl"
+    # Copying the ChemAxon license file if needed
+    if [[ "${chemaxon_license_file}" == "none" ]] || [[ -z "${chemaxon_license_file}" ]]; then
+
+        # Error
+        echo " Error: The ChemAxon license file was not specified, but is required..."
+
+        # Causing an error
+        error_response_std
+
+    elif [[ ! -f "${chemaxon_license_file}" ]]; then
+
+        # Error
+        echo " Error: The specified ChemAxon license file was not found..."
+
+        # Causing an error
+        error_response_std
+
+    else
+        # Copying the ChemAxon licence file
+        cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl
+
+        # Adjusting the CHEMAXON_LICENSE_URL environment variable
+        export CHEMAXON_LICENSE_URL="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl"
+    fi
+
+    # Preparing the JVM
+    java_package_filename="$(grep -m 1 "^java_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${java_package_filename}
+    export JAVA_HOME="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java"
+    chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java/bin/*
+    export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java/bin:$PATH"
+
+    # Preparing ng
+    ng_package_filename="$(grep -m 1 "^ng_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${ng_package_filename}
+    CLASSPATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-server/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/jchemsuite/lib/*"
+    chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-client/target/ng
+    export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-client/target/:$PATH"
+    # Getting the first free port (Source: https://unix.stackexchange.com/questions/55913/whats-the-easiest-way-to-find-an-unused-local-port )
+    read lowerport upperport < /proc/sys/net/ipv4/ip_local_port_range
+    while :
+    do
+        test_port="$(shuf -i $lowerport-$upperport -n 1)"
+        bin/ss -lpn | grep -q ":${test_port} " || break
+    done
+    export NG_PORT=${test_port}
+    # Starting the ng server
+    java com.martiansoftware.nailgun.NGServer $HOSTNAME:${NG_PORT} &
 fi
 
 # Starting the individual queues
@@ -115,7 +166,7 @@ for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
     export VF_QUEUE_NO="${VF_QUEUE_NO_12}-${VF_QUEUE_NO_3}"
     prepare_queue_files_tmp
     echo "Job step ${VF_STEP_NO} is starting queue ${VF_QUEUE_NO} on host $(hostname)."
-    . ../workflow/job-files/sub/one-queue.sh >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out 2>&1 &
+    source ../workflow/job-files/sub/one-queue.sh >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out 2>&1 &
     pids[$(( i - 1 ))]=$!
 done
 

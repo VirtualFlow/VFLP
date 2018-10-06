@@ -107,19 +107,6 @@ tempdir=/tmp
 *****************************************************************    Ligand Preparation Options    **************************************************************
 *****************************************************************************************************************************************************************
 
-# Todo: input format choice
-
-chemaxon_license_file=${PWD}/packages/chemaxon-license.cxl
-# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
-# Should be stored on the cluster filesystem (rather than the $HOME directory due to performance issues)
-# Possible values:
-#   * <Absolute path to license file>: Shell variables can be used such as $HOME or $PWD (the tools/ directory of the workflow)
-#   * none
-
-targetformat=pdbqt
-# Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
-# A complete list can be obtained by running the command "obabel -L formats"
-
 ***************************************************************    Protonation State Generation    **************************************************************
 
 protonation_state_generation=true
@@ -154,6 +141,7 @@ keep_ligand_summary_logs=false
 #   * false
 #   * true
 
+
 ******************************************************************    Conformation Generation    ****************************************************************
 
 conformation_generation=true
@@ -176,6 +164,49 @@ conformation_obligatory=true
 # Possible values:
 #   * true: Successful 3D conformation generation of the ligand is mandatory (unsuccessful conformation generation leads to the omission of this ligand).
 #   * false: The ligand will continue to be processed even if the conformation generation step fails.
+
+
+*****************************************************************    Target Format Generation    ****************************************************************
+
+targetformat=pdbqt
+# Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
+# A complete list can be obtained by running the command "obabel -L formats"
+
+
+*****************************************************************    ChemAxon Related Packages    ***************************************************************
+
+jchem_package_file=jchemsuite.tar.gz
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# The filename of the JChem package located in the folder tools/packages/ in the tar.gz format (available on the ChemAxon homepage)
+# The root folder in the archive has to have the name jchemsuite (normally distributed by ChemAxon in this way)
+# Possible values:
+#   * <filename>
+#   * none
+
+chemaxon_license_file=chemaxon-license.cxl
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# The filename of the license file, which has to be located in the folder tools/packages/
+# Possible values:
+#   * <filename>
+#   * none
+
+java_package_file=openjdk-11_linux-x64_bin.tar.gz
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# Any JRE binary distribution of version of at least version 8.
+# This has to be a file in the tar.gz format, which has to be located in the folder tools/packages/
+# The root folder in the archive has to have the name "java" (which will be used for the JAVA_HOME variable). Tthis normally needs to be manually changed in the Java package after downloading a JRE.
+# Possible values:
+#   * <filename>
+#   * none
+
+ng_package_file=nailgun.tar.gz
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# Nailgun package filename.
+# This has to be a file in the tar.gz format, which has to be located in the folder tools/packages/
+# The root folder in the archive has to have the name "nailgun"
+# Possible values:
+#   * <filename>
+#   * none
 
 
 *****************************************************************************************************************************************************************
