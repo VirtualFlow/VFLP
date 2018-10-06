@@ -32,7 +32,7 @@
 
 # Loading Modules
 # Odyssey
-#module load openbabel/2.4.1-fasrc01
+module load openbabel/2.4.1-fasrc01
 # O2
 #module load java
 

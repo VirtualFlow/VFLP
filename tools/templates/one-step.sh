@@ -111,7 +111,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     #export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/bin:$PATH"
 
     # Copying the ChemAxon license file if needed
-    if [[ "${chemaxon_license_file}" == "none" ]] || [[ -z "${chemaxon_license_file}" ]]; then
+    if [[ "${chemaxon_license_filename}" == "none" ]] || [[ -z "${chemaxon_license_filename}" ]]; then
 
         # Error
         echo " Error: The ChemAxon license file was not specified, but is required..."
@@ -119,7 +119,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
         # Causing an error
         error_response_std
 
-    elif [[ ! -f "${chemaxon_license_file}" ]]; then
+    elif [[ ! -f "packages/${chemaxon_license_filename}" ]]; then
 
         # Error
         echo " Error: The specified ChemAxon license file was not found..."
@@ -129,7 +129,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
 
     else
         # Copying the ChemAxon licence file
-        cp packages/${chemaxon_license_filename}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl
+        cp packages/${chemaxon_license_filename} ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl
 
         # Adjusting the CHEMAXON_LICENSE_URL environment variable
         export CHEMAXON_LICENSE_URL="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl"
@@ -145,7 +145,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     # Preparing ng
     ng_package_filename="$(grep -m 1 "^ng_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${ng_package_filename}
-    CLASSPATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-server/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/jchemsuite/lib/*"
+    export CLASSPATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-server/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/lib/*"
     chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-client/target/ng
     export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-client/target/:$PATH"
     # Getting the first free port (Source: https://unix.stackexchange.com/questions/55913/whats-the-easiest-way-to-find-an-unused-local-port )
@@ -157,7 +157,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     done
     export NG_PORT=${test_port}
     # Starting the ng server
-    java com.martiansoftware.nailgun.NGServer $HOSTNAME:${NG_PORT} &
+    java com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
 fi
 
 # Starting the individual queues

@@ -2,7 +2,7 @@
 ***************************************************************    Job Resource Configuration    ****************************************************************
 *****************************************************************************************************************************************************************
 
-job_letter=r
+job_letter=t
 # One alphabetic character (i.e. a letter from a-z or A-Z)
 # Should not be changed during runtime, and be the same for all joblines
 # Required when running VF several times on the same cluster to distinguish the jobs in the batchsystem
@@ -24,13 +24,13 @@ nodes_per_job=1
 # Not (yet) available for LSF and SGE (is always set to 1)
 # Should not be changed during runtime, and be the same for all joblines
 
-cpus_per_step=8
+cpus_per_step=1
 # sets the slurm cpus-per-task variable (task = step) in SLURM
 # in LSF this corresponds to the number of slots per node
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
 
-queues_per_step=8
+queues_per_step=1
 # sets the number of queues/processes per step
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
@@ -190,7 +190,7 @@ chemaxon_license_filename=chemaxon-license.cxl
 #   * <filename>
 #   * none
 
-java_package_filename=openjdk-11_linux-x64_bin.tar.gz
+java_package_filename=java_bin.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Any JRE binary distribution of version of at least version 8.
 # This has to be a file in the tar.gz format, which has to be located in the folder tools/packages/
