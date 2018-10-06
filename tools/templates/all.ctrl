@@ -150,8 +150,8 @@ conformation_generation=true
 #   * false
 #   * true
 
-conformation_program_1=obabel
-conformation_program_2=molconvert
+conformation_program_1=molconvert
+conformation_program_2=obabel
 # Setting only required if conformation_generation=true
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
 # Possible values:
@@ -175,7 +175,7 @@ targetformat=pdbqt
 
 *****************************************************************    ChemAxon Related Packages    ***************************************************************
 
-jchem_package_file=jchemsuite.tar.gz
+jchem_package_filename=jchemsuite.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # The filename of the JChem package located in the folder tools/packages/ in the tar.gz format (available on the ChemAxon homepage)
 # The root folder in the archive has to have the name jchemsuite (normally distributed by ChemAxon in this way)
@@ -183,14 +183,14 @@ jchem_package_file=jchemsuite.tar.gz
 #   * <filename>
 #   * none
 
-chemaxon_license_file=chemaxon-license.cxl
+chemaxon_license_filename=chemaxon-license.cxl
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # The filename of the license file, which has to be located in the folder tools/packages/
 # Possible values:
 #   * <filename>
 #   * none
 
-java_package_file=openjdk-11_linux-x64_bin.tar.gz
+java_package_filename=openjdk-11_linux-x64_bin.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Any JRE binary distribution of version of at least version 8.
 # This has to be a file in the tar.gz format, which has to be located in the folder tools/packages/
@@ -199,7 +199,7 @@ java_package_file=openjdk-11_linux-x64_bin.tar.gz
 #   * <filename>
 #   * none
 
-ng_package_file=nailgun.tar.gz
+ng_package_filename=nailgun.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Nailgun package filename.
 # This has to be a file in the tar.gz format, which has to be located in the folder tools/packages/

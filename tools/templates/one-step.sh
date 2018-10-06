@@ -103,7 +103,7 @@ conformation_program_2="$(grep -m 1 "^conformation_program_2=" ${VF_CONTROLFILE}
 if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_1}" == "cxcalc" || "${protonation_program_2}" == "cxcalc" )) || ( "${conformation_generation}" == "true" && ( "${conformation_program_1}" == "molconvert" || "${conformation_program_2}" == "molconvert" )) ]]; then
 
     # Preparing the JChem Package
-    chemaxon_license_file="$(grep -m 1 "^chemaxon_license_file=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    chemaxon_license_filename="$(grep -m 1 "^chemaxon_license_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     jchem_package_filename="$(grep -m 1 "^jchem_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/
     tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/ -xvzf packages/${jchem_package_filename}
@@ -129,7 +129,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
 
     else
         # Copying the ChemAxon licence file
-        cp $(eval echo ${chemaxon_license_file}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl
+        cp packages/${chemaxon_license_filename}) ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl
 
         # Adjusting the CHEMAXON_LICENSE_URL environment variable
         export CHEMAXON_LICENSE_URL="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl"
