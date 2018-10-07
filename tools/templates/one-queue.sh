@@ -300,9 +300,9 @@ clean_collection_files_tmp() {
             # Copying the files which should be kept in the permanent storage location
             mkdir -p ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/
             cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/
+            mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/
             cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/ || true
         fi
-
     fi
     needs_cleaning="false"
 }
@@ -538,6 +538,8 @@ targetformat="$(grep -m 1 "^targetformat=" ${VF_CONTROLFILE} | tr -d '[[:space:]
 minimum_time_remaining="$(grep -m 1 "^minimum_time_remaining=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 obabel_version="$(obabel -V | awk '{print $3}')"
 keep_ligand_summary_logs="$(grep -m 1 "^keep_ligand_summary_logs=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+ligand_check_interval="$(grep -m 1 "^ligand_check_interval=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+
 
 # Protonation settings
 protonation_state_generation="$(grep -m 1 "^protonation_state_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
@@ -738,30 +740,33 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
     fail_reason=""
 
-    # Determining the VF_CONTROLFILE to use for this jobline
-    VF_CONTROLFILE=""
-    for file in $(ls ../workflow/control/*-* 2>/dev/null|| true); do
-        file_basename=$(basename $file)
-        jobline_range=${file_basename/.*}
-        jobline_no_start=${jobline_range/-*}
-        jobline_no_end=${jobline_range/*-}
-        if [[ "${jobline_no_start}" -le "${VF_JOBLINE_NO}" && "${VF_JOBLINE_NO}" -le "${jobline_no_end}" ]]; then
-            export VF_CONTROLFILE="${file}"
-            break
+    # Checking if the current ligand index divides by ligand_check_interval
+    if [ "$((ligand_index % ligand_check_interval))" == "0" ]; then
+        # Determining the VF_CONTROLFILE to use for this jobline
+        VF_CONTROLFILE=""
+        for file in $(ls ../workflow/control/*-* 2>/dev/null|| true); do
+            file_basename=$(basename $file)
+            jobline_range=${file_basename/.*}
+            jobline_no_start=${jobline_range/-*}
+            jobline_no_end=${jobline_range/*-}
+            if [[ "${jobline_no_start}" -le "${VF_JOBLINE_NO}" && "${VF_JOBLINE_NO}" -le "${jobline_no_end}" ]]; then
+                export VF_CONTROLFILE="${file}"
+                break
+            fi
+        done
+        if [ -z "${VF_CONTROLFILE}" ]; then
+            VF_CONTROLFILE="../workflow/control/all.ctrl"
         fi
-    done
-    if [ -z "${VF_CONTROLFILE}" ]; then
-        VF_CONTROLFILE="../workflow/control/all.ctrl"
-    fi
 
-    # Checking if this queue line should be stopped immediately
-    line=$(cat ${VF_CONTROLFILE} | grep "^stop_after_current_ligand=")
-    stop_after_current_ligand=${line/"stop_after_current_ligand="}
-    if [ "${stop_after_current_ligand}" = "true" ]; then
-        echo
-        echo " * INFO: This queue will be stopped due to the stop_after_current_ligand flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
-        echo
-        end_queue 0
+        # Checking if this queue line should be stopped immediately
+        line=$(cat ${VF_CONTROLFILE} | grep "^stop_after_current_ligand_batch=")
+        stop_after_current_ligand_batch=${line/"stop_after_current_ligand_batch="}
+        if [ "${stop_after_current_ligand_batch}" = "true" ]; then
+            echo
+            echo " * INFO: This queue will be stopped due to the stop_after_current_ligand_batch flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
+            echo
+            end_queue 0
+        fi
     fi
 
     # Checking if there is enough time left for a new ligand

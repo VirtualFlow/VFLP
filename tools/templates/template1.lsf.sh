@@ -128,11 +128,11 @@ check_queue_end1() {
     fi
 
     # Checking if the queue should be stopped
-    line="$(cat ${VF_CONTROLFILE} | grep "stop_after_current_ligand=")"
-    stop_after_current_ligand=${line/"stop_after_current_ligand="}
-    if [ "${stop_after_current_ligand}" = "true" ]; then
+    line="$(cat ${VF_CONTROLFILE} | grep "stop_after_current_ligand_batch=")"
+    stop_after_current_ligand_batch=${line/"stop_after_current_ligand_batch="}
+    if [ "${stop_after_current_ligand_batch}" = "true" ]; then
         echo
-        echo "This job line was stopped by the stop_after_current_ligand flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
+        echo "This job line was stopped by the stop_after_current_ligand_batch flag in the VF_CONTROLFILE ${VF_CONTROLFILE}."
         echo
         print_job_infos_end
         exit 0

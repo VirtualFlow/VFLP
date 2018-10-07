@@ -225,11 +225,15 @@ ng_package_filename=nailgun.tar.gz
 *******************************************************************    Terminating Variables    *****************************************************************
 *****************************************************************************************************************************************************************
 
-stop_after_current_ligand=false
-# Determines whether the queue is stopped after the ligand currenty (or next) in progress
+stop_after_current_ligand_batch=false
+# Determines whether the queue is stopped after the ligand batch currenty in progress. The size of the ligand batches is determined by the <ligand_check_interval> variable.
 # Possible values:
 #   * false : The queue will continue to process ligands as long as there are ligands remaining for the queue
 #   * true : No new ligand will be started after the current ligand is completed
+
+ligand_check_interval=100
+# Possible values
+#   * Positive integer
 
 stop_after_collection=false
 # Determines whether the queue is stopped after the current collection is completed
