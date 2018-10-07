@@ -300,6 +300,7 @@ clean_collection_files_tmp() {
             # Copying the files which should be kept in the permanent storage location
             mkdir -p ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/
             cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz ../output-files/incomplete/${targetformat}/${local_ligand_collection_tranch}/
+            cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}/ || true
         fi
 
     fi
@@ -503,7 +504,7 @@ obabel_generate_targetformat() {
     # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Target format generation with obabel failed. Open Babel was interrupted by the timeout command..."
-    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 grep -i -E 'failed|timelimit|error|not found'; then
+    elif tail -n 3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|not found'; then
         echo " * Warning:  Target format generation with obabel failed. An error flag was detected in the log files..."
     elif [ ! -f ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} ]; then
         echo " * Warning: PDB generation with obabel failed. No valid PDB file was generated (empty or nonexistent)..."

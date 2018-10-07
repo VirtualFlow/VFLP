@@ -62,16 +62,16 @@ batchsystem="$(grep -m 1 "^batchsystem=" ${controlfile} | tr -d '[[:space:]]' | 
 echo -e "Syncing the jobfile of jobline ${jobline_no} with the controlfile file ${controlfile}."
 
 # Syncing the number of nodes
-nodes_per_job_new="$(grep -m 1 "^nodes_per_job=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+steps_per_job_new="$(grep -m 1 "^steps_per_job=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${batchsystem}" = "SLURM" ]; then
     job_line=$(grep -m 1 "nodes=" ../../workflow/job-files/main/${jobline_no}.job)
-    nodes_per_job_old=${job_line/"#SBATCH --nodes="}
-    sed -i "s/nodes=${nodes_per_job_old}/nodes=${nodes_per_job_new}/g" ../../workflow/job-files/main/${jobline_no}.job
+    steps_per_job_old=${job_line/"#SBATCH --nodes="}
+    sed -i "s/nodes=${steps_per_job_old}/nodes=${steps_per_job_new}/g" ../../workflow/job-files/main/${jobline_no}.job
 elif [[ "${batchsystem}" = "TORQUE" ]] || [[ "${batchsystem}" = "PBS" ]]; then
     job_line=$(grep -m 1 " -l nodes=" ../../workflow/job-files/main/${jobline_no}.job)
-    nodes_per_job_old=${job_line/"#PBS -l nodes="}
-    nodes_per_job_old=${nodes_per_job_old/:*}
-    sed -i "s/nodes=${nodes_per_job_old}:/nodes=${nodes_per_job_new}:/g" ../../workflow/job-files/main/${jobline_no}.job
+    steps_per_job_old=${job_line/"#PBS -l nodes="}
+    steps_per_job_old=${steps_per_job_old/:*}
+    sed -i "s/nodes=${steps_per_job_old}:/nodes=${steps_per_job_new}:/g" ../../workflow/job-files/main/${jobline_no}.job
 fi
 
 # Syncing the number of cpus per step

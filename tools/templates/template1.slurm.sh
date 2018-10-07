@@ -20,7 +20,7 @@
 #SBATCH --mail-user=cgorgulla@crystal.harvard.edu
 #SBATCH --mail-type=fail
 #SBATCH --time=00-12:00:00
-#SBATCH --mem-per-cpu=3000
+#SBATCH --mem-per-cpu=5G
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=main
@@ -32,7 +32,7 @@
 
 # Loading Modules
 # Odyssey
-module load openbabel/2.4.1-fasrc01
+#module load openbabel/2.4.1-fasrc01
 # O2
 #module load java
 
@@ -271,7 +271,7 @@ cd ..
 # Starting the individual steps on different nodes
 for VF_STEP_NO in $(seq 1 ${VF_NODES_PER_JOB} ); do
     export VF_STEP_NO
-    echo "Starting job step VF_STEP_NO on host $(hostname)."
+    echo "Starting job step ${VF_STEP_NO} on host $(hostname)."
     srun --relative=$((VF_STEP_NO - 1)) -n 1 -N 1 ../workflow/job-files/sub/one-step.sh &
     pids[$(( VF_STEP_NO - 0 ))]=$!
     sleep "${VF_SLEEP_TIME_1}"

@@ -1,7 +1,7 @@
 #!/bin/bash
 # ----------------------------
 #
-# Usage: . prepare-todolists.sh jobline_no nodes_per_job queues_per_step [quiet]
+# Usage: . prepare-todolists.sh jobline_no steps_per_job queues_per_step [quiet]
 #
 # Description: prepares the todolists for the queues. The tasks are taken from the central todo list ../../workflow/ligand-collections/todo/todo.all
 #
@@ -14,7 +14,7 @@
 # TODO: improve second backup mecha (copying back)
 
 # Displaying help if the first argument is -h
-usage="Usage: . prepare-todolists.sh jobline_no nodes_per_job queues_per_step [quiet]"
+usage="Usage: . prepare-todolists.sh jobline_no steps_per_job queues_per_step [quiet]"
 if [ "${1}" = "-h" ]; then
     echo "${usage}"
     return
@@ -28,7 +28,7 @@ fi
 
 # Variables
 queue_no_1="${1}"
-nodes_per_job="${2}"
+steps_per_job="${2}"
 queues_per_step="${3}"
 export LC_ALL=C
 todo_file_temp=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/todo.all
@@ -224,7 +224,7 @@ todo_new_temp_basename="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_N
 # Getting the number of ligands which are already in the local to-do lists
 ligands_todo=""
 queue_collection_numbers=""
-for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+for queue_no_2 in $(seq 1 ${steps_per_job}); do
     # Loop for each queue of the node
     for queue_no_3 in $(seq 1 ${queues_per_step}); do
 
@@ -280,7 +280,7 @@ done
 if [[ ! "$*" = *"quiet"* ]]; then
     echo "Starting the (re)filling of the todolists of the queues."
     echo
-    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+    for queue_no_2 in $(seq 1 ${steps_per_job}); do
         # Loop for each queue of the node
         for queue_no_3 in $(seq 1 ${queues_per_step}); do
             queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
@@ -298,7 +298,7 @@ no_collections_beginning=${no_collections_remaining}
 for refill_step in $(seq 1 ${no_of_refilling_steps}); do
     step_limit=$((${refill_step} * ${ligands_per_refilling_step}))
     # Loop for each node
-    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+    for queue_no_2 in $(seq 1 ${steps_per_job}); do
         # Loop for each queue of the node
         for queue_no_3 in $(seq 1 ${queues_per_step}); do
             queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
@@ -335,7 +335,7 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
 done
 
 # Adding the new collections from the temporary to-do file to the permanent one of the queue
-for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+for queue_no_2 in $(seq 1 ${steps_per_job}); do
     for queue_no_3 in $(seq 1 ${queues_per_step}); do
         queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
         cat ${todo_new_temp_basename}_${queue_no} >> ../../workflow/ligand-collections/todo/${queue_no}
@@ -345,7 +345,7 @@ done
 
 # Printing some infos about the to-do lists of this queue after the refilling
 if [[ ! "$*" = *"quiet"* ]]; then
-    for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+    for queue_no_2 in $(seq 1 ${steps_per_job}); do
         # Loop for each queue of the node
         for queue_no_3 in $(seq 1 ${queues_per_step}); do
             queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"

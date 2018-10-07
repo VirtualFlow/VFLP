@@ -20,7 +20,7 @@ timelimit=1-00:00:00
 # format for LSF: hh:mm
 # for all: always fill up with two digits per field (used be the job scripts)
 
-nodes_per_job=1
+steps_per_job=1
 # Not (yet) available for LSF and SGE (is always set to 1)
 # Should not be changed during runtime, and be the same for all joblines
 
