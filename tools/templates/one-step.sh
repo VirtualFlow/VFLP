@@ -84,7 +84,7 @@ prepare_queue_files_tmp() {
     # Copying the requires files
     if ls -1 ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* > /dev/null 2>&1; then
         cp ../workflow/output-files/queues/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/
-    fi    
+    fi
 }
 
 # Verbosity
