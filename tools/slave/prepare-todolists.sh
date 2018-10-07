@@ -228,9 +228,14 @@ for queue_no_2 in $(seq 1 ${nodes_per_job}); do
     # Loop for each queue of the node
     for queue_no_3 in $(seq 1 ${queues_per_step}); do
 
-        # Creating empty temp todo files
-        echo -n "" > ${todo_new_temp_basename}_${queue_no_2}_${queue_no_3}
+        # Variables
         queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
+
+        # TODO: checking if it works (job run on test). Read theentire listinto memory as bash array. 10K package size during refilling. Test the new ligand-list mechanism during breaks.
+
+        # Creating empty temp todo files
+        echo -n "" > ${todo_new_temp_basename}_${queue_no}
+
         ligands_todo[${queue_no_2}0000${queue_no_3}]=0
         queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=0
         # Getting the current number of the ligands to-do
