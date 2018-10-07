@@ -218,8 +218,8 @@ length_file_temp="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/pre
 cp "${length_file}" "${length_file_temp}"
 
 # Creating a temporary to-do file with the new ligand collections
-todo_new_temp="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/todo.new"
-touch ${todo_new_temp}
+todo_new_temp_basename="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/todo.new"
+
 
 # Getting the number of ligands which are already in the local to-do lists
 ligands_todo=""
@@ -227,6 +227,9 @@ queue_collection_numbers=""
 for queue_no_2 in $(seq 1 ${nodes_per_job}); do
     # Loop for each queue of the node
     for queue_no_3 in $(seq 1 ${queues_per_step}); do
+
+        # Creating empty temp todo files
+        echo -n "" > ${todo_new_temp_basename}_${queue_no_2}_${queue_no_3}
         queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
         ligands_todo[${queue_no_2}0000${queue_no_3}]=0
         queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=0
@@ -294,7 +297,6 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
         # Loop for each queue of the node
         for queue_no_3 in $(seq 1 ${queues_per_step}); do
             queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
-            cat /dev/null > ${todo_new_temp}
 
             while [ "${ligands_todo[${queue_no_2}0000${queue_no_3}]}" -lt "${step_limit}" ]; do
                 # Checking if there is one more ligand collection to be done
@@ -308,7 +310,7 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                 fi
                 # Setting some variables
                 next_ligand_collection="$(head -n 1 ${todo_file_temp})"
-                echo "${next_ligand_collection}" >> ${todo_new_temp}
+                echo "${next_ligand_collection}" >> ${todo_new_temp_basename}_${queue_no}
                 no_to_add=$(fgrep "${next_ligand_collection} " ${length_file_temp} | awk '{print $2}')
                 if ! [ "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${next_ligand_collection}. Found value is: ${no_to_add}. Exiting."
@@ -323,9 +325,16 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                 no_collections_remaining=$((no_collections_remaining-1))
                 no_collections_assigned=$((no_collections_assigned+1))
             done
-            # Adding the new collections from the temporary to-do file to the permanent one of the queue
-            cat ${todo_new_temp} >> ../../workflow/ligand-collections/todo/${queue_no}
         done
+    done
+done
+
+# Adding the new collections from the temporary to-do file to the permanent one of the queue
+for queue_no_2 in $(seq 1 ${nodes_per_job}); do
+    for queue_no_3 in $(seq 1 ${queues_per_step}); do
+        queue_no="${queue_no_1}-${queue_no_2}-${queue_no_3}"
+        cat ${todo_new_temp_basename}_${queue_no} >> ../../workflow/ligand-collections/todo/${queue_no}
+        rm ${todo_new_temp_basename}_${queue_no}
     done
 done
 
