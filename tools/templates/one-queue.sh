@@ -919,6 +919,9 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
         fi
     else
 
+        # Copying the original ligand
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+
         # Variables
         next_ligand_tautomers=${next_ligand}
 
