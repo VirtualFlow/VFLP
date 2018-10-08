@@ -64,12 +64,12 @@ another_signal() {
 trap 'time_near_limit' 1 2 3 9 15
 
 
-clean_up() {
-
-    # Removing the used temp folder folder
-    rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12} || true
-}
-trap 'clean_up' EXIT
+#clean_up() {
+#
+#    # Removing the used temp folder folder
+#    rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12} || true
+#}
+#trap 'clean_up' EXIT
 
 # Sourcing bashrc
 source ~/.bashrc
