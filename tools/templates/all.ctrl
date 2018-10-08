@@ -96,7 +96,7 @@ error_response=fail
 #   * next_job  : end this job and start new job
 #   * fail      : exit workflow with failure (exit code 1)
 
-tempdir=/tmp
+tempdir=/dev/shm
 # The directory which is used for the temporary workflow files
 # Should be a very fast filesystem not part of the distributed cluster filesystem, e.g. a local ramfs (as normally provided by ${VF_TMPDIR})
 # The directory does only need to be available on the node on which the job step/queue is running
