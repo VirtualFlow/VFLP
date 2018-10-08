@@ -107,6 +107,32 @@ tempdir=/tmp
 *****************************************************************    Ligand Preparation Options    **************************************************************
 *****************************************************************************************************************************************************************
 
+keep_ligand_summary_logs=false
+# Summary log files which show for each ligand the success status of conversion and the conversion time.
+# If the conversion failed, a reason is stated.
+# If the transformation succeeded, the conversion programs which were used are stated.
+# Possible values:
+#   * false
+#   * true
+
+
+**********************************************************************    Tautomerization    ********************************************************************
+
+tautomerization=true
+# Possible values:
+#   * false
+#   * true
+
+tautomerization_obligatory=true
+# Setting only required if tautomerization=true
+# Possible values:
+#   * true: Successful protonation of the ligand is mandatory (unsuccessful protonation leads to the omission of this ligand).
+#   * false: The ligand will continue to be processed even if the protonation step fails. This might light to protonation states which are unphysiological.
+
+cxcalc_tautomerization_options=
+# any options which should be passed to the tautomerization plugin of cxcalc
+
+
 ***************************************************************    Protonation State Generation    **************************************************************
 
 protonation_state_generation=true
@@ -132,14 +158,6 @@ protonation_obligatory=true
 protonation_pH_value=7.4
 # Setting only required if protonation_state_generation=true
 # Possible values: floating point number between 0.0 and 14.0
-
-keep_ligand_summary_logs=false
-# Summary log files which show for each ligand the success status of conversion and the conversion time.
-# If the conversion failed, a reason is stated.
-# If the transformation succeeded, the conversion programs which were used are stated.
-# Possible values:
-#   * false
-#   * true
 
 
 ******************************************************************    Conformation Generation    ****************************************************************
@@ -170,7 +188,6 @@ molconvert_3D_options=-3:{fast}
 #                       accept any generated structure (default)
 #           S{nofaulty} Same as S{fast}, but leave failed fragments intact.
 
-
 conformation_obligatory=true
 # Setting only required if conformation_generation=true
 # Possible values:
@@ -180,9 +197,10 @@ conformation_obligatory=true
 
 *****************************************************************    Target Format Generation    ****************************************************************
 
-targetformat=pdbqt
+targetformats=pdbqt
 # Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
 # A complete list can be obtained by running the command "obabel -L formats"
+# Multiple target formats can be specified by separating them with colons, e.g. pdb:sdf:pdbqt
 
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
@@ -225,7 +243,7 @@ ng_package_filename=nailgun.tar.gz
 *******************************************************************    Terminating Variables    *****************************************************************
 *****************************************************************************************************************************************************************
 
-stop_after_current_ligand_batch=false
+stop_after_next_check_interval=false
 # Determines whether the queue is stopped after the ligand batch currenty in progress. The size of the ligand batches is determined by the <ligand_check_interval> variable.
 # Possible values:
 #   * false : The queue will continue to process ligands as long as there are ligands remaining for the queue
