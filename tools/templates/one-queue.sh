@@ -921,9 +921,6 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
 
     fi
 
-    # Updating the ligand-list files
-    start_time_without_tautomerization_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    update_ligand_list_start
 
     # Variables
     pdb_protonation_remark=""
@@ -932,9 +929,13 @@ for ligand_index in $(seq 1 ${no_of_ligands}); do
     pdb_generation_remark=""
     protonation_program=""
     conformation_program=""
+    start_time_without_tautomerization_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
     # Loop for each tautomer
     for next_ligand in ${next_ligand_tautomers}; do
+
+        # Updating the ligand-list files
+        update_ligand_list_start
 
         # Protonation
         if [ "${protonation_state_generation}" == "true" ]; then
