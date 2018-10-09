@@ -88,7 +88,7 @@ next_todo_list() {
 
         # Changing the symlink
         rm ../../workflow/ligand-collections/todo/todo.all.locked
-        ln -s ../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index} ../../workflow/ligand-collections/todo/todo.all.locked
+        ln -s todo.all.${next_todo_list_index} ../../workflow/ligand-collections/todo/todo.all.locked
 
         # Copying the new todo list to temp
         cp ../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index} ${todo_file_temp}
