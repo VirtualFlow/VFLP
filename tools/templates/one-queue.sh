@@ -689,18 +689,17 @@ cat ${VF_CONTROLFILE}
 echo
 echo
 
-# Setting the number of ligands to screen in this job
-no_of_ligands="$(grep -m 1 "^ligands_per_queue=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-
 # Getting the folder where the colections are
 collection_folder="$(grep -m 1 "^collection_folder=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Loop for each ligand
-for ligand_index in $(seq 1 ${no_of_ligands}); do
+ligand_index=0
+while true; do
 
     # Variables
     new_collection="false"
     collection_complete="false"
+    ligand_index=$((ligand_index+1))
 
     # Preparing the next ligand
     # Checking if this is the first ligand at all (beginning of first ligand collection)
