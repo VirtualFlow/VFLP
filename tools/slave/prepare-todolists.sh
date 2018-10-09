@@ -177,12 +177,14 @@ while [[ "${status}" = "false" ]]; do
     fi
     if [ "${modification_time_difference}" -ge "${modification_time_treshhold}" ]; then
         date
-        if ionice -c 1 -n 0 mv ../../workflow/ligand-collections/todo/todo.all ../../workflow/ligand-collections/todo/todo.all.locked 2>/dev/null; then
+        if mv ../../workflow/ligand-collections/todo/todo.all ../../workflow/ligand-collections/todo/todo.all.locked 2>/dev/null; then
             cp ../../workflow/ligand-collections/todo/todo.all.locked ${todo_file_temp}
             current_todo_list_index="$(realpath ../../workflow/ligand-collections/todo/todo.all | xargs basename | xargs basename | awk -F '.' '{print $3}')"
             cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.${current_todo_list_index}.bak.${queue_no_1}
             status="true"
             trap 'error_response_std $LINENO' ERR
+        else
+            sleep 1."$(shuf -i 0-9 -n1)"
         fi
     else
 
