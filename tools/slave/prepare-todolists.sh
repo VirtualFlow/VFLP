@@ -146,7 +146,7 @@ clean_up() {
 #        fi
 #    fi
     cp ${todo_file_temp}  ../../workflow/ligand-collections/todo/todo.all.locked
-    ionice -c 1 -n 0 mv ../../workflow/ligand-collections/todo/todo.all.locked ../../workflow/ligand-collections/todo/todo.all
+    mv ../../workflow/ligand-collections/todo/todo.all.locked ../../workflow/ligand-collections/todo/todo.all
     rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO} || true
 }
 trap 'clean_up' EXIT
