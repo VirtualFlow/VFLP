@@ -53,6 +53,7 @@ if [[ "${1}" = "todofiles" || "${1}" = "all" ]]; then
     split -a 4 -d -l ${central_todo_list_splitting_size} ../templates/todo.all ../../workflow/ligand-collections/todo/todo.all.
     cp ../../workflow/ligand-collections/todo/todo.all.[0-9]* ../../workflow/ligand-collections/var/
     cp ../templates/todo.all ../../workflow/ligand-collections/var/todo.original
+    ln -s ../../workflow/ligand-collections/todo/todo.all.0000 ../../workflow/ligand-collections/todo/todo.all
 fi
 if [[ "${1}" = "controlfiles" || "${1}" = "all" ]]; then
     cp ../templates/all.ctrl ../../workflow/control/

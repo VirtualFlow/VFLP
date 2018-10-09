@@ -299,7 +299,7 @@ if [[ "${category}" = "workflow" ]]; then
             fi            
         ligands_success=$((${ligands_success} + noToAdd)) 2>/dev/null || true
         done
-        iteration=$((iteration + 1))             
+        iteration=$((iteration + 1))
     done
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
         noToAdd="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
