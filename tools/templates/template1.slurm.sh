@@ -140,7 +140,6 @@ check_queue_end1() {
         export VF_CONTROLFILE="../workflow/control/all.ctrl"
     fi
 
-
     # Checking if the queue should be stopped
     line="$(cat ${VF_CONTROLFILE} | grep "stop_after_next_check_interval=")"
     stop_after_next_check_interval=${line/"stop_after_next_check_interval="}

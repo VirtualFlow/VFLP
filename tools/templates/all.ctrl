@@ -45,6 +45,10 @@ cpus_per_queue=1
 *********************************************************************    Workflow Options    ********************************************************************
 *****************************************************************************************************************************************************************
 
+central_todo_list_splitting_size=100000
+# When the folders are initially prepared the first time, the central todo list will be split into pieces of size <central_todo_list_splitting_size>
+# Possible values: Positive integer
+
 ligands_todo_per_queue=50000
 # used as a limit of ligands for the to-do lists
 # this value should be divisible by the next setting "ligands_todo_per_refilling_step"

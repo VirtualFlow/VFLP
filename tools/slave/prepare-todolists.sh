@@ -74,48 +74,79 @@ termination_signal() {
 }
 trap 'termination_signal' 1 2 3 9 15
 
+
+next_todo_list() {
+
+    # Variables
+    next_todo_list_index=$(printf "%04d" $((current_todo_list_index+1)) )
+
+    # Checking if another todo file exists
+    if [ -f ../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index} ]; then
+
+        # Printing information
+        echo "The next todo list will be used (todo.all.${next_todo_list_index})"
+
+        # Changing the symlink
+        rm ../../workflow/ligand-collections/todo/todo.all.locked
+        ln -s ../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index} ../../workflow/ligand-collections/todo/todo.all.locked
+
+        # Copying the new todo list to temp
+        cp ../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index} ${todo_file_temp}
+
+        # Emptying the old todo list
+        echo -n "" > ../../workflow/ligand-collections/todo/todo.all.${current_todo_list_index}
+
+        # Changing variables
+        current_todo_list_index=${next_todo_list_index}
+    fi
+}
+trap 'termination_signal' 1 2 3 9 15
+
 # Clean up when exiting
 clean_up() {
-    # Moving the to-do.all file to its original place
-    other_todofile_exists="false"
-    if [ -f ../../workflow/ligand-collections/todo/todo.all ]; then
-        echo "Warning: The file ../../workflow/ligand-collections/todo/todo.all already exists."
-        no_of_lines_1=$(fgrep -c "" ../../workflow/ligand-collections/todo/todo.all)
-        no_of_lines_2=$(fgrep -c "" "${todo_file_temp}")
-        other_todofile_exists="true"
-        other_todofile_is_larger="false"
-        if [ "${no_of_lines_1}" -ge "${no_of_lines_2}" ]; then
-            echo "The number of lines in the found todo file is larger than in our one. Discarding our version."
-            other_todofile_is_larger="true"
-        else
-            echo "The number of lines in the found todo file is smaller than in our one. Using our version."
-        fi
-    fi
 
-    # Checking if our to-do file has size zero and the locked one is very large
-    copy_flag="true"
-    #if [[ ! -s ${todo_file_temp} ]] && [[ -f ../../workflow/ligand-collections/todo/todo.all.locked ]]; then
-    #    no_of_lines_1=$(fgrep -c "" ../../workflow/ligand-collections/todo/todo.all.locked 2>/dev/null || true)
-    #    if [[ "${no_of_lines_1}" -ge "1000" ]]; then
-    #        copy_flag="false"
-    #    fi
-    #fi
-
-    if [[ "${other_todofile_exists}" == "false"  ]] || [[ "${other_todofile_exists}" == "true" && "${other_todofile_is_larger}" == "false" ]]; then
-        if [[ -f "${todo_file_temp}" && "${copy_flag}" == "true" ]]; then
-            mv ${todo_file_temp}  ../../workflow/ligand-collections/todo/
-            echo -e "\nThe file ${todo_file_temp} has been moved back to the original folder (../../workflow/ligand-collections/todo/).\n"
-            rm ../../workflow/ligand-collections/todo/todo.all.locked || true
-
-        elif [[ -f ../../workflow/ligand-collections/todo/todo.all.locked ]]; then
-            mv ../../workflow/ligand-collections/todo/todo.all.locked ../../workflow/ligand-collections/todo/todo.all
-            echo -e "The file ../../workflow/ligand-collections/todo/todo.all.locked has been moved back to ../../workflow/ligand-collections/todo/"
-
-        else
-            echo -e "\nThe file ${todo_file_temp} could not be moved back to the original folder (../../workflow/ligand-collections/todo/)."
-            echo -e "Also the file ../../workflow/ligand-collections/todo/todo.all.locked could not be moved back to ../../workflow/ligand-collections/todo/"
-        fi
-    fi
+#    # Moving the to-do.all file to its original place
+#    other_todofile_exists="false"
+#    if [ -f ../../workflow/ligand-collections/todo/todo.all ]; then
+#        echo "Warning: The file ../../workflow/ligand-collections/todo/todo.all already exists."
+#        no_of_lines_1=$(fgrep -c "" ../../workflow/ligand-collections/todo/todo.all)
+#        no_of_lines_2=$(fgrep -c "" "${todo_file_temp}")
+#        other_todofile_exists="true"
+#        other_todofile_is_larger="false"
+#        if [ "${no_of_lines_1}" -ge "${no_of_lines_2}" ]; then
+#            echo "The number of lines in the found todo file is larger than in our one. Discarding our version."
+#            other_todofile_is_larger="true"
+#        else
+#            echo "The number of lines in the found todo file is smaller than in our one. Using our version."
+#        fi
+#    fi
+#
+#    # Checking if our to-do file has size zero and the locked one is very large
+#    copy_flag="true"
+#    #if [[ ! -s ${todo_file_temp} ]] && [[ -f ../../workflow/ligand-collections/todo/todo.all.locked ]]; then
+#    #    no_of_lines_1=$(fgrep -c "" ../../workflow/ligand-collections/todo/todo.all.locked 2>/dev/null || true)
+#    #    if [[ "${no_of_lines_1}" -ge "1000" ]]; then
+#    #        copy_flag="false"
+#    #    fi
+#    #fi
+#
+#    if [[ "${other_todofile_exists}" == "false"  ]] || [[ "${other_todofile_exists}" == "true" && "${other_todofile_is_larger}" == "false" ]]; then
+#        if [[ -f "${todo_file_temp}" && "${copy_flag}" == "true" ]]; then
+#            mv ${todo_file_temp}  ../../workflow/ligand-collections/todo/
+#            echo -e "\nThe file ${todo_file_temp} has been moved back to the original folder (../../workflow/ligand-collections/todo/).\n"
+#            rm ../../workflow/ligand-collections/todo/todo.all.locked || true
+#
+#        elif [[ -f ../../workflow/ligand-collections/todo/todo.all.locked ]]; then
+#            mv ../../workflow/ligand-collections/todo/todo.all.locked ../../workflow/ligand-collections/todo/todo.all
+#            echo -e "The file ../../workflow/ligand-collections/todo/todo.all.locked has been moved back to ../../workflow/ligand-collections/todo/"
+#
+#        else
+#            echo -e "\nThe file ${todo_file_temp} could not be moved back to the original folder (../../workflow/ligand-collections/todo/)."
+#            echo -e "Also the file ../../workflow/ligand-collections/todo/todo.all.locked could not be moved back to ../../workflow/ligand-collections/todo/"
+#        fi
+#    fi
+    cp ${todo_file_temp}  ../../workflow/ligand-collections/todo/todo.all.locked
+    ionice -c 1 -n 0 mv ../../workflow/ligand-collections/todo/todo.all.locked ../../workflow/ligand-collections/todo/todo.all
     rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO} || true
 }
 trap 'clean_up' EXIT
@@ -138,7 +169,7 @@ modification_time_treshhold_lockedfile="3600"              # one hour
 
 # Loop for hiding the todo.all file
 while [[ "${status}" = "false" ]]; do
-    modification_time=$(stat -c %Y ../../workflow/ligand-collections/todo/todo.all || true)
+    modification_time=$(stat -c %Z ../../workflow/ligand-collections/todo/todo.all || true)
     if [ "${modification_time}" -eq "${modification_time}" ]; then
         modification_time_difference="$(($(date +%s) - modification_time))"
     else
@@ -146,9 +177,10 @@ while [[ "${status}" = "false" ]]; do
     fi
     if [ "${modification_time_difference}" -ge "${modification_time_treshhold}" ]; then
         date
-        if mv ../../workflow/ligand-collections/todo/todo.all ${todo_file_temp}  2>/dev/null; then
-            cp ${todo_file_temp} ../../workflow/ligand-collections/todo/todo.all.locked
-            cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.locked.bak.${queue_no_1}
+        if ionice -c 1 -n 0 mv ../../workflow/ligand-collections/todo/todo.all ../../workflow/ligand-collections/todo/todo.all.locked 2>/dev/null; then
+            cp ../../workflow/ligand-collections/todo/todo.all.locked ${todo_file_temp}
+            current_todo_list_index="$(realpath ../../workflow/ligand-collections/todo/todo.all | xargs basename | xargs basename | awk -F '.' '{print $3}')"
+            cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.${current_todo_list_index}.bak.${queue_no_1}
             status="true"
             trap 'error_response_std $LINENO' ERR
         fi
@@ -158,7 +190,7 @@ while [[ "${status}" = "false" ]]; do
         sleep "$(shuf -i 10-30 -n1).$(shuf -i 0-9 -n1)"
         if [ -f ../../workflow/ligand-collections/todo/todo.all.locked ]; then
             # Checking the locked file
-            modification_time=$(stat -c %Y ../../workflow/ligand-collections/todo/todo.all.locked || true)
+            modification_time=$(stat -c %Z ../../workflow/ligand-collections/todo/todo.all.locked || true)
             if [ "${modification_time}" -eq "${modification_time}" ]; then
                 modification_time_difference="$(($(date +%s) - modification_time))"
             else
@@ -182,11 +214,18 @@ done
 end_time_waiting="$(date +%s)"
 
 # Checking if there are tasks left in the to-do file
-no_collections_incomplete=0
 no_collections_incomplete="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
 if [[ "${no_collections_incomplete}" = "0" ]]; then
-    echo "There is no more ligand collection in the todo.all file. Stopping the refilling procedure."
-    exit 0
+
+    # Checking if there is one more todo list
+    next_todo_list
+    no_collections_incomplete="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
+
+    # If no more new todo list, quitting
+    if [[ "${no_collections_incomplete}" = "0" ]]; then
+        echo "There is no more ligand collection in the todo.all file. Stopping the refilling procedure."
+        exit 0
+    fi
 fi
 
 # Removing empty lines
@@ -212,14 +251,8 @@ if [[ ! "$*" = *"quiet"* ]]; then
     echo
 fi
 
-# Copying the length file to tmp
-length_file="../${collection_folder}.length"
-length_file_temp="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/length"
-cp "${length_file}" "${length_file_temp}"
-
 # Creating a temporary to-do file with the new ligand collections
 todo_new_temp_basename="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/todo.new"
-
 
 # Getting the number of ligands which are already in the local to-do lists
 ligands_todo=""
@@ -241,7 +274,7 @@ for queue_no_2 in $(seq 1 ${steps_per_job}); do
         # Getting the current number of the ligands to-do
         if [ -f "../../workflow/ligand-collections/todo/${queue_no}" ]; then
             for queue_collection in $(cat ../../workflow/ligand-collections/todo/${queue_no}); do
-		        no_to_add=$(fgrep "${queue_collection} " ${length_file_temp} | awk '{print $2}')
+		        no_to_add=$(fgrep "${queue_collection} " ${todo_file_temp} | awk '{print $2}')
                 if [ ! "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_add}. Using value 0 for the length."
                     no_to_add=0
@@ -257,7 +290,7 @@ for queue_no_2 in $(seq 1 ${steps_per_job}); do
             for queue_collection in $(cat ../../workflow/ligand-collections/current/${queue_no}); do
                 queue_collection_tranch=${queue_collection/_*}
                 queue_collection_ID=${queue_collection/*_}
-                no_to_add=$(fgrep "${queue_collection} " ${length_file_temp} | awk '{print $2}')
+                no_to_add=$(fgrep "${queue_collection} " ${todo_file_temp} | awk '{print $2}')
                 if [ ! "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_add}. Using value 0 for the length."
                     no_to_add=0
@@ -306,17 +339,23 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
             while [ "${ligands_todo[${queue_no_2}0000${queue_no_3}]}" -lt "${step_limit}" ]; do
                 # Checking if there is one more ligand collection to be done
                 if [ "${no_collections_remaining}" -eq "0" ]; then
-                # Displaying some information
-                    if [[ ! "$*" = *"quiet"* ]]; then
+
+                    # Checking if there is one more todo list
+                    next_todo_list
+                    no_collections_remaining="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
+
+                    # If no more new todo list, quitting
+                    if [[ "${no_collections_remaining}" = "0" ]]; then
                         echo "There is no more ligand collection in the todo.all file. Stopping the refilling procedure."
-                        echo
+                        break 4
                     fi
-                    break 4
                 fi
+
                 # Setting some variables
-                next_ligand_collection="$(head -n 1 ${todo_file_temp})"
+                next_ligand_collection_and_length="$(head -n 1 ${todo_file_temp})"
+                next_ligand_collection=${next_ligand_collection_and_length// *}
                 echo "${next_ligand_collection}" >> ${todo_new_temp_basename}_${queue_no}
-                no_to_add=$(fgrep "${next_ligand_collection} " ${length_file_temp} | awk '{print $2}')
+                no_to_add=${next_ligand_collection_and_length//* }
                 if ! [ "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${next_ligand_collection}. Found value is: ${no_to_add}. Exiting."
                     exit 1
@@ -324,7 +363,7 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                 ligands_todo[${queue_no_2}0000${queue_no_3}]=$(( ${ligands_todo[${queue_no_2}0000${queue_no_3}]} + ${no_to_add} ))
                 queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=$((queue_collection_numbers[${queue_no_2}0000${queue_no_3}] + 1 ))
                 # Removing the new collection from the ligand-collections-to-do file
-                fgrep -v ${next_ligand_collection} ${todo_file_temp} > ${todo_file_temp}.tmp || true
+                tail -n +2 ${next_ligand_collection} ${todo_file_temp} > ${todo_file_temp}.tmp || true
                 mv ${todo_file_temp}.tmp ${todo_file_temp}
                 # Updating the variable no_collections_remaining
                 no_collections_remaining=$((no_collections_remaining-1))
