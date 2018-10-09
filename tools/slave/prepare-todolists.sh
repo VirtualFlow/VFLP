@@ -365,7 +365,7 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                 ligands_todo[${queue_no_2}0000${queue_no_3}]=$(( ${ligands_todo[${queue_no_2}0000${queue_no_3}]} + ${no_to_add} ))
                 queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=$((queue_collection_numbers[${queue_no_2}0000${queue_no_3}] + 1 ))
                 # Removing the new collection from the ligand-collections-to-do file
-                tail -n +2 ${next_ligand_collection} ${todo_file_temp} > ${todo_file_temp}.tmp || true
+                tail -n +2 ${todo_file_temp} > ${todo_file_temp}.tmp || true
                 mv ${todo_file_temp}.tmp ${todo_file_temp}
                 # Updating the variable no_collections_remaining
                 no_collections_remaining=$((no_collections_remaining-1))
