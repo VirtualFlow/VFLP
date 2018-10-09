@@ -41,12 +41,12 @@ error_response_nonstd() {
 trap 'error_response_nonstd $LINENO' ERR
 
 # Variables
-if [ -f ../workflow/control/all.ctrl ]; then
-    export VF_CONTROLFILE="../../workflow/control/all.ctrl"
+if [ -f ../../workflow/control/all.ctrl ]; then
+    controlfile="../../workflow/control/all.ctrl"
 else
-    export VF_CONTROLFILE="../templates/all.ctrl"
+    controlfile="../templates/all.ctrl"
 fi
-central_todo_list_splitting_size="$(grep -m 1 "^central_todo_list_splitting_size=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+central_todo_list_splitting_size="$(grep -m 1 "^central_todo_list_splitting_size=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 
 # Copying the template files
