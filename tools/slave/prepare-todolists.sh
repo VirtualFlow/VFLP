@@ -78,7 +78,7 @@ trap 'termination_signal' 1 2 3 9 15
 next_todo_list() {
 
     # Variables
-    next_todo_list_index=$(printf "%04d" $((current_todo_list_index+1)) )
+    next_todo_list_index=$(printf "%04d" $((10#${current_todo_list_index}+1)) )
 
     # Checking if another todo file exists
     if [ -f ../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index} ]; then
