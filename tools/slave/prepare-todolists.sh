@@ -179,7 +179,7 @@ while [[ "${status}" = "false" ]]; do
         date
         if mv ../../workflow/ligand-collections/todo/todo.all ../../workflow/ligand-collections/todo/todo.all.locked 2>/dev/null; then
             cp ../../workflow/ligand-collections/todo/todo.all.locked ${todo_file_temp}
-            current_todo_list_index="$(realpath ../../workflow/ligand-collections/todo/todo.all | xargs basename | xargs basename | awk -F '.' '{print $3}')"
+            current_todo_list_index="$(realpath ../../workflow/ligand-collections/todo/todo.all.locked | xargs basename | xargs basename | awk -F '.' '{print $3}')"
             cp ${todo_file_temp} ../../workflow/ligand-collections/var/todo.all.${current_todo_list_index}.bak.${queue_no_1}
             status="true"
             trap 'error_response_std $LINENO' ERR
