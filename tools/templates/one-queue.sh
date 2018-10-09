@@ -172,7 +172,7 @@ next_ligand_collection() {
 
         # Setting some variables
         next_ligand_collection=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $1}')
-        next_ligand_collection_length=$(head -n 2 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $1}')
+        next_ligand_collection_length=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $2}')
         next_ligand_collection_tranch="${next_ligand_collection/_*}"
         next_ligand_collection_ID="${next_ligand_collection/*_}"
         if grep -w "${next_ligand_collection}" ../workflow/ligand-collections/done/* &>/dev/null; then
