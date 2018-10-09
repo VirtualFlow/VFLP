@@ -43,6 +43,12 @@ trap 'error_response_nonstd $LINENO' ERR
 # Variables
 central_todo_list_splitting_size="$(grep -m 1 "^central_todo_list_splitting_size=" ../${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
+if [ -f ../workflow/control/all.ctrl ]; then
+    export VF_CONTROLFILE="../workflow/control/all.ctrl"
+else
+    export VF_CONTROLFILE="templates/all.ctrl"
+fi
+
 # Copying the template files
 if [[ "${1}" = "subjobfiles" || "${1}" = "all" ]]; then
     cp ../templates/one-step.sh ../../workflow/job-files/sub/
@@ -53,7 +59,7 @@ if [[ "${1}" = "todofiles" || "${1}" = "all" ]]; then
     split -a 4 -d -l ${central_todo_list_splitting_size} ../templates/todo.all ../../workflow/ligand-collections/todo/todo.all.
     cp ../../workflow/ligand-collections/todo/todo.all.[0-9]* ../../workflow/ligand-collections/var/
     cp ../templates/todo.all ../../workflow/ligand-collections/var/todo.original
-    ln -s ../../workflow/ligand-collections/todo/todo.all.0000 ../../workflow/ligand-collections/todo/todo.all
+    ln -s todo.all.0000 ../../workflow/ligand-collections/todo/todo.all
 fi
 if [[ "${1}" = "controlfiles" || "${1}" = "all" ]]; then
     cp ../templates/all.ctrl ../../workflow/control/
