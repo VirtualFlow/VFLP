@@ -171,7 +171,8 @@ next_ligand_collection() {
         fi
 
         # Setting some variables
-        next_ligand_collection=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO})
+        next_ligand_collection=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $1}')
+        next_ligand_collection_length=$(head -n 2 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $1}')
         next_ligand_collection_tranch="${next_ligand_collection/_*}"
         next_ligand_collection_ID="${next_ligand_collection/*_}"
         if grep -w "${next_ligand_collection}" ../workflow/ligand-collections/done/* &>/dev/null; then
@@ -188,7 +189,7 @@ next_ligand_collection() {
     done
 
     # Updating the ligand-collection files
-    echo "${next_ligand_collection}" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
+    echo "${next_ligand_collection} ${next_ligand_collection_length}" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
 
     if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
         echo -e "\n***************** INFO **********************"
@@ -745,7 +746,7 @@ while true; do
     # Using the old collection
     else
         # Getting the name of the current ligand collection
-        last_ligand_collection=$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO})
+        last_ligand_collection=$(awk '{print $1}' ../workflow/ligand-collections/current/${VF_QUEUE_NO})
         last_ligand_collection_tranch="${last_ligand_collection/_*}"
         last_ligand_collection_ID="${last_ligand_collection/*_}"
 

@@ -275,24 +275,30 @@ for queue_no_2 in $(seq 1 ${steps_per_job}); do
         queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=0
         # Getting the current number of the ligands to-do
         if [ -f "../../workflow/ligand-collections/todo/${queue_no}" ]; then
-            for queue_collection in $(cat ../../workflow/ligand-collections/todo/${queue_no}); do
-		        no_to_add=$(fgrep "${queue_collection} " ${todo_file_temp} | awk '{print $2}')
+            queue_collection_index=0
+            for queue_collection in $(awk '{print $1}' ../../workflow/ligand-collections/todo/${queue_no}); do
+                queue_collection_lengths=$(awk '{print $2}' ../../workflow/ligand-collections/todo/${queue_no} | tr "\n" " ")
+                queue_collection_lengths=(${queue_collection_lengths})
+		        no_to_add=${queue_collection_lengths[queue_collection_index]}
                 if [ ! "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_add}. Using value 0 for the length."
                     no_to_add=0
                 fi
                 ligands_todo[${queue_no_2}0000${queue_no_3}]=$((ligands_todo[${queue_no_2}0000${queue_no_3}] + ${no_to_add} ))
                 queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=$((queue_collection_numbers[${queue_no_2}0000${queue_no_3}] + 1 ))
+                queue_collection_index=$((queue_collection_index+1))
             done
         else
         # If no local to-do list exists create one
-        touch ../../workflow/ligand-collections/todo/${queue_no}
+            touch ../../workflow/ligand-collections/todo/${queue_no}
         fi
         if [ -f "../../workflow/ligand-collections/current/${queue_no}" ]; then
-            for queue_collection in $(cat ../../workflow/ligand-collections/current/${queue_no}); do
+            queue_collection_index=0
+            for queue_collection in $(awk '{print $1}' ../../workflow/ligand-collections/current/${queue_no}); do
                 queue_collection_tranch=${queue_collection/_*}
                 queue_collection_ID=${queue_collection/*_}
-                no_to_add=$(fgrep "${queue_collection} " ${todo_file_temp} | awk '{print $2}')
+                queue_collection_lengths=$(awk '{print $2}' ../../workflow/ligand-collections/current/${queue_no} | tr "\n" " ")
+                no_to_add=${queue_collection_lengths[queue_collection_index]}
                 if [ ! "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${queue_collection}. Found value is: ${no_to_add}. Using value 0 for the length."
                     no_to_add=0
@@ -356,7 +362,7 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                 # Setting some variables
                 next_ligand_collection_and_length="$(head -n 1 ${todo_file_temp})"
                 next_ligand_collection=${next_ligand_collection_and_length// *}
-                echo "${next_ligand_collection}" >> ${todo_new_temp_basename}_${queue_no}
+                echo "${next_ligand_collection_and_length}" >> ${todo_new_temp_basename}_${queue_no}
                 no_to_add=${next_ligand_collection_and_length//* }
                 if ! [ "${no_to_add}" -eq "${no_to_add}" ]; then
                     echo " * Warning: Could not get the length of collection ${next_ligand_collection}. Found value is: ${no_to_add}. Exiting."
