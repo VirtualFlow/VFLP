@@ -165,7 +165,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     done
     export NG_PORT=${test_port}
     # Starting the ng server
-    java Xmx${java_max_heap_size}G com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
+    java -Xmx${java_max_heap_size}G com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
 fi
 
 # Starting the individual queues
