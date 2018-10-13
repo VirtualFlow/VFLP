@@ -239,6 +239,11 @@ ng_package_filename=nailgun.tar.gz
 #   * <filename>
 #   * none
 
+java_max_heap_size=5
+# Size in GB
+# Recommended: 5-20 GB
+# This value also depends on how many queues are run per step (and thus per JVM/NG server)
+
 
 *****************************************************************************************************************************************************************
 *******************************************************************    Terminating Variables    *****************************************************************

@@ -311,22 +311,22 @@ if [[ "${category}" = "workflow" ]]; then
     echo -ne " Number of ligands successfully completed: ${ligands_success}                                                \\r"
     echo
     
-    ligands_processing=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands processing: ${ligands_processing} (counting tranch ${iteration}/${totalNo}) \\r"        
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -h "processing" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)"
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi            
-            ligands_processing=$((${ligands_processing} + ${noToAdd})) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))   
-    done
-    echo -ne " Number of ligands in state processing: ${ligands_processing}                                               \\r"
-    echo
+#    ligands_processing=0
+#    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
+#    iteration=1
+#    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
+#        echo -ne " Number of ligands processing: ${ligands_processing} (counting tranch ${iteration}/${totalNo}) \\r"
+#        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
+#            noToAdd="$(grep -h "processing" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)"
+#            if [[ -z "${noToAdd// }" ]]; then
+#                noToAdd=0
+#            fi
+#            ligands_processing=$((${ligands_processing} + ${noToAdd})) 2>/dev/null || true
+#        done
+#        iteration=$((iteration + 1))
+#    done
+#    echo -ne " Number of ligands in state processing: ${ligands_processing}                                               \\r"
+#    echo
 
     ligands_failed=0
     totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
