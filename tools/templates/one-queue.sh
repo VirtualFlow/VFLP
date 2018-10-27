@@ -308,7 +308,7 @@ clean_collection_files_tmp() {
                 mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/
                 tar -cvzf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/ ${local_ligand_collection_ID}
                 local_ligand_collection_length="$(ls ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} | wc -l)"
-                echo ${local_ligand_collection_length} >> ../output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.length
+                echo "${local_ligand_collection}" "${local_ligand_collection_length}" >> ../output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.length
 
                 # Adding the completed collection archive to the tranch archive
                 mkdir  -p ../output-files/complete/${targetformat}/${local_ligand_collection_metatranch}
