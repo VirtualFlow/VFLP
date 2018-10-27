@@ -397,7 +397,7 @@ cxcalc_tautomerize() {
         echo " * Warning: Tautomeriization with cxcalc failed. cxcalc was interrupted by the timeout command..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found'; then
         echo " * Warning: Tautomeriization with cxcalc failed. An error flag was detected in the log files..."
-    elif [[ -z tautomer_smiles ]]; then
+    elif [[ -z ${tautomer_smiles} ]]; then
         echo " * Warning: Tautomeriization with cxcalc failed. No valid SMILES were generated..."
     else
         echo " * Info: Ligand successfully tautomerized by cxcalc."
