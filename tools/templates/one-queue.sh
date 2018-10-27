@@ -395,7 +395,10 @@ cxcalc_tautomerize() {
     # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Tautomeriization with cxcalc failed. cxcalc was interrupted by the timeout command..."
-    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found|non-zero|refused'; then
+    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'Connection refused'; then
+        echo " * Error: The Nailgun server seems to have terminated..."
+        error_response_std $LINENO
+    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found|non-zero'; then
         echo " * Warning: Tautomeriization with cxcalc failed. An error flag was detected in the log files..."
     elif [[ -z ${tautomer_smiles} ]]; then
         echo " * Warning: Tautomeriization with cxcalc failed. No valid SMILES were generated..."
