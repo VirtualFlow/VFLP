@@ -247,7 +247,7 @@ prepare_collection_files_tmp() {
 
 
     # Copying the required files
-    tar -xf ${collection_folder}/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz || true
+    tar -xf ${collection_folder}/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/ ${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz
     gunzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar.gz
 
 
@@ -310,7 +310,7 @@ clean_collection_files_tmp() {
 
                 # Adding the completed collection archive to the tranch archive
                 mkdir  -p ../output-files/complete/${targetformat}/
-                tar -rf ../output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat} /${local_ligand_collection_metatranch}${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz || true
+                tar -rf ../output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranch} ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz || true
             done
 
             # Checking if we should keep the ligand log summary files
@@ -318,7 +318,7 @@ clean_collection_files_tmp() {
 
                 # Directory preparation
                 mkdir  -p ../output-files/complete/logfiles/
-                tar -rf ../output-files/complete/logfiles/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/ ${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status || true
+                tar -rf ../output-files/complete/logfiles/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/ ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status || true
             fi
 
             # Updating the ligand collection files
@@ -716,32 +716,18 @@ while true; do
     # Checking the conditions for using a new collection
     if [[ "${queue_collection_file_exists}" = "false" ]] || [[ "${queue_collection_file_exists}" = "true" && ! "$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} | tr -d '[:space:]')" ]]; then
 
-        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
-            echo -e "\n***************** INFO **********************"
-            echo ${VF_QUEUE_NO}
-            ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-            cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-            cat ../workflow/ligand-collections/todo/${VF_QUEUE_NO} 2>/dev/null || true
-            echo -e "***************** INFO END ******************\n"
-        fi
+#        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
+#            echo -e "\n***************** INFO **********************"
+#            echo ${VF_QUEUE_NO}
+#            ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
+#            cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
+#            cat ../workflow/ligand-collections/todo/${VF_QUEUE_NO} 2>/dev/null || true
+#            echo -e "***************** INFO END ******************\n"
+#        fi
+
         next_ligand_collection
-        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
-            echo -e "\n***************** INFO **********************"
-            echo ${VF_QUEUE_NO}
-            ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-            cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-            cat ../workflow/ligand-collections/todo/${VF_QUEUE_NO} 2>/dev/null || true
-            echo -e "***************** INFO END ******************\n"
-        fi
         prepare_collection_files_tmp
-        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
-            echo -e "\n***************** INFO **********************"
-            echo ${VF_QUEUE_NO}
-            ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-            cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-            cat ../workflow/ligand-collections/todo/${VF_QUEUE_NO} 2>/dev/null || true
-            echo -e "***************** INFO END ******************\n"
-        fi
+
         # Getting the name of the first ligand of the first collection
         next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
 
@@ -757,7 +743,7 @@ while true; do
         if [ "${ligand_index}" = "1" ]; then
             # Extracting the last ligand collection
             mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/
-            tar -xf ${collection_folder}/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/ ${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
+            tar -xf ${collection_folder}/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/ ${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
             gunzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
             # Extracting all the SMILES at the same time (faster)
             tar -xf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}
