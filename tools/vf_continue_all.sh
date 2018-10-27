@@ -43,6 +43,7 @@ if [ "${VF_VERBOSITY_COMMANDS}" = "debug" ]; then
 fi
 
 # Body
+mkdir -p tmp
 cat /dev/null > tmp/sqs.out
 bin/sqs > tmp/sqs.out || true
 
