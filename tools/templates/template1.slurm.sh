@@ -284,7 +284,7 @@ for pid in ${pids[@]}; do
     wait $pid || let "exit_code=1"
 done
 if [ "$exit_code" == "1" ]; then
-    error_response_std
+    error_response_std $LINENO
 fi
 
 
