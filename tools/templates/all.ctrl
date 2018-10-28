@@ -206,6 +206,12 @@ targetformats=pdbqt
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
+obabel_memory_limit=500000
+# In KB
+# Recommended value: >= 500000
+
+*******************************************************************    JChem-Related Packages    ****************************************************************
+
 jchem_package_filename=jchemsuite.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # The filename of the JChem package located in the folder tools/packages/ in the tar.gz format (available on the ChemAxon homepage)
