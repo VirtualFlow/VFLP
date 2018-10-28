@@ -165,7 +165,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     done
     export NG_PORT=${test_port}
     # Starting the ng server
-    java -Xmx${java_max_heap_size}G -XX:+HeapDumpOnOutOfMemoryError -XX:OnErrorLog -Xlog:gc*:file=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -Xlog:all=warning:file=${PWD}/java.warning.${VF_QUEUE_NO_12}.log com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
+    java -Xmx${java_max_heap_size}G -XX:+HeapDumpOnOutOfMemoryError -XX:OnOutOfMemoryError -XX:OnError -Xlog:gc*:file=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -Xlog:all=warning:file=${PWD}/java.warning.${VF_QUEUE_NO_12}.log com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
     sleep 10 # Loading the ng server takes a few seconds
 fi
 
