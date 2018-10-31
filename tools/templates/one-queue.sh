@@ -80,58 +80,32 @@ trap 'clean_queue_files_tmp' EXIT RETURN
 
 # Writing the ID of the next ligand to the current ligand list
 update_ligand_list_start() {
-    echo "${next_ligand}:processing" >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
-}
-
-update_ligand_list_end_fail() {
 
     # Variables
-    fail_reason="${1}"
-    total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_without_tautomerization_ms}))"
+    start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing.*/${next_ligand}:failed:(${fail_reason}):${total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
+    echo "${next_ligand} processing" >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
+}
+
+update_ligand_list_end() {
+
+    # Variables
+    success="${1}" # true or false
+    ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
+
+    # Updating the ligand-list file
+    perl -pi -e "s/${next_ligand} processing.*/${next_ligand} ${ligand_list_entry} total-time:${total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
-    echo "Ligand ${next_ligand} failed on on $(date)."
-    echo "Total time for this ligand in ms: $(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
+    if [ "${success}" == "true" ]; then
+        echo "Ligand ${next_ligand} completed successfully on $(date)."
+    else
+        echo "Ligand ${next_ligand} failed on on $(date)."
+    fi
+    echo "Total time for this ligand (${next_ligand}) in ms: ${total_time_ms}"
     echo
-}
-
-update_ligand_list_end_fail_tautomerization() {
-
-    # Variables
-    tautomerization_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
-
-    # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing.*/${next_ligand}:failed (tautomerization):${tautomerization_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
-
-}
-
-update_ligand_list_end_success() {
-
-    # Variables
-    total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_without_tautomerization_ms}))"
-
-    # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing.*/${next_ligand}:succeeded:${protonation_program}:${conformation_program}:${total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
-
-    # Printing some information
-    echo
-    echo "Ligand ${next_ligand} completed successfully on $(date)."
-    echo "Total time for this ligand in ms: ${total_time_ms}"
-    echo
-}
-
-update_ligand_list_end_success_tautomerization() {
-
-    # Variables
-    tautomerization_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${start_time_ms}))"
-
-    # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand}:processing.*/${next_ligand}:succeeded (tautomerization):${tautomerization_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
-
 }
 
 # Obtaining the next ligand collection.
@@ -216,6 +190,16 @@ prepare_collection_files_tmp() {
         mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
     elif [ "$(ls -A "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}")" ]; then
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
+    fi
+    if [ ! -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
+        mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
+    elif [ "$(ls -A "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}")" ]; then
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
+    fi
+    if [ ! -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
+        mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
+    elif [ "$(ls -A "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}")" ]; then
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/*
     fi
     if [ ! -d "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}" ]; then
         mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}
@@ -325,10 +309,10 @@ clean_collection_files_tmp() {
 
             # Updating the ligand collection files
             echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
-            ligands_started="$(wc -l < ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
             ligands_succeeded_tautomerization="$(grep succeeded ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status | grep -c tautomerization)"
             ligands_succeeded_conversion="$(grep succeeded ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status | grep -vc tautomerization)"
             ligands_failed="$(grep -c failed ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status)"
+            ligands_started=$((ligands_succeeded_conversion+ligands_failed))
             echo "${local_ligand_collection} was completed by queue ${VF_QUEUE_NO} on $(date). Ligands started:${ligands_started} succeeded(tautomerization):${ligands_succeeded_tautomerization} succeeded(conversion):${ligands_succeeded_conversion} failed:${ligands_failed}" >> ../workflow/ligand-collections/done/${VF_QUEUE_NO}
 
             # Cleaning up
@@ -383,16 +367,120 @@ check_pdb_coordinates() {
     fi
 }
 
+# Desalting
+desalt() {
+
+
+    # Number of fragments in SMILES
+    number_of_smiles_fragments="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tr "." "\n" | wc -l)"
+
+    # Checking the number of fragments
+    if [[ "${number_of_smiles_fragments}" -ge "2" ]]; then
+
+        # Carrying out the desalting
+        trap '' ERR
+        desalted_smiles_largest_fragment="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tr "." "\n" | perl -e 'print sort { length($a) <=> length($b) } <>' | tail -n 1)"
+        desalted_smiles_smallest_fragment="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tr "." "\n" | perl -e 'print sort { length($a) <=> length($b) } <>' | head -n 1)"
+        last_exit_code=$?
+        trap 'error_response_std $LINENO' ERR
+
+        # Checking if the desalting was successful
+        if [ "${last_exit_code}" -ne "0" ]; then
+            echo " * Warning: Desalting has failed. Desalting procedure resulted in a non-zero exit code..."
+        elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found|non-zero'; then
+            echo " * Warning: Desalting has failed. An error flag was detected in the log files..."
+        elif [[ -z ${desalted_smiles_largest_fragment} ]]; then
+            echo " * Warning: Desalting has failed. No valid SMILES were generated..."
+        else
+
+            # Printing some information
+            echo " * Info: Ligand successfully desalted."
+
+            # Variables
+            desalting_success="true"
+            desalting_type="genuine"
+            pdb_desalting_remark="REMARK    The ligand was desalted by extracting the largest organic fragment (out of ${number_of_smiles_fragments}) from the original structure."
+
+            # Storing each tautomer SMILES in a file and storing the new ligand names
+            echo ${desalted_smiles_largest_fragment} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}_T${tautomer_index}.smi
+        fi
+    elif [[ "${number_of_smiles_fragments}" -eq "1" ]]; then
+
+        # Printing some information
+        echo " * Info: Ligand was not a salt, leaving it untouched."
+
+        # Variables
+        desalting_success="true"
+        desalting_type="untouched"
+        pdb_desalting_remark="REMARK    The ligand was originally not a salt, therefore no desalting was carried out."
+
+        # Nothing to extract, just copying the structure
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}_T${tautomer_index}.smi
+    else
+
+        # Printing some information
+        echo " * Warning: Could not determine the number of fragments. Desalting failed..."
+    fi
+}
+
+standardizer_neutralize() {
+
+    # Checking if the charged counterion
+    charged_counterion=false
+    if echo ${desalted_smiles_smallest_fragment} | grep -c -E "\-\]|\+\]"; then
+        charged_counterion="true"
+    fi
+
+    # Checking type of neutralization mode
+    neutralization_flag="false"
+    if [[ "${neutralization_mode}" == "always" ]]; then
+        neutralization_flag="true"
+    elif [[ "${neutralization_mode}" == "if_genuine_desalting" && "${number_of_smiles_fragments}" -ge "2" ]]; then
+        neutralization_flag="true"
+    elif [[ "${neutralization_mode}" == "if_genuine_desalting_and_charged" && "${number_of_smiles_fragments}" -ge "2" && "${charged_counterion}" == "true" ]]; then
+        neutralization_flag="true"
+    fi
+
+    # Checking if conversion successful
+    if [ ${neutralization_flag} == "true" ]; then
+
+        # Carrying out the neutralization
+        trap '' ERR
+        timeout 300 bin/time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of cxcalc (user real system): %U %e %S"  ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.standardizer.StandardizerCLI ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi -c "neutralize" | tail -n 1 > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+        last_exit_code=$?
+        trap 'error_response_std $LINENO' ERR
+
+        if [ "${last_exit_code}" -ne "0" ]; then
+            echo " * Warning: Neutralization with Standardizer failed. Standardizer was interrupted by the timeout command..."
+        elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 4 | grep "refused"; then
+            echo " * Error: The Nailgun server seems to have terminated..."
+            error_response_std $LINENO
+        elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found'; then
+            echo " * Warning: Neutralization with Standardizer failed. An error flag was detected in the log files..."
+        elif [[ ! -s  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
+            echo " * Warning: Neutralization with Standardizer failed. No valid SMILES file was generated..."
+        else
+            echo " * Info: Ligand successfully neutralized by Standardizer."
+            neutralizationn_success="true"
+            pdb_neutralization_remark="REMARK    The compound was neutralized by Standardizer version ${standardizer_version} of ChemAxons JChem Suite."
+            neutralization_type="genuine"
+        fi
+    else
+        # Variables
+        neutralization_type="untouched"
+    fi
+}
+
 # Protonation with cxcalc
 cxcalc_tautomerize() {
 
-    # Carrying out the protonation
+    # Carrying out the tautomerization
     trap '' ERR
     tautomer_smiles=$(timeout 300 bin/time_bin -a -o "${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out" -f "\nTimings of cxcalc (user real system): %U %e %S"  ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator tautomers ${cxcalc_tautomerization_options} ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk -F ' ' '{print $2}' | tr "." " ")
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
-    # Checking if conversion successful
+    # Checking if the tautomerization was successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Tautomeriization with cxcalc failed. cxcalc was interrupted by the timeout command..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 4 | grep "refused"; then
@@ -401,7 +489,7 @@ cxcalc_tautomerize() {
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found|non-zero'; then
         echo " * Warning: Tautomeriization with cxcalc failed. An error flag was detected in the log files..."
     elif [[ -z ${tautomer_smiles} ]]; then
-        echo " * Warning: Tautomeriization with cxcalc failed. No valid SMILES were generated..."
+        echo " * Warning: Tautomerization with cxcalc failed. No valid SMILES were generated..."
     else
         echo " * Info: Ligand successfully tautomerized by cxcalc."
         tautomerization_success="true"
@@ -431,6 +519,9 @@ cxcalc_protonate() {
     # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Protonation with cxcalc failed. cxcalc was interrupted by the timeout command..."
+    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 4 | grep "refused"; then
+        echo " * Error: The Nailgun server seems to have terminated..."
+        error_response_std $LINENO
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found'; then
         echo " * Warning: Protonation with cxcalc failed. An error flag was detected in the log files..."
     elif [[ ! -s  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
@@ -481,6 +572,9 @@ molconvert_generate_conformation() {
     # Checking if conversion successful
     if [ "${last_exit_code}" -ne "0" ]; then
         echo " * Warning: Conformation generation with molconvert failed. Molconvert was interrupted by the timeout command..."
+    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 4 | grep "refused"; then
+        echo " * Error: The Nailgun server seems to have terminated..."
+        error_response_std $LINENO
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out | grep -v "^+" | tail -n 3 | grep -i -E'failed|timelimit|error|no such file|not found' &>/dev/null; then
         echo " * Warning: Conformation generation with molconvert failed. An error flag was detected in the log files..."
     elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
@@ -623,6 +717,33 @@ keep_ligand_summary_logs="$(grep -m 1 "^keep_ligand_summary_logs=" ${VF_CONTROLF
 ligand_check_interval="$(grep -m 1 "^ligand_check_interval=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 obabel_memory_limit="$(grep -m 1 "^obabel_memory_limit=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
+
+# Desalting
+desalting="$(grep -m 1 "^desalting=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+if [ "${desalting}" == "true" ]; then
+
+    # Variables
+    desalting_obligatory="$(grep -m 1 "^desalting_obligatory=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+fi
+
+# Neutralization
+neutralization="$(grep -m 1 "^neutralization=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+if [ "${neutralization}" == "true" ]; then
+
+    # Variables
+    neutralization_mode="$(grep -m 1 "^neutralization_mode=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    neutralization_obligatory="$(grep -m 1 "^neutralization_obligatory=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    standardizer_version="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.standardizer.StandardizerCLI -h | head -n 1 | awk -F '[ ,]' '{print $2}')"
+
+    # Checking variable values
+    if [[ ( "${neutralization_mode}" == "if_genuine_desalting" || "${neutralization_mode}" == "if_genuine_desalting_and_charged" ) && ! "${desalting}" == "true" ]]; then
+
+        # Printing some information
+        echo -e " Error: The value (${neutralization_mode}) of the variable neutralization_mode requires desalting to be enabled, but it is disabled."
+        error_response_std $LINENO
+    fi
+fi
+
 # Tautomerization settings
 tautomerization="$(grep -m 1 "^tautomerization=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${tautomerization}" == "true" ]; then
@@ -651,10 +772,10 @@ if [ "${protonation_state_generation}" == "true" ]; then
     # Checking some variables
     if [[ "${protonation_program_1}" !=  "cxcalc" ]] && [[ "${protonation_program_1}" !=  "obabel" ]]; then
         echo -e " Error: The value (${protonation_program_1}) for protonation_program_1 which was specified in the controlfile is invalid..."
-        error_response_std
+        error_response_std $LINENO
     elif [[ "${protonation_program_2}" !=  "cxcalc" ]] && [[ "${protonation_program_2}" !=  "obabel" ]] && [[ "${protonation_program_2}" ==  "none" ]]; then
         echo -e " Error: The value (${protonation_program_2}) for protonation_program_2 which was specified in the controlfile is invalid..."
-        error_response_std
+        error_response_std $LINENO
     fi
 fi
 
@@ -675,10 +796,10 @@ if [ "${conformation_generation}" == "true" ]; then
     # Checking some variables
     if [[ "${conformation_program_1}" !=  "molconvert" ]] && [[ "${conformation_program_1}" !=  "obabel" ]]; then
         echo -e " Error: The value (${conformation_program_1}) for conformation_program_1 which was specified in the controlfile is invalid..."
-        error_response_std
+        error_response_std $LINENO
     elif [[ "${conformation_program_2}" !=  "molconvert" ]] && [[ "${conformation_program_2}" !=  "obabel" ]] && [[ "${protonation_program_2}" ==  "none" ]]; then
         echo -e " Error: The value (${conformation_program_2}) for conformation_program_2 which was specified in the controlfile is invalid..."
-        error_response_std
+        error_response_std $LINENO
     fi
 fi
 
@@ -817,9 +938,6 @@ while true; do
     echo ""
 
     # Setting up variables
-    start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    fail_reason=""
-
     # Checking if the current ligand index divides by ligand_check_interval
     if [ "$((ligand_index % ligand_check_interval))" == "0" ]; then
         # Determining the VF_CONTROLFILE to use for this jobline
@@ -864,12 +982,121 @@ while true; do
         end_queue 0
     fi
 
-    # Tautomer generation
-    pdb_tautuomerization_remark=""
-    if [ "${tautomerization}" == "true" ]; then
 
-        # Updating the ligand-list files
-        update_ligand_list_start
+    # Updating the ligand-list files
+    ligand_list_entry=""
+    update_ligand_list_start
+
+    # Desalting
+    pdb_desalting_remark=""
+    if [ "${desalting}" == "true" ]; then
+
+        # Variables
+        desalting_success="false"
+
+        # Printing information
+        echo " * Info: Starting the desalting step."
+
+        # Carrying out the desalting step
+        desalt
+
+        # Checking if the desalting has failed
+        if [ "${desalting_success}" == "false" ]; then
+
+            # Printing information
+            echo " * Warning: The desalting has failed."
+
+            # Updating the ligand-list entry
+            ligand_list_entry="${ligand_list_entry} desalting:failed"
+
+            # Checking if desalting is mandatory
+            if [ "${desalting_obligatory}" == "true" ]; then
+
+                # Printing some information
+                echo " * Warning: Ligand will be skipped since a successful desalting is required according to the controlfile."
+
+                # Updating the ligand list
+                update_ligand_list_end
+
+                # Skipping the ligand
+                continue
+
+            else
+                # Printing some information
+                echo " * Warning: Ligand will be further processed without desalting"
+
+                # Copying the original ligand
+                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+            fi
+        else
+
+            # Adjusting the ligand-list file
+            ligand_list_entry="${ligand_list_entry} desalting:success(${desalting_type})"
+        fi
+    else
+
+        # Copying the original ligand
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+
+    fi
+
+
+    # Neutralization
+    pdb_neutralization_remark=""
+    if [ "${neutralization}" == "true" ]; then
+
+        # Variables
+        neutralization_success="false"
+
+        # Printing information
+        echo " * Info: Starting the neutralization step"
+
+        # Carrying out the neutralization step
+        standardizer_neutralize
+
+        # Checking if the neutralization has failed
+        if [ "${neutralization_success}" == "false" ]; then
+
+            # Printing information
+            echo " * Warning: The neutralization has failed."
+
+            # Adjusting the ligand-list file
+            ligand_list_entry="${ligand_list_entry} neutralization:failed"
+
+            # Checking if neutralization is mandatory
+            if [ "${neutralization_obligatory}" == "true" ]; then
+
+                # Printing some information
+                echo " * Warning: Ligand will be skipped since a successful neutralization is required according to the controlfile."
+
+                # Updating the ligand list
+                update_ligand_list_end
+
+                # Skipping the ligand
+                continue
+            else
+
+                # Printing some information
+                echo " * Warning: Ligand will be further processed without neutralization"
+
+                # Copying the original ligand
+                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+            fi
+        else
+
+            # Adjusting the ligand-list file
+            ligand_list_entry="${ligand_list_entry} neutralization:success(${neutralization_type})"
+        fi
+    else
+
+        # Copying the original ligand
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+
+    fi
+
+    # Tautomer generation
+    pdb_tautomerization_remark=""
+    if [ "${tautomerization}" == "true" ]; then
 
         # Variables
         tautomerization_success="false"
@@ -887,13 +1114,16 @@ while true; do
             echo " * Warning: The tautomerization has failed."
 
             # Adjusting the ligand-list file
-            update_ligand_list_end_fail_tautomerization
+            ligand_list_entry="${ligand_list_entry} tautomerization:failed"
 
             # Checking if tautomerization is mandatory
             if [ "${tautomerization_obligatory}" == "true" ]; then
 
                 # Printing some information
                 echo " * Warning: Ligand will be skipped since a successful tautomerization is required according to the controlfile."
+
+                # Updating the ligand list
+                update_ligand_list_end
 
                 # Skipping the ligand
                 continue
@@ -910,8 +1140,8 @@ while true; do
             fi
         else
 
-            # Updating the ligand list file
-            update_ligand_list_end_success_tautomerization
+            # Adjusting the ligand-list file
+            ligand_list_entry="${ligand_list_entry} tautomerization:success"
         fi
     else
 
@@ -923,26 +1153,26 @@ while true; do
 
     fi
 
-
-    # Variables
-    pdb_protonation_remark=""
-    pdb_conformation_remark=""
-    pdb_generation_remark=""
-    pdb_generation_remark=""
-    protonation_program=""
-    conformation_program=""
-    start_time_without_tautomerization_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    # Checking if we have more than one tautomer
+    next_ligand_tautomers_count=${#next_ligand_tautomers[@]}
+    if [ "${next_ligand_tautomers_count}" -ge "1" ]; then
+        update_ligand_list_end
+    fi
 
     # Loop for each tautomer
     for next_ligand in ${next_ligand_tautomers}; do
 
-        # Updating the ligand-list files
-        update_ligand_list_start
+        # Starting a new entry for each tautomer in the ligand-list log files if we have more than one tautomer
+        if [ "${next_ligand_tautomers_count}" -ge "1" ]; then
+            update_ligand_list_start
+        fi
 
         # Protonation
         if [ "${protonation_state_generation}" == "true" ]; then
 
             # Variables
+            pdb_protonation_remark=""
+            protonation_program=""
             protonation_success="false"
 
             # Printing information
@@ -982,6 +1212,9 @@ while true; do
             # Checking if both of the protonation attempts have failed
             if [ "${protonation_success}" == "false" ]; then
 
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} protonation:failed"
+
                 # Printing information
                 echo " * Warning: Both protonation attempts have failed."
 
@@ -991,8 +1224,8 @@ while true; do
                     # Printing some information
                     echo " * Warning: Ligand will be skipped since a successful protonation is required according to the controlfile."
 
-                    # Updating the ligand list
-                    update_ligand_list_end_fail "protonation"
+                    # Updating the ligand-list status file
+                    update_ligand_list_end
 
                     # Skipping the ligand
                     continue
@@ -1003,15 +1236,15 @@ while true; do
 
                     # Variables
                     pdb_protonation_remark="REMARK    WARNING: Molecule was not protonated at physiological pH (protonation with both obabel and cxcalc has failed)"
-                    protonation_program="protonation failed"
 
                     # Copying the unprotonated ligand
                     cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/protomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
                 fi
+            else
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} protonation:success(${protonation_program}"
             fi
-        else
-            # Variables
-            protonation_program="none (protonation disabled)"
         fi
 
 
@@ -1019,6 +1252,8 @@ while true; do
         if [ "${conformation_generation}" == "true" ]; then
 
             # Variables
+            pdb_conformation_remark=""
+            conformation_program=""
             conformation_success="false"
 
             # Printing information
@@ -1061,6 +1296,9 @@ while true; do
                 # Printing information
                 echo " * Warning: Both of the 3D conformation generation attempts have failed."
 
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} conformation:failed"
+
                 # Checking if conformation generation is mandatory
                 if [ "${conformation_obligatory}" == "true" ]; then
 
@@ -1068,7 +1306,7 @@ while true; do
                     echo " * Warning: Ligand will be skipped since a successful 3D conformation generation is required according to the controlfile."
 
                     # Updating the ligand list
-                    update_ligand_list_end_fail "3D conformation"
+                    update_ligand_list_end
 
                     # Skipping the ligand
                     continue
@@ -1079,17 +1317,19 @@ while true; do
 
                     # Variables
                     pdb_conformation_remark="REMARK    WARNING: 3D conformation could not be generated (both obabel and molconvert failed)"
-                    conformation_program="conformation generation failed"
                 fi
+
+            else
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} conformation:success(${conformation_program}"
             fi
-        else
-            # Variables
-            conformation_program="none (conformation-generation disabled)"
         fi
 
 
         # PDB generation
         # If conformation generation failed, and we reached this point, then conformation_obligatory=false, so we do not need to check this
+        pdb_generation_remark=""
         if [[ "${conformation_generation}" == "false" ]] || [[ "${conformation_success}" == "false" ]]; then
 
 
@@ -1105,14 +1345,22 @@ while true; do
             # Checking if PDB generation attempt has failed
             if [ "${pdb_generation_success}" == "false" ]; then
 
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} pdb-generation:failed"
+
                 # Printing some information
                 echo " * Warning: Ligand will be skipped since a successful PDB generation is mandatory."
 
                 # Updating the ligand list
-                update_ligand_list_end_fail "PDB generation"
+                update_ligand_list_end
 
                 # Skipping the ligand
                 continue
+            else
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} pdb-generation:success"
+
             fi
         fi
 
@@ -1133,17 +1381,23 @@ while true; do
             # Checking if the target format generation has failed
             if [ "${targetformat_generation_success}" == "false" ]; then
 
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} targetformat(${targetformat})-generation):failed"
+
                 # Updating the ligand list
-                update_ligand_list_end_fail "target format generation (${targetformat})"
+                update_ligand_list_end
 
                 # Skipping the ligand
-                # TODO: only skipping the failed target format. Needs reformatting of the ligand-lists status log files (one entry for each target format)
-                continue 2
+                continue 1
+            else
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} targetformat(${targetformat})-generation):success"
             fi
         done
 
         # Updating the ligand list
-        update_ligand_list_end_success
+        update_ligand_list_end
 
         # Variables
         needs_cleaning="true"

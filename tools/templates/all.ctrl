@@ -117,6 +117,43 @@ keep_ligand_summary_logs=false
 #   * true
 
 
+*************************************************************************    Desalting    ***********************************************************************
+
+desalting=true
+# If true, extracts the largest organic part of the molecule
+# Possible values:
+#   * false
+#   * true
+
+desalting_obligatory=false
+# Setting only required if desalting=true
+# Possible values:
+#   * true: Successful desalting of the ligand is mandatory (unsuccessful desalting leads to the omission of this ligand).
+#   * false: The ligand will continue to be processed even if the desalting step fails.
+
+
+***********************************************************************    Neutralization    ********************************************************************
+
+neutralization=true
+# Neutralizes molecules using JChem's Standardizer of ChemAxon
+# Possible values:
+#   * false
+#   * true
+
+neutralization_mode=after_desalting_if_charged
+# Only relevant if neutralization=true
+# Possible values:
+#   * always: always neutralize the molecule
+#   * if_genuine_desalting: only neutralize the molecule if the input structure contained more than one component
+#   * if_genuine_desalting_and_charged: only neutralize if the input structure contained more than one component and if the smallest component contained an ion
+
+neutralization_obligatory=false
+# Setting only required if neutralization=true
+# Possible values:
+#   * true: Successful neutralization of the ligand is mandatory (unsuccessful neutralization leads to the omission of this ligand).
+#   * false: The ligand will continue to be processed even if the neutralization step fails.
+
+
 **********************************************************************    Tautomerization    ********************************************************************
 
 tautomerization=true
@@ -127,8 +164,8 @@ tautomerization=true
 tautomerization_obligatory=true
 # Setting only required if tautomerization=true
 # Possible values:
-#   * true: Successful protonation of the ligand is mandatory (unsuccessful protonation leads to the omission of this ligand).
-#   * false: The ligand will continue to be processed even if the protonation step fails. This might light to protonation states which are unphysiological.
+#   * true: Successful tautomerization of the ligand is mandatory (unsuccessful tautomerization leads to the omission of this ligand).
+#   * false: The ligand will continue to be processed even if the tautomerization step fails.
 
 cxcalc_tautomerization_options=
 # any options which should be passed to the tautomerization plugin of cxcalc
@@ -183,11 +220,10 @@ molconvert_3D_options=-3:{fast}
 # 3D conformation generation options for molconvert.
 # See also the help text printed by molconvert for additional information
 # Possible values:
-#   * -3
+#   * -3           Defaults to value 3{fast}
 #   *  3{fine}     Find low energy conformer Leave failed fragments intact
-#           S{fast}     Fast clean, if failed, perform fine clean,
-#                       accept any generated structure (default)
-#           S{nofaulty} Same as S{fast}, but leave failed fragments intact.
+#   *  3{fast}     Fast clean, if failed, perform fine clean, accept any generated structure (default)
+#   *  3{nofaulty} Same as S{fast}, but leave failed fragments intact.
 
 conformation_obligatory=true
 # Setting only required if conformation_generation=true
@@ -204,11 +240,12 @@ targetformats=pdbqt
 # Multiple target formats can be specified by separating them with colons, e.g. pdb:sdf:pdbqt
 
 
-*******************************************************************    JChem-Related Packages    ****************************************************************
+*************************************************************************    Open Babel    **********************************************************************
 
 obabel_memory_limit=500000
 # In KB
 # Recommended value: >= 500000
+
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
@@ -247,8 +284,8 @@ ng_package_filename=nailgun.tar.gz
 
 java_max_heap_size=5
 # Size in GB
-# Recommended: 5-20 GB
-# This value also depends on how many queues are run per step (and thus per JVM/NG server)
+# Recommended: >= 1 GB * queues_per_step
+# The required memory depends mainly on how many queues are run per step (and thus per JVM/NG server), since one JVM is used per step
 
 
 *****************************************************************************************************************************************************************
