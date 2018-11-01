@@ -96,7 +96,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand} processing.*/${next_ligand} ${ligand_list_entry} total-time:${total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand} processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -105,7 +105,7 @@ update_ligand_list_end() {
     else
         echo "Ligand ${next_ligand} failed on on $(date)."
     fi
-    echo "Total time for this ligand (${next_ligand}) in ms: ${total_time_ms}"
+    echo "Total time for this ligand (${next_ligand}) in ms: ${ligand_total_time_ms}"
     echo
 }
 
@@ -177,7 +177,7 @@ next_ligand_collection() {
     fi
 
     # Creating the subfolder in the ligand-lists folder
-    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_tranch}
+    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists
 
     # Printing some information
     echo "The new ligand collection is ${next_ligand_collection}."
@@ -462,7 +462,7 @@ standardizer_neutralize() {
             echo " * Warning: Neutralization with Standardizer failed. No valid SMILES file was generated..."
         else
             echo " * Info: Ligand successfully neutralized by Standardizer."
-            neutralizationn_success="true"
+            neutralization_success="true"
             pdb_neutralization_remark="REMARK    The compound was neutralized by Standardizer version ${standardizer_version} of ChemAxons JChem Suite."
             neutralization_type="genuine"
         fi
@@ -1019,7 +1019,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful desalting is required according to the controlfile."
 
                 # Updating the ligand list
-                update_ligand_list_end
+                update_ligand_list_end false
 
                 # Skipping the ligand
                 continue
@@ -1073,7 +1073,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful neutralization is required according to the controlfile."
 
                 # Updating the ligand list
-                update_ligand_list_end
+                update_ligand_list_end false
 
                 # Skipping the ligand
                 continue
@@ -1126,7 +1126,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful tautomerization is required according to the controlfile."
 
                 # Updating the ligand list
-                update_ligand_list_end
+                update_ligand_list_end false
 
                 # Skipping the ligand
                 continue
@@ -1159,7 +1159,7 @@ while true; do
     # Checking if we have more than one tautomer
     next_ligand_tautomers_count=${#next_ligand_tautomers[@]}
     if [ "${next_ligand_tautomers_count}" -ge "1" ]; then
-        update_ligand_list_end
+        update_ligand_list_end true
     fi
 
     # Loop for each tautomer
@@ -1228,7 +1228,7 @@ while true; do
                     echo " * Warning: Ligand will be skipped since a successful protonation is required according to the controlfile."
 
                     # Updating the ligand-list status file
-                    update_ligand_list_end
+                    update_ligand_list_end false
 
                     # Skipping the ligand
                     continue
@@ -1246,7 +1246,7 @@ while true; do
             else
 
                 # Adjusting the ligand-list file
-                ligand_list_entry="${ligand_list_entry} protonation:success(${protonation_program}"
+                ligand_list_entry="${ligand_list_entry} protonation:success(${protonation_program})"
             fi
         fi
 
@@ -1309,7 +1309,7 @@ while true; do
                     echo " * Warning: Ligand will be skipped since a successful 3D conformation generation is required according to the controlfile."
 
                     # Updating the ligand list
-                    update_ligand_list_end
+                    update_ligand_list_end false
 
                     # Skipping the ligand
                     continue
@@ -1325,7 +1325,7 @@ while true; do
             else
 
                 # Adjusting the ligand-list file
-                ligand_list_entry="${ligand_list_entry} conformation:success(${conformation_program}"
+                ligand_list_entry="${ligand_list_entry} conformation:success(${conformation_program})"
             fi
         fi
 
@@ -1355,7 +1355,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful PDB generation is mandatory."
 
                 # Updating the ligand list
-                update_ligand_list_end
+                update_ligand_list_end false
 
                 # Skipping the ligand
                 continue
@@ -1385,22 +1385,17 @@ while true; do
             if [ "${targetformat_generation_success}" == "false" ]; then
 
                 # Adjusting the ligand-list file
-                ligand_list_entry="${ligand_list_entry} targetformat(${targetformat})-generation):failed"
+                ligand_list_entry="${ligand_list_entry} targetformat-generation(${targetformat}):failed"
 
-                # Updating the ligand list
-                update_ligand_list_end
-
-                # Skipping the ligand
-                continue 1
-            else
+           else
 
                 # Adjusting the ligand-list file
-                ligand_list_entry="${ligand_list_entry} targetformat(${targetformat})-generation):success"
+                ligand_list_entry="${ligand_list_entry} targetformat-generation(${targetformat}):success"
             fi
         done
 
         # Updating the ligand list
-        update_ligand_list_end
+        update_ligand_list_end true
 
         # Variables
         needs_cleaning="true"
