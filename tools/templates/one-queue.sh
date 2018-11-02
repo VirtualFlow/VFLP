@@ -101,9 +101,9 @@ update_ligand_list_end() {
     # Printing some information
     echo
     if [ "${success}" == "true" ]; then
-        echo "Ligand ${next_ligand} completed successfully on $(date)."
+        echo "Ligand ${next_ligand} completed successfully ($2) on $(date)."
     else
-        echo "Ligand ${next_ligand} failed on on $(date)."
+        echo "Ligand ${next_ligand} failed ($2) on on $(date)."
     fi
     echo "Total time for this ligand (${next_ligand}) in ms: ${ligand_total_time_ms}"
     echo
@@ -1020,7 +1020,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful desalting is required according to the controlfile."
 
                 # Updating the ligand list
-                update_ligand_list_end false
+                update_ligand_list_end false "during desalting"
 
                 # Skipping the ligand
                 continue
@@ -1074,7 +1074,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful neutralization is required according to the controlfile."
 
                 # Updating the ligand list
-                update_ligand_list_end false
+                update_ligand_list_end false "during neutralization"
 
                 # Skipping the ligand
                 continue
@@ -1127,7 +1127,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful tautomerization is required according to the controlfile."
 
                 # Updating the ligand list
-                update_ligand_list_end false
+                update_ligand_list_end false "during tautomerization"
 
                 # Skipping the ligand
                 continue
@@ -1159,8 +1159,8 @@ while true; do
 
     # Checking if we have more than one tautomer
     next_ligand_tautomers_count=${#next_ligand_tautomers[@]}
-    if [ "${next_ligand_tautomers_count}" -ge "1" ]; then
-        update_ligand_list_end true
+    if [ "${next_ligand_tautomers_count}" -gt "1" ]; then
+        update_ligand_list_end true "up to tautomerization"
     fi
 
     # Loop for each tautomer
@@ -1229,7 +1229,7 @@ while true; do
                     echo " * Warning: Ligand will be skipped since a successful protonation is required according to the controlfile."
 
                     # Updating the ligand-list status file
-                    update_ligand_list_end false
+                    update_ligand_list_end false "during protonation"
 
                     # Skipping the ligand
                     continue
@@ -1310,7 +1310,7 @@ while true; do
                     echo " * Warning: Ligand will be skipped since a successful 3D conformation generation is required according to the controlfile."
 
                     # Updating the ligand list
-                    update_ligand_list_end false
+                    update_ligand_list_end false "during conformation generation"
 
                     # Skipping the ligand
                     continue
@@ -1356,7 +1356,7 @@ while true; do
                 echo " * Warning: Ligand will be skipped since a successful PDB generation is mandatory."
 
                 # Updating the ligand list
-                update_ligand_list_end false
+                update_ligand_list_end false "during PDB generation"
 
                 # Skipping the ligand
                 continue
@@ -1396,7 +1396,7 @@ while true; do
         done
 
         # Updating the ligand list
-        update_ligand_list_end true
+        update_ligand_list_end true "up to conversion"
 
         # Variables
         needs_cleaning="true"
