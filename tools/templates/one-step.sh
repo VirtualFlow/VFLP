@@ -124,7 +124,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
         echo " Error: The ChemAxon license file was not specified, but is required..."
 
         # Causing an error
-        error_response_std
+        error_response_std $LINENO
 
     elif [[ ! -f "packages/${chemaxon_license_filename}" ]]; then
 
@@ -132,7 +132,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
         echo " Error: The specified ChemAxon license file was not found..."
 
         # Causing an error
-        error_response_std
+        error_response_std $LINENO
 
     else
         # Copying the ChemAxon licence file
@@ -144,11 +144,34 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
 
     # Preparing the JVM
     java_package_filename="$(grep -m 1 "^java_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    java_max_heap_size="$(grep -m 1 "^java_max_heap_size=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${java_package_filename}
-    export JAVA_HOME="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java"
-    chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java/bin/*
-    export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java/bin:$PATH"
+
+    if [[ ${java_package_filename} != "none" ]]; then
+        if [[ -f ${java_package_filename} ]]; then
+            java_max_heap_size="$(grep -m 1 "^java_max_heap_size=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+            tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${java_package_filename}
+
+            # Checking the folder structure
+            if [ ! -d ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java/ ]; then
+
+                # Error
+                echo " Error: The root folder of the java package does not seem to have the name \'java\', which is required..."
+
+                # Causing an error
+                error_response_std $LINENO
+            fi
+
+            export JAVA_HOME="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java"
+            chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java/bin/*
+            export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/java/bin:$PATH"
+        else
+
+            # Error
+            echo " Error: The specified Java file was not found..."
+
+            # Causing an error
+            error_response_std $LINENO
+        fi
+    fi
 
     # Preparing ng
     ng_package_filename="$(grep -m 1 "^ng_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"

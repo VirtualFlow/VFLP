@@ -428,7 +428,7 @@ standardizer_neutralize() {
 
     # Checking if the charged counterion
     charged_counterion=false
-    if echo ${desalted_smiles_smallest_fragment} | grep -c -E "\-\]|\+\]"; then
+    if echo ${desalted_smiles_smallest_fragment} | grep -c -E "\-\]|\+\] >/dev/null"; then
         charged_counterion="true"
     fi
 

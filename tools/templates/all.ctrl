@@ -267,8 +267,9 @@ chemaxon_license_filename=chemaxon-license.cxl
 java_package_filename=java_bin.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Any JRE binary distribution of version of at least version 8.
+# If java is provided by the system (e.g. by loading a module), then no Java package needs to be provided.
 # This has to be a file in the tar.gz format, which has to be located in the folder tools/packages/
-# The root folder in the archive has to have the name "java" (which will be used for the JAVA_HOME variable). Tthis normally needs to be manually changed in the Java package after downloading a JRE.
+# The root folder in the archive has to have the name "java" (which will be used for the JAVA_HOME variable). This normally needs to be manually changed in the Java package after downloading a JRE.
 # Possible values:
 #   * <filename>
 #   * none
