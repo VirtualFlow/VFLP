@@ -147,7 +147,6 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
 
     if [[ ${java_package_filename} != "none" ]]; then
         if [[ -f ${java_package_filename} ]]; then
-            java_max_heap_size="$(grep -m 1 "^java_max_heap_size=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
             tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${java_package_filename}
 
             # Checking the folder structure
@@ -174,6 +173,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     fi
 
     # Preparing ng
+    java_max_heap_size="$(grep -m 1 "^java_max_heap_size=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     ng_package_filename="$(grep -m 1 "^ng_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${ng_package_filename}
     export CLASSPATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-server/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/lib/*"
