@@ -188,10 +188,8 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     done
     export NG_PORT=${test_port}
     # Starting the ng server
-    # Java 10/11
-    #java -Xmx${java_max_heap_size}G -XX:+HeapDumpOnOutOfMemoryError -XX:OnOutOfMemoryError="echo %p" -XX:OnError="echo %p" -Xlog:gc*:file=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -Xlog:all=warning:file=${PWD}/java.warning.${VF_QUEUE_NO_12}.log com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
-    # Java 8
-    # -Xmx${java_max_heap_size}G -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -XX:-PrintConcurrentLocks -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${PWD}/java.gc.${VF_QUEUE_NO_12}.log
+    # Java 10/11 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:OnOutOfMemoryError="echo %p" -XX:OnError="echo %p" -Xlog:gc*:file=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -Xlog:all=warning:file=${PWD}/java.warning.${VF_QUEUE_NO_12}.log
+    # Java 8 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -XX:-PrintConcurrentLocks -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${PWD}/java.gc.${VF_QUEUE_NO_12}.log
     java -Xmx${java_max_heap_size}G com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
     sleep 10 # Loading the ng server takes a few seconds
 fi

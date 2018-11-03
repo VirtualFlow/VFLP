@@ -264,7 +264,7 @@ chemaxon_license_filename=chemaxon-license.cxl
 #   * <filename>
 #   * none
 
-java_package_filename=java_bin.tar.gz
+java_package_filename=java11_bin.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Any JRE binary distribution of version of at least version 8.
 # If java is provided by the system (e.g. by loading a module), then no Java package needs to be provided.
