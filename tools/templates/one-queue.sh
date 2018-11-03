@@ -1161,7 +1161,7 @@ while true; do
         else
 
             # Adjusting the ligand-list file
-            next_ligand_tautomers_count=${#next_ligand_tautomers[@]}
+            next_ligand_tautomers_count=$(echo ${next_ligand_tautomers} | wc -w)
             ligand_list_entry="${ligand_list_entry} tautomerization(${next_ligand_tautomers_count}):success"
         fi
     else
@@ -1175,7 +1175,7 @@ while true; do
     fi
 
     # Checking if we have more than one tautomer
-    next_ligand_tautomers_count=${#next_ligand_tautomers[@]}
+    next_ligand_tautomers_count=$(echo ${next_ligand_tautomers} | wc -w)
     if [ "${next_ligand_tautomers_count}" -gt "1" ]; then
         update_ligand_list_end true "up to tautomerization"
     fi
