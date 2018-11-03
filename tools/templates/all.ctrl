@@ -75,11 +75,11 @@ dispersion_time_max=40
 # Each job has to wait a random amount of time in the dispersion interval.
 # The effect of this is that when two jobs arrive at the same time at the central task list, the random waiting time will disperse their access on the central task list in time
 
-verbosity_commands=debug
+verbosity_commands=standard
 # Possible values: standard, debug
 # This option mainly effects the screen output and the logfiles
 
-verbosity_logfiles=debug
+verbosity_logfiles=standard
 # Possible values:
 #   * standard
 #   * debug : activates the set -x option

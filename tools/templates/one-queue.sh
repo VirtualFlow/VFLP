@@ -96,7 +96,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand} processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand/_T*} processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -298,6 +298,10 @@ clean_collection_files_tmp() {
                 # Adding the completed collection archive to the tranch archive
                 mkdir  -p ../output-files/complete/${targetformat}/${local_ligand_collection_metatranch}
                 tar -rf ../output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranch} ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz || true
+
+                # Cleaning up
+                rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz 2>&1 > /dev/null || true
+
             done
 
             # Checking if we should keep the ligand log summary files
@@ -316,9 +320,6 @@ clean_collection_files_tmp() {
             ligands_started=$((ligands_succeeded_conversion+ligands_failed))
             echo "${local_ligand_collection} was completed by queue ${VF_QUEUE_NO} on $(date). Ligands started:${ligands_started} succeeded(tautomerization):${ligands_succeeded_tautomerization} succeeded(conversion):${ligands_succeeded_conversion} failed:${ligands_failed}" >> ../workflow/ligand-collections/done/${VF_QUEUE_NO}
 
-            # Cleaning up
-            rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status 2>&1 > /dev/null || true
-
         else
             # Loop for each target format
             for targetformat in ${targetformats//:/ }; do
@@ -332,7 +333,22 @@ clean_collection_files_tmp() {
 
             mkdir -p ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/
             cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/ || true
+
         fi
+
+        # Cleaning up
+        rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status 2>&1 > /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} 2>&1 > /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} 2>&1 > /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} 2>&1 > /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} 2>&1 > /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID} 2>&1 > /dev/null || true
+
+        # Cleaning up
+        for targetformat in ${targetformats//:/ }; do
+            rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} 2>&1 > /dev/null || true
+        done
+
     fi
     needs_cleaning="false"
 }
@@ -1145,7 +1161,8 @@ while true; do
         else
 
             # Adjusting the ligand-list file
-            ligand_list_entry="${ligand_list_entry} tautomerization:success"
+            next_ligand_tautomers_count=${#next_ligand_tautomers[@]}
+            ligand_list_entry="${ligand_list_entry} tautomerization(${next_ligand_tautomers_count}):success"
         fi
     else
 
@@ -1396,7 +1413,11 @@ while true; do
         done
 
         # Updating the ligand list
-        update_ligand_list_end true "up to conversion"
+        if [ "${next_ligand_tautomers_count}" -eq "1" ]; then
+            update_ligand_list_end true "complet pipeline"
+        elif [ "${next_ligand_tautomers_count}" -gt "1" ]; then
+            update_ligand_list_end true "after tautomerization"
+        fi
 
         # Variables
         needs_cleaning="true"
