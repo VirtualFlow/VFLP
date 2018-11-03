@@ -146,7 +146,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     java_package_filename="$(grep -m 1 "^java_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
     if [[ ${java_package_filename} != "none" ]]; then
-        if [[ -f ${java_package_filename} ]]; then
+        if [[ -f packages/${java_package_filename} ]]; then
             tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${java_package_filename}
 
             # Checking the folder structure
@@ -165,7 +165,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
         else
 
             # Error
-            echo " Error: The specified Java file was not found..."
+            echo " Error: The Java package file (java_package_filename=${java_package_filename}) which was specified in the relevant controlfile (${VF_CONTROLFILE}) was was not found..."
 
             # Causing an error
             error_response_std $LINENO

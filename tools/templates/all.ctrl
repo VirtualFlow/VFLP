@@ -11,27 +11,27 @@ batchsystem=SLURM
 # Possible values: SLURM, TOQRUE, PBS, LSF, SGE
 
 partition=shared
-# also called queue
+# Partitions are also called queues in some batchsystems
 
 timelimit=1-00:00:00
-# format for slurm: dd-hh:mm:ss
-# format for TORQUE and PBS: hh:mm:ss
-# format for SGE: hh:mm:ss
-# format for LSF: hh:mm
-# for all: always fill up with two digits per field (used be the job scripts)
+# Format for slurm: dd-hh:mm:ss
+# Format for TORQUE and PBS: hh:mm:ss
+# Format for SGE: hh:mm:ss
+# Format for LSF: hh:mm
+# For all batchsystems: always fill up with two digits per field (used be the job scripts)
 
 steps_per_job=1
 # Not (yet) available for LSF and SGE (is always set to 1)
 # Should not be changed during runtime, and be the same for all joblines
 
 cpus_per_step=8
-# sets the slurm cpus-per-task variable (task = step) in SLURM
-# in LSF this corresponds to the number of slots per node
+# Sets the slurm cpus-per-task variable (task = step) in SLURM
+# In LSF this corresponds to the number of slots per node
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
 
 queues_per_step=16
-# sets the number of queues/processes per step
+# Sets the number of queues/processes per step
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
 
@@ -45,21 +45,24 @@ cpus_per_queue=1
 *********************************************************************    Workflow Options    ********************************************************************
 *****************************************************************************************************************************************************************
 
-central_todo_list_splitting_size=100000
-# When the folders are initially prepared the first time, the central todo list will be split into pieces of size <central_todo_list_splitting_size>
+central_todo_list_splitting_size=10000
+# When the folders are initially prepared the first time, the central todo list will be split into pieces of size <central_todo_list_splitting_size>. One task corresponds to one collection.
+# Recommended value: < 100000
 # Possible values: Positive integer
+# The smaller the value, the faster the ligand collections can be distributed.
+# For many types of clusters it is recommended if the total number of splitted todo lists stays below 10000.
 
 ligands_todo_per_queue=50000
-# used as a limit of ligands for the to-do lists
-# this value should be divisible by the next setting "ligands_todo_per_refilling_step"
+# Used as a limit of ligands for the to-do lists
+# This value should be divisible by the next setting "ligands_todo_per_refilling_step"
 
-ligands_per_refilling_step=1000
-# fill the to-do files of the queues with this number of ligands per refill step
-# a number roughly equal to the average of number of ligands per collection is recommended
+ligands_per_refilling_step=10000
+# The to-do files of the queues are filled with <ligands_per_refilling_step> ligands per refill step
+# A number roughly equal to the average of number of ligands per collection is recommended
 
 collection_folder=../../../collections/zinc15_20180825.smi.splitted1000_ind_tgz_tar
-# slash at the end is not required (optional)
-# relative pathname is required w.r.t. the folder tools/
+# Slash at the end is not required (optional)
+# Relative pathname is required w.r.t. the folder tools/
 
 minimum_time_remaining=10
 # In minutes
@@ -67,9 +70,9 @@ minimum_time_remaining=10
 # This is checked before each ligand is screened
 # Thus the timelimit should be larger than the maximum time which is needed to process one ligand
 
-dispersion_time_min=10
+dispersion_time_min=3
 # One positive integer, resembling the time in seconds
-dispersion_time_max=40
+dispersion_time_max=10
 # One positive integer, resembling the time in seconds
 # The dispersion time is used when jobs try to access the central task list.
 # Each job has to wait a random amount of time in the dispersion interval.
@@ -242,7 +245,7 @@ targetformats=pdbqt
 
 *************************************************************************    Open Babel    **********************************************************************
 
-obabel_memory_limit=500000
+obabel_memory_limit=1000000
 # In KB
 # Recommended value: >= 500000
 
@@ -283,7 +286,7 @@ ng_package_filename=nailgun.tar.gz
 #   * <filename>
 #   * none
 
-java_max_heap_size=5
+java_max_heap_size=2
 # Size in GB
 # Recommended: >= 1 GB * queues_per_step
 # The required memory depends mainly on how many queues are run per step (and thus per JVM/NG server), since one JVM is used per step
