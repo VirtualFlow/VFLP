@@ -105,6 +105,7 @@ protonation_program_2="$(grep -m 1 "^protonation_program_2=" ${VF_CONTROLFILE} |
 conformation_generation="$(grep -m 1 "^conformation_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 conformation_program_1="$(grep -m 1 "^conformation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 conformation_program_2="$(grep -m 1 "^conformation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+store_queue_log_files="$(grep -m 1 "^store_queue_log_files=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Preparing the JChem and associated packages if JChem is used
 if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_1}" == "cxcalc" || "${protonation_program_2}" == "cxcalc" )) || ( "${conformation_generation}" == "true" && ( "${conformation_program_1}" == "molconvert" || "${conformation_program_2}" == "molconvert" )) ]]; then
@@ -200,7 +201,19 @@ for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
     export VF_QUEUE_NO="${VF_QUEUE_NO_12}-${VF_QUEUE_NO_3}"
     prepare_queue_files_tmp
     echo "Job step ${VF_STEP_NO} is starting queue ${VF_QUEUE_NO} on host $(hostname)."
-    source ../workflow/job-files/sub/one-queue.sh 2>&1 | gzip >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.gz &
+    if [ ${store_queue_log_files} == "uncompressed" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 2>&1 >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out &
+    elif [ ${store_queue_log_files} == "compressed" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 2>&1 | gzip >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.gz &
+    elif [ ${store_queue_log_files} == "only_error_uncompressed" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 2> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out &
+    elif [ ${store_queue_log_files} == "only_error_compressed" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 2> >(gzip > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.gz) &
+    elif [ ${store_queue_log_files} == "none" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 2>&1 >/dev/null &
+    else
+        echo "Error: The variable store_log_file in the control file ${VF_CONTROLFILE} has an Unsupported value (${store_queue_log_files}."
+    fi
     pids[$(( i - 1 ))]=$!
 done
 
