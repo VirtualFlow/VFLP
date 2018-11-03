@@ -85,15 +85,16 @@ verbosity_commands=standard
 verbosity_logfiles=standard
 # Possible values:
 #   * standard
-#   * debug : activates the set -x option
+#   * debug : activates the set -x option. Increases size of log-files in average by nearly a factor of 10
 # This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
 
 store_queue_log_files=compressed
 # Supported values
-#   * uncompressed: requires most memory any and storage, but is recommending for test runs and debugging purposes
-#   * compressed: requires less memory and storage than uncompressed, but during crashes the last part of the log files might be missing due to the on-the-fly compression
+#   * all_uncompressed: requires most memory any and storage, but is recommending for test runs and debugging purposes
+#   * all_compressed: requires less memory and storage than uncompressed, but during the last part of the log files might get lost (in particular during crashes) due to the on-the-fly compression
 #   * only_error_uncompressed: only stderr is logged
-#   * only_error_compressed: only stderr is logged and compressed. During crashes the last part of the log might be missing due to the on-the-fly compression.
+#   * only_error_compressed: only stderr is logged and compressed. The last part of the log might get lost (in particular during crashes) due to the on-the-fly compression.
+#   * std_compressed_error_uncompressed
 #   * none: reduces required memory and storage
 
 error_sensitivity=normal

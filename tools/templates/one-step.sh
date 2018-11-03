@@ -201,14 +201,16 @@ for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
     export VF_QUEUE_NO="${VF_QUEUE_NO_12}-${VF_QUEUE_NO_3}"
     prepare_queue_files_tmp
     echo "Job step ${VF_STEP_NO} is starting queue ${VF_QUEUE_NO} on host $(hostname)."
-    if [ ${store_queue_log_files} == "uncompressed" ]; then
-        source ../workflow/job-files/sub/one-queue.sh 2>&1 >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out &
-    elif [ ${store_queue_log_files} == "compressed" ]; then
-        source ../workflow/job-files/sub/one-queue.sh 2>&1 | gzip >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.gz &
+    if [ ${store_queue_log_files} == "all_uncompressed" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 2>&1 >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.all &
+    elif [ ${store_queue_log_files} == "all_compressed" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 2>&1 | gzip >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.all.gz &
     elif [ ${store_queue_log_files} == "only_error_uncompressed" ]; then
-        source ../workflow/job-files/sub/one-queue.sh 2> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out &
+        source ../workflow/job-files/sub/one-queue.sh 2> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.err &
     elif [ ${store_queue_log_files} == "only_error_compressed" ]; then
-        source ../workflow/job-files/sub/one-queue.sh 2> >(gzip > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.gz) &
+        source ../workflow/job-files/sub/one-queue.sh 2> >(gzip >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.err.gz) &
+    elif [ ${store_queue_log_files} == "std_compressed_error_uncompressed" ]; then
+        source ../workflow/job-files/sub/one-queue.sh 1> >(gzip >> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.std.gz) 2>> ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/queue-${VF_QUEUE_NO}.out.err &
     elif [ ${store_queue_log_files} == "none" ]; then
         source ../workflow/job-files/sub/one-queue.sh 2>&1 >/dev/null &
     else
