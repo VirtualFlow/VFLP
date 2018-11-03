@@ -96,7 +96,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand/_T*} processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -1180,7 +1180,7 @@ while true; do
     for next_ligand in ${next_ligand_tautomers}; do
 
         # Starting a new entry for each tautomer in the ligand-list log files if we have more than one tautomer
-        if [ "${next_ligand_tautomers_count}" -ge "1" ]; then
+        if [ "${next_ligand_tautomers_count}" -gt "1" ]; then
             update_ligand_list_start
         fi
 
