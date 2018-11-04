@@ -225,12 +225,10 @@ if [[ "${category}" = "workflow" ]]; then
     fi
     echo " Number of ligand collections in state \"processing\": ${ligand_collections_processing}"                      # remove empty lines: grep -v '^\s*$'
     
-    ligand_collections_todo=$(grep -ch "" ../workflow/ligand-collections/todo/* 2>/dev/null | paste -sd+ 2>/dev/null | bc )
+    ligand_collections_todo=$(grep -ch "" ../workflow/ligand-collections/todo/*[0-9]* 2>/dev/null | paste -sd+ 2>/dev/null | bc ) # not counting the symlink todo.all, since this would result in a double-count
     if [ -z ${ligand_collections_todo} ]; then
         ligand_collections_todo=0
     fi
-    echo " Number of ligand collections not yet started: ${ligand_collections_processing}"                      # remove empty lines: grep -v '^\s*$'
-
     echo -ne " Number of ligand collections not yet started: ${ligand_collections_todo}                                   \\r"
     echo
     echo
