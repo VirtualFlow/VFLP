@@ -157,8 +157,8 @@ neutralization_mode=after_desalting_if_charged
 # Only relevant if neutralization=true
 # Possible values:
 #   * always: always neutralize the molecule
-#   * if_genuine_desalting: only neutralize the molecule if the input structure contained more than one component
-#   * if_genuine_desalting_and_charged: only neutralize if the input structure contained more than one component and if the smallest component contained an ion
+#   * only_genuine_desalting: only neutralize the molecule if the input structure contained more than one component
+#   * only_genuine_desalting_and_if_charged: only neutralize if the input structure contained more than one component and if the smallest component contained an ion
 
 neutralization_obligatory=false
 # Setting only required if neutralization=true
