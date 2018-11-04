@@ -225,19 +225,13 @@ if [[ "${category}" = "workflow" ]]; then
     fi
     echo " Number of ligand collections in state \"processing\": ${ligand_collections_processing}"                      # remove empty lines: grep -v '^\s*$'
     
-    counter_temp=0
-    iteration=1
-    total_no="$(ls ../workflow/ligand-collections/todo/ | grep -c "" 2>/dev/null || true)"
-    for file in $(ls ../workflow/ligand-collections/todo/); do
-        echo -ne " Number of ligand collections not yet started: ${counter_temp} (counting file ${iteration}/${total_no})                                  \\r"
-        number_to_add=$(grep -hc "" ../workflow/ligand-collections/todo/${file/.*}* 2>/dev/null | paste -sd+ 2>/dev/null | bc 2>/dev/null)
-        if [ ! "${number_to_add}" -eq "${number_to_add}" ]; then
-            number_to_add=0
-        fi
-        counter_temp=$(( counter_temp + number_to_add )) || true
-        iteration=$((iteration + 1 ))
-    done
-    echo -ne " Number of ligand collections not yet started: ${counter_temp}                                   \\r"
+    ligand_collections_todo=$(grep -ch "" ../workflow/ligand-collections/todo/* 2>/dev/null | paste -sd+ 2>/dev/null | bc )
+    if [ -z ${ligand_collections_todo} ]; then
+        ligand_collections_todo=0
+    fi
+    echo " Number of ligand collections not yet started: ${ligand_collections_processing}"                      # remove empty lines: grep -v '^\s*$'
+
+    echo -ne " Number of ligand collections not yet started: ${ligand_collections_todo}                                   \\r"
     echo
     echo
 
