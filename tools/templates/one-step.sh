@@ -216,7 +216,8 @@ for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
     elif [ ${store_queue_log_files} == "none" ]; then
         source ../workflow/job-files/sub/one-queue.sh 2>&1 >/dev/null &
     else
-        echo "Error: The variable store_log_file in the control file ${VF_CONTROLFILE} has an unsupported value (${store_queue_log_files}."
+        echo "Error: The variable store_log_file in the control file ${VF_CONTROLFILE} has an unsupported value (${store_queue_log_files})."
+        false
     fi
     pids[$(( i - 1 ))]=$!
 done
