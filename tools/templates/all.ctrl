@@ -259,6 +259,10 @@ obabel_memory_limit=1000000
 # In KB
 # Recommended value: >= 500000
 
+obabel_time_limit=50
+# In seconds
+# OpenBabel seems to have an internal limit of 240 seconds for conformation generation
+
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
