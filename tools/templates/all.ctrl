@@ -89,7 +89,7 @@ verbosity_logfiles=standard
 # This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
 
 store_queue_log_files=all_compressed_error_uncompressed
-# Supported values
+# Supported values (experimental)
 #   * all_uncompressed: requires most memory any and storage, but is recommending for test runs and debugging purposes
 #   * all_compressed: requires less memory and storage than uncompressed, but during the last part of the log files might get lost (in particular during crashes) due to the on-the-fly compression
 #   * only_error_uncompressed: only stderr is logged
