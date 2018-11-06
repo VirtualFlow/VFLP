@@ -233,7 +233,7 @@ if [[ "${category}" = "workflow" ]]; then
     echo
     echo
 
-    echo "                                              Ligands    "
+    echo "                                 Ligands (in completed collections)   "
     echo "................................................................................................"
     echo
     
