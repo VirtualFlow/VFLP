@@ -232,6 +232,7 @@ if [[ "${category}" = "workflow" ]]; then
     echo -ne " Number of ligand collections not yet started: ${ligand_collections_todo}                                   \\r"
     echo
     echo
+    echo
 
     echo "                                 Ligands (in completed collections)   "
     echo "................................................................................................"
@@ -330,6 +331,5 @@ if [[ "${category}" = "workflow" ]]; then
     echo -ne " Number of ligands failed (counting tautomers): ${ligands_failed}                                                              \\r"
     echo
     echo
-
-    echo -e "\n\n"
+    echo
 fi
