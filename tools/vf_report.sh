@@ -280,21 +280,8 @@ if [[ "${category}" = "workflow" ]]; then
     echo
     
     ligands_success=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands successfully completed (counting generated tautomers): ${ligands_success} (counting tranch ${iteration}/${totalNo})\\r"
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(grep -h "succeeded(conversion)" ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)"
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi            
-        ligands_success=$((${ligands_success} + noToAdd)) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))
-    done
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        noToAdd="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        noToAdd="$(grep -ho "succeeded(target-format):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
         if [[ -z "${noToAdd// }" ]]; then
             noToAdd=0
         fi
