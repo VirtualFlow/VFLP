@@ -278,7 +278,18 @@ if [[ "${category}" = "workflow" ]]; then
     fi
     echo -ne " Number of ligands started (not counting tautomers): ${ligands_started}                                                     \\r"
     echo
-    
+
+    ligands_success=0
+    if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
+        noToAdd="$(grep -ho "succeeded(tautomerization):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        if [[ -z "${noToAdd// }" ]]; then
+            noToAdd=0
+        fi
+        ligands_success=$((ligands_success+noToAdd)) 2>/dev/null || true
+    fi
+    echo -ne " Number of ligands successfully completed (up to tautomerization, not counting tautomers): ${ligands_success}                                                \\r"
+    echo
+
     ligands_success=0
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
         noToAdd="$(grep -ho "succeeded(target-format):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
