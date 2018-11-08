@@ -151,10 +151,10 @@ next_ligand_collection() {
 
         # Setting some variables
         next_ligand_collection=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $1}')
-        next_ligand_collection_length=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $2}')
+        next_ligand_collection_ID="${next_ligand_collection/*_}"
         next_ligand_collection_tranch="${next_ligand_collection/_*}"
         next_ligand_collection_metatranch="${next_ligand_collection_tranch:0:2}"
-        next_ligand_collection_ID="${next_ligand_collection/*_}"
+        next_ligand_collection_length=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO} | awk '{print $2}')
         if grep -w "${next_ligand_collection}" ../workflow/ligand-collections/done/* &>/dev/null; then
             echo "This ligand collection was already finished. Skipping this ligand collection."
         elif grep -w "${next_ligand_collection}" ../workflow/ligand-collections/current/* &>/dev/null; then
@@ -242,7 +242,7 @@ prepare_collection_files_tmp() {
     else
         # Raising an error
         echo " * Error: The tranch archive file ${collection_folder}/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}.tar does not exist..."
-        false
+        error_response_std $LINENO
     fi
 
     # Checking if the collection could be extracted
@@ -250,7 +250,7 @@ prepare_collection_files_tmp() {
 
         # Raising an error
         echo " * Error: The ligand collection ${next_ligand_collection_tranch}_${next_ligand_collection_ID} could not be prepared."
-        false
+        error_response_std $LINENO
     fi
 
     # Extracting all the SMILES at the same time (faster than individual for each ligand separately)
@@ -766,7 +766,7 @@ minimum_time_remaining="$(grep -m 1 "^minimum_time_remaining=" ${VF_CONTROLFILE}
 obabel_version="$(obabel -V | awk '{print $3}')"
 if [ -z ${obabel_version} ]; then
     echo " * Error: OpenBabel is not available..."
-    false
+    error_response_std $LINENO
 fi
 keep_ligand_summary_logs="$(grep -m 1 "^keep_ligand_summary_logs=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 ligand_check_interval="$(grep -m 1 "^ligand_check_interval=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
@@ -910,9 +910,9 @@ while true; do
         else
             # Getting the name of the current ligand collection
             last_ligand_collection=$(awk '{print $1}' ../workflow/ligand-collections/current/${VF_QUEUE_NO})
+            last_ligand_collection_ID="${last_ligand_collection/*_}"
             last_ligand_collection_tranch="${last_ligand_collection/_*}"
             last_ligand_collection_metatranch="${last_ligand_collection_tranch:0:2}"
-            last_ligand_collection_ID="${last_ligand_collection/*_}"
 
             # Extracting the last ligand collection
             mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}
@@ -950,13 +950,14 @@ while true; do
         last_ligand_status=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $2}' || true)
     fi
 
-    # Checking if we can use the old collection
+    # Checking if we can use the collection determined so far
     if [ -n "${next_ligand}" ]; then
 
         # We can continue to use the old ligand collection
         next_ligand_collection=${last_ligand_collection}
         next_ligand_collection_ID="${next_ligand_collection/*_}"
         next_ligand_collection_tranch="${next_ligand_collection/_*}"
+        next_ligand_collection_metatranch="${next_ligand_collection_tranch:0:2}"
 
         # Preparing the collection folders if this is the first ligand of this queue
         if [[ "${ligand_index}" == "1" ]]; then
