@@ -890,41 +890,30 @@ while true; do
     ligand_index=$((ligand_index+1))
 
     # Preparing the next ligand
-    # Checking if this is the first ligand at all (beginning of first ligand collection)
-    if [[ ! -f  "../workflow/ligand-collections/current/${VF_QUEUE_NO}" ]]; then
-        queue_collection_file_exists="false"
-    else
-        queue_collection_file_exists="true"
-        perl -ni -e "print unless /^$/" ../workflow/ligand-collections/current/${VF_QUEUE_NO}
-    fi
     # Checking the conditions for using a new collection
-    if [[ "${queue_collection_file_exists}" = "false" ]] || [[ "${queue_collection_file_exists}" = "true" && ! "$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} | tr -d '[:space:]')" ]]; then
+    if [[ "${ligand_index}" == "1" ]]; then
 
-#        if [ "${VF_VERBOSITY_LOGFILES}" == "debug" ]; then
-#            echo -e "\n***************** INFO **********************"
-#            echo ${VF_QUEUE_NO}
-#            ls -lh ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-#            cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} 2>/dev/null || true
-#            cat ../workflow/ligand-collections/todo/${VF_QUEUE_NO} 2>/dev/null || true
-#            echo -e "***************** INFO END ******************\n"
-#        fi
+        #if [[ "${ligand_index}" -gt "1" && ! "$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} | tr -d '[:space:]')" ]]; then
 
-        next_ligand_collection
-        prepare_collection_files_tmp
+        # Checking if there is a current ligand collection
+        if [[ ! -s ../workflow/ligand-collections/current/${VF_QUEUE_NO} ]]; then
 
-        # Getting the name of the first ligand of the first collection
-        next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+            # Preparing a new collection
+            next_ligand_collection
+            prepare_collection_files_tmp
 
-    # Using the old collection
-    else
-        # Getting the name of the current ligand collection
-        last_ligand_collection=$(awk '{print $1}' ../workflow/ligand-collections/current/${VF_QUEUE_NO})
-        last_ligand_collection_tranch="${last_ligand_collection/_*}"
-        last_ligand_collection_metatranch="${last_ligand_collection_tranch:0:2}"
-        last_ligand_collection_ID="${last_ligand_collection/*_}"
+            # Getting the name of the first ligand of the first collection
+            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
 
-        # Checking if this is the first ligand of this queue
-        if [ "${ligand_index}" = "1" ]; then
+
+        # using the old
+        else
+            # Getting the name of the current ligand collection
+            last_ligand_collection=$(awk '{print $1}' ../workflow/ligand-collections/current/${VF_QUEUE_NO})
+            last_ligand_collection_tranch="${last_ligand_collection/_*}"
+            last_ligand_collection_metatranch="${last_ligand_collection_tranch:0:2}"
+            last_ligand_collection_ID="${last_ligand_collection/*_}"
+
             # Extracting the last ligand collection
             mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}
             tar -xf ${collection_folder}/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/ ${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar.gz
@@ -951,45 +940,41 @@ while true; do
                 next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -w -A 1 "${last_ligand/_T*}" | grep -v ${last_ligand/_T*} | awk -F '[/.]' '{print $2}')
             fi
 
+        fi
+
+    # Using the old collection
+    else
+
         # Not first ligand of this queue
-        else
-            last_ligand=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
-            last_ligand_status=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $2}' || true)
+        last_ligand=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
+        last_ligand_status=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $2}' || true)
+    fi
 
-            # Checking if the last ligand was in the status processing. In this case we will try to process the ligand again since the last process might have not have the chance to complete its tasks.
-            if [ "${last_ligand_status}" == "processing" ]; then
-                perl -ni -e "/${last_ligand}:processing/d" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status # Might not work for VFVS due to multiple replicas
-                next_ligand="${last_ligand}"
-            else
-                next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -w -A 1 "${last_ligand/_T*}" | grep -v ${last_ligand/_T*} | awk -F '[/.]' '{print $2}')
-            fi
-        fi
+    # Checking if we can use the old collection
+    if [ -n "${next_ligand}" ]; then
 
-        # Check if we can use the old collection
-        if [ -n "${next_ligand}" ]; then
+        # We can continue to use the old ligand collection
+        next_ligand_collection=${last_ligand_collection}
+        next_ligand_collection_ID="${next_ligand_collection/*_}"
+        next_ligand_collection_tranch="${next_ligand_collection/_*}"
 
-            # We can continue to use the old ligand collection
-            next_ligand_collection=${last_ligand_collection}
-            next_ligand_collection_ID="${next_ligand_collection/*_}"
-            next_ligand_collection_tranch="${next_ligand_collection/_*}"
-            
-            # Preparing the collection folders only if ligand_index=1
-            if [ "${ligand_index}" = "1" ]; then
-                prepare_collection_files_tmp
-            fi
-        # Otherwise we have to use a new ligand collection
-        else
-            collection_complete="true"
-            # Cleaning up the files and folders of the old collection
-            if [ ! "${ligand_index}" = "1" ]; then
-               clean_collection_files_tmp ${last_ligand_collection}
-            fi
-            # Getting the next collection if there is one more
-            next_ligand_collection
+        # Preparing the collection folders if this is the first ligand of this queue
+        if [[ "${ligand_index}" == "1" ]]; then
             prepare_collection_files_tmp
-            # Getting the first ligand of the new collection
-            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
         fi
+
+    # Otherwise we have to use a new ligand collection
+    else
+        collection_complete="true"
+        # Cleaning up the files and folders of the old collection
+        if [ ! "${ligand_index}" = "1" ]; then
+           clean_collection_files_tmp ${last_ligand_collection}
+        fi
+        # Getting the next collection if there is one more
+        next_ligand_collection
+        prepare_collection_files_tmp
+        # Getting the first ligand of the new collection
+        next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
     fi
 
     # Displaying the heading for the new ligand
