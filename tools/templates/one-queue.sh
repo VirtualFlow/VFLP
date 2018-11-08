@@ -895,7 +895,7 @@ while true; do
 
         #if [[ "${ligand_index}" -gt "1" && ! "$(cat ../workflow/ligand-collections/current/${VF_QUEUE_NO} | tr -d '[:space:]')" ]]; then
 
-        # Checking if there is a current ligand collection
+        # Checking if there is no current ligand collection
         if [[ ! -s ../workflow/ligand-collections/current/${VF_QUEUE_NO} ]]; then
 
             # Preparing a new collection
@@ -906,7 +906,7 @@ while true; do
             next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
 
 
-        # using the old
+        # Using the old collection
         else
             # Getting the name of the current ligand collection
             last_ligand_collection=$(awk '{print $1}' ../workflow/ligand-collections/current/${VF_QUEUE_NO})
@@ -947,7 +947,7 @@ while true; do
 
         # Not first ligand of this queue
         last_ligand=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
-        last_ligand_status=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $2}' || true)
+        next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${last_ligand_collection_metatranch}/${last_ligand_collection_tranch}/${last_ligand_collection_ID}.tar | grep -w -A 1 "${last_ligand/_T*}" | grep -v ${last_ligand/_T*} | awk -F '[/.]' '{print $2}')
     fi
 
     # Checking if we can use the collection determined so far
