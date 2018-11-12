@@ -159,7 +159,7 @@ next_ligand_collection() {
             echo "This ligand collection was already finished. Skipping this ligand collection."
         elif grep -w "${next_ligand_collection}" ../workflow/ligand-collections/current/* &>/dev/null; then
             echo "On this ligand collection already another queue is working. Skipping this ligand collection."
-        elif grep -w ${next_ligand_collection} $(ls ../workflow/ligand-collections/todo/* | grep -v "${VF_QUEUE_NO}" &>/dev/null); then
+        elif grep -w ${next_ligand_collection} $(ls ../workflow/ligand-collections/todo/* &>/dev/null | grep -v "${VF_QUEUE_NO}" &>/dev/null); then
             echo "This ligand collection is in one of the other todo-lists. Skipping this ligand collection."
         else
             new_collection="true"
@@ -466,6 +466,9 @@ desalt() {
 
 standardizer_neutralize() {
 
+    # Checking the NG Server
+    ng_server_check
+
     # Checking if the charged counterion
     charged_counterion=false
     if echo ${desalted_smiles_smallest_fragment} | grep -c -E "\-\]|\+\]" &>/dev/null; then
@@ -523,6 +526,9 @@ standardizer_neutralize() {
 # Protonation with cxcalc
 cxcalc_tautomerize() {
 
+    # Checking the NG Server
+    ng_server_check
+
     # Carrying out the tautomerization
     trap '' ERR
     { timeout 300 bin/time_bin -f "    * Timings of cxcalc (user real system): %U %e %S"  ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator -o ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp tautomers ${cxcalc_tautomerization_options}  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1
@@ -559,6 +565,9 @@ cxcalc_tautomerize() {
 
 # Protonation with cxcalc
 cxcalc_protonate() {
+
+    # Checking the NG Server
+    ng_server_check
 
     # Carrying out the protonation
     trap '' ERR
@@ -614,6 +623,9 @@ obabel_protonate() {
 
 # Conformation generation with molconvert
 molconvert_generate_conformation() {
+
+    # Checking the NG Server
+    ng_server_check
 
     # Converting SMILES to 3D PDB
     # Trying conversion with molconvert

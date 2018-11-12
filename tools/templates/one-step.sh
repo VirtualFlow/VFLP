@@ -92,6 +92,46 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
     set -x
 fi
 
+start_ng_server() {
+
+    # Starting the ng-server
+    java -Xmx${java_max_heap_size}G com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
+    sleep 10 # Loading the ng server takes a few seconds
+}
+
+ng_server_check() {
+
+    # Testing if the ng-server is still working
+    ng --nailgun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
+    exit_code=$?
+
+    # Checking the exit status
+    if [ ${exit_code} != 0 ]; then
+
+        # Printing warning message
+        echo " * Warning: The NG Server seems to be not running anymore. Trying to restart..."
+
+        # Starting the ng-server
+        start_ng_server
+
+        # Testing if the ng-server is still working
+        ng --nailgun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
+        exit_code=$?
+
+        # Checking the exit status
+        if [ ${exit_code} != 0 ]; then
+
+            # Printing warning message
+            echo " * Error: Restarting of the NG Server has failed... "
+            error_response_std $LINENO
+        else
+
+            # Printing warning message
+            echo " * The NG Server was successfully restarted... "
+        fi
+    fi
+}
+
 # Setting and exporting variables
 export VF_QUEUE_NO_2=${VF_STEP_NO}
 export VF_QUEUE_NO_12="${VF_QUEUE_NO_1}-${VF_QUEUE_NO_2}"
@@ -177,7 +217,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     java_max_heap_size="$(grep -m 1 "^java_max_heap_size=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     ng_package_filename="$(grep -m 1 "^ng_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${ng_package_filename}
-    export CLASSPATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-server/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/lib/*"
+    export CLASSPATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-server/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-examples/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/lib/*"
     chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-client/target/ng
     export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-client/target/:$PATH"
     # Getting the first free port (Source: https://unix.stackexchange.com/questions/55913/whats-the-easiest-way-to-find-an-unused-local-port )
@@ -191,8 +231,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     # Starting the ng server
     # Java 10/11 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:OnOutOfMemoryError="echo %p" -XX:OnError="echo %p" -Xlog:gc*:file=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -Xlog:all=warning:file=${PWD}/java.warning.${VF_QUEUE_NO_12}.log
     # Java 8 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -XX:-PrintConcurrentLocks -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${PWD}/java.gc.${VF_QUEUE_NO_12}.log
-    java -Xmx${java_max_heap_size}G com.martiansoftware.nailgun.NGServer localhost:${NG_PORT} &
-    sleep 10 # Loading the ng server takes a few seconds
+    start_ng_server
 fi
 
 # Starting the individual queues
