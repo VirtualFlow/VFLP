@@ -126,7 +126,10 @@ job_letter="$(grep -m 1 "^job_letter=" ${controlfile} | tr -d '[[:space:]]' | aw
 
 
 if [[ "${category}" = "workflow" ]]; then
+
     # Displaying the information
+    echo
+    echo "                                  $(date)                                       "
     echo
     echo
     echo "                                         Workflow Status                                        "
