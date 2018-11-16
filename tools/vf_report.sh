@@ -257,47 +257,31 @@ if [[ "${category}" = "workflow" ]]; then
     fi
     
     ligands_started=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
-    iteration=1
-    for folder in $(ls ../workflow/ligand-collections/ligand-lists/); do
-        echo -ne " Number of ligands started: ${ligands_started} (counting tranch ${iteration}/${totalNo}) \\r"    
-        for file in $(ls ../workflow/ligand-collections/ligand-lists/${folder}/ 2>/dev/null); do
-            noToAdd="$(cat ../workflow/ligand-collections/ligand-lists/${folder}/${file} 2>/dev/null | awk -F ' ' '{print $1}' 2>/dev/null | uniq | wc -l || true)" 
-            if [[ -z "${noToAdd// }" ]]; then 
-                noToAdd=0
-            fi
-            ligands_started=$((${ligands_started} + ${noToAdd})) 2>/dev/null || true
-        done
-        iteration=$((iteration + 1))
-    done
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        noToAdd="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
-        if [[ -z "${noToAdd// }" ]]; then
-            noToAdd=0
+        ligands_started="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        if [[ -z "${ligands_started// }" ]]; then
+            ligands_started=0
         fi
-        ligands_started=$((ligands_started+noToAdd)) 2>/dev/null || true
     fi
     echo -ne " Number of ligands started (not counting tautomers): ${ligands_started}                                                     \\r"
     echo
 
     ligands_success=0
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        noToAdd="$(grep -ho "succeeded(tautomerization):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
-        if [[ -z "${noToAdd// }" ]]; then
-            noToAdd=0
+        ligands_success="$(grep -ho "succeeded(tautomerization):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        if [[ -z "${ligands_success// }" ]]; then
+            ligands_success=0
         fi
-        ligands_success=$((ligands_success+noToAdd)) 2>/dev/null || true
     fi
     echo -ne " Number of ligands successfully completed (up to tautomerization, not counting tautomers): ${ligands_success}                                                \\r"
     echo
 
     ligands_success=0
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        noToAdd="$(grep -ho "succeeded(target-format):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
-        if [[ -z "${noToAdd// }" ]]; then
-            noToAdd=0
+        ligands_success="$(grep -ho "succeeded(target-format):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        if [[ -z "${ligands_success// }" ]]; then
+            ligands_success=0
         fi
-        ligands_success=$((ligands_success+noToAdd)) 2>/dev/null || true
     fi
     echo -ne " Number of ligands successfully completed (up to target format, counting tautomers): ${ligands_success}                                                \\r"
     echo
@@ -320,13 +304,11 @@ if [[ "${category}" = "workflow" ]]; then
 #    echo
 
     ligands_failed=0
-    totalNo=$(ls ../workflow/ligand-collections/ligand-lists/ | grep -c "" 2>/dev/null || true)
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        noToAdd="$(grep -ho "failed:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
-        if [[ -z "${noToAdd// }" ]]; then
-            noToAdd=0
+        ligands_failed="$(grep -ho "failed:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        if [[ -z "${ligands_failed// }" ]]; then
+            ligands_failed=0
         fi
-        ligands_failed=$((ligands_failed+noToAdd)) 2>/dev/null || true
     fi
     echo -ne " Number of ligands failed (counting tautomers): ${ligands_failed}                                                              \\r"
     echo
