@@ -258,7 +258,7 @@ if [[ "${category}" = "workflow" ]]; then
     
     ligands_started=0
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        ligands_started="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        ligands_started="$(grep -ho "started:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | sed "/^$/d" |  paste -sd+ | bc -l 2>/dev/null || true)"
         if [[ -z "${ligands_started// }" ]]; then
             ligands_started=0
         fi
@@ -268,7 +268,7 @@ if [[ "${category}" = "workflow" ]]; then
 
     ligands_success=0
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        ligands_success="$(grep -ho "succeeded(tautomerization):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        ligands_success="$(grep -ho "succeeded(tautomerization):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | sed "/^$/d" |  paste -sd+ | bc -l 2>/dev/null || true)"
         if [[ -z "${ligands_success// }" ]]; then
             ligands_success=0
         fi
@@ -278,7 +278,7 @@ if [[ "${category}" = "workflow" ]]; then
 
     ligands_success=0
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        ligands_success="$(grep -ho "succeeded(target-format):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        ligands_success="$(grep -ho "succeeded(target-format):[0-9]\+" ../workflow/ligand-collections/done/* 2>/dev/null | awk -F ':' '{print $2}' | sed "/^$/d" | paste -sd+ | bc -l 2>/dev/null || true)"
         if [[ -z "${ligands_success// }" ]]; then
             ligands_success=0
         fi
@@ -305,7 +305,7 @@ if [[ "${category}" = "workflow" ]]; then
 
     ligands_failed=0
     if [ ! -z "$(ls -A ../workflow/ligand-collections/done/)" ]; then
-        ligands_failed="$(grep -ho "failed:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | paste -sd+ | bc -l 2>/dev/null || true)"
+        ligands_failed="$(grep -ho "failed:[0-9]\+" ../workflow/ligand-collections/done/* | awk -F ':' '{print $2}' | sed "/^$/d" |  paste -sd+ | bc -l 2>/dev/null || true)"
         if [[ -z "${ligands_failed// }" ]]; then
             ligands_failed=0
         fi
