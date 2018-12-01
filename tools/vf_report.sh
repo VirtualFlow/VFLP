@@ -54,7 +54,7 @@ batchsystem="${line/batchsystem=}"
 line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
 
-# Determining the names of each docking type
+# Tempdir creation
 tmp_dir=/tmp/${USER}/vfvs_report_$(date | tr " :" "_")
 
 # Verbosity
@@ -68,9 +68,6 @@ mkdir -p tmp
 
 # Treating the input arguments
 category_flag="false"
-docking_type_name_flag="false"
-show_vs_statistics_flag="false"
-number_highest_scores_flag="false"
 while getopts ':hc:v:' option; do
     case "$option" in
         h)  echo -e "$usage"

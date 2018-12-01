@@ -15,10 +15,10 @@ if [[ "${VF_ERROR_SENSITIVITY}" == "high" ]]; then
     set -uo pipefail
     trap '' PIPE        # SIGPIPE = exit code 141, means broken pipe. Happens often, e.g. if head is listening and got all the lines it needs.
 fi
-# TODO: different input file format
+# TODO: Different input file format
 # TODO: Test with storing logfile
 # TODO: Change ligand-lists/todo /current ... to subfolders
-# TODO: add ligand info into each completed collection -> creating correct sums and faster
+# TODO: Add ligand info into each completed collection -> creating correct sums and faster
 # TODO: Refill during runtime
 
 # Functions
@@ -94,6 +94,7 @@ update_ligand_list_end() {
 
     # Variables
     success="${1}" # true or false
+    pipeline_part="${2}"
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
@@ -102,9 +103,9 @@ update_ligand_list_end() {
     # Printing some information
     echo
     if [ "${success}" == "true" ]; then
-        echo "Ligand ${next_ligand} completed ($2) on $(date)."
+        echo "Ligand ${next_ligand} completed ($pipeline_part) on $(date)."
     else
-        echo "Ligand ${next_ligand} failed ($2) on on $(date)."
+        echo "Ligand ${next_ligand} failed ($pipeline_part) on on $(date)."
     fi
     echo "Total time for this ligand (${next_ligand}) in ms: ${ligand_total_time_ms}"
     echo
@@ -320,6 +321,7 @@ clean_collection_files_tmp() {
 
                 # Cleaning up
                 rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar.gz &> /dev/null || true
+                rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} &> /dev/null || true
 
             done
 
@@ -328,8 +330,13 @@ clean_collection_files_tmp() {
 
                 # Directory preparation
                 mkdir  -p ../output-files/complete/logfiles/${local_ligand_collection_metatranch}
+
+                # Compressing and archiving the status file
                 gzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status
                 tar -rf ../output-files/complete/logfiles/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/ ${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status.gz || true
+
+                # Removing possible old status files
+                rm ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status &> /dev/null || true
             fi
 
             # Updating the ligand collection files
@@ -359,13 +366,12 @@ clean_collection_files_tmp() {
         # Cleaning up
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} &> /dev/null || true
         rm  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.tar &> /dev/null || true
-        rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status.* &> /dev/null || true
+        rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status* &> /dev/null || true
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} &> /dev/null || true
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} &> /dev/null || true
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} &> /dev/null || true
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} &> /dev/null || true
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID} &> /dev/null || true
-        rm ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}.status &> /dev/null || true
 
         # Cleaning up
         for targetformat in ${targetformats//:/ }; do
@@ -1235,7 +1241,6 @@ while true; do
             # Printing some information
             echo -e "\n *** Starting the processing of tautomer ${next_ligand_tautomer_index}/${next_ligand_tautomers_count} (${next_ligand}) ***"
         fi
-
 
         # Protonation
         if [ "${protonation_state_generation}" == "true" ]; then
