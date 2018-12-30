@@ -74,8 +74,7 @@ termination_signal() {
 }
 trap 'termination_signal' 1 2 3 9 15
 
-
-next_todo_list() {
+next_todo_list1() {
 
     # Variables
     next_todo_list_index=$(printf "%04d" $((10#${current_todo_list_index}+1)) )
@@ -92,6 +91,32 @@ next_todo_list() {
 
         # Copying the new todo list to temp
         cp ../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index} ${todo_file_temp}
+
+        # Emptying the old todo list
+        echo -n "" > ../../workflow/ligand-collections/todo/todo.all.${current_todo_list_index}
+
+        # Changing variables
+        current_todo_list_index=${next_todo_list_index}
+    fi
+}
+trap 'termination_signal' 1 2 3 9 15
+
+next_todo_list2() {
+
+
+    # Changing the symlink
+    rm ../../workflow/ligand-collections/todo/todo.all.locked
+    next_todo_list=$(wc -l todo.all* | grep todo | grep -v " 0 " | head -n 1 | awk '{print $2}')
+    if [ -n ${next_todo_list} ]; then
+
+        ln -s ${next_todo_list} ../../workflow/ligand-collections/todo/todo.all.locked
+        next_todo_list_index=${next_todo_list/*.}
+
+        # Printing information
+        echo "The next todo list will be used (${next_todo_list})"
+
+        # Copying the new todo list to temp
+        cp ../../workflow/ligand-collections/todo/${next_todo_list} ${todo_file_temp}
 
         # Emptying the old todo list
         echo -n "" > ../../workflow/ligand-collections/todo/todo.all.${current_todo_list_index}
@@ -220,13 +245,21 @@ no_collections_incomplete="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:bl
 if [[ "${no_collections_incomplete}" = "0" ]]; then
 
     # Checking if there is one more todo list
-    next_todo_list
+    next_todo_list1
     no_collections_incomplete="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
 
     # If no more new todo list, quitting
     if [[ "${no_collections_incomplete}" = "0" ]]; then
-        echo "There is no more ligand collection in the todo.all file. Stopping the refilling procedure."
-        exit 0
+
+        # Using the alternative method
+        next_todo_list2
+        no_collections_incomplete="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
+
+        # If no more new todo list, quitting
+        if [[ "${no_collections_incomplete}" = "0" ]]; then
+            echo "There is no more ligand collection in the todo.all file. Stopping the refilling procedure."
+            exit 0
+        fi
     fi
 fi
 

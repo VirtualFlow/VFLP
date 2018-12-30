@@ -310,7 +310,7 @@ java_max_heap_size=2
 *****************************************************************************************************************************************************************
 
 stop_after_next_check_interval=false
-# Determines whether the queue is stopped after the ligand batch currenty in progress. The size of the ligand batches is determined by the <ligand_check_interval> variable.
+# Determines whether the queue is stopped after the ligand batch currently in progress. The size of the ligand batches is determined by the <ligand_check_interval> variable.
 # Possible values:
 #   * false : The queue will continue to process ligands as long as there are ligands remaining for the queue
 #   * true : No new ligand will be started after the current ligand is completed

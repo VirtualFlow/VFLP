@@ -203,7 +203,7 @@ if [[ "${category}" = "workflow" ]]; then
             sumCores=$((sumCores + coreNumber))
         done < tmp/report.tmp
         echo " Number of cores/slots currently used by the workflow: ${sumCores}"
-        rm tmp/report.tmp
+        rm tmp/report.tmp || true
     fi
     
     echo
