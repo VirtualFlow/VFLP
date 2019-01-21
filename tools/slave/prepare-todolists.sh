@@ -99,7 +99,6 @@ next_todo_list1() {
         current_todo_list_index=${next_todo_list_index}
     fi
 }
-trap 'termination_signal' 1 2 3 9 15
 
 next_todo_list2() {
 
@@ -125,7 +124,6 @@ next_todo_list2() {
         current_todo_list_index=${next_todo_list_index}
     fi
 }
-trap 'termination_signal' 1 2 3 9 15
 
 # Clean up when exiting
 clean_up() {
