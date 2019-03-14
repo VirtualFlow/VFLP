@@ -186,7 +186,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
         if [ -d ${HOME}/.chemaxon ]; then
             rm -r ${HOME}/.chemaxon || true
             mkdir -p ${HOME}/.chemaxon
-            chattr +i ${HOME}/.chemaxon
+            chmod 000 ${HOME}/.chemaxon
         fi
     fi
 
