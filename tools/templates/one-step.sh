@@ -181,6 +181,13 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
 
         # Adjusting the CHEMAXON_LICENSE_URL environment variable
         export CHEMAXON_LICENSE_URL="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/license.cxl"
+
+        # Removing the Chemaxon folder if existent which ChemAxon's software automatically creates to store the license file, because if it exists it will not use the variable  CHEMAXON_LICENSE_URL
+        if [ -d ${HOME}/.chemaxon ]; then
+            rm -r ${HOME}/.chemaxon || true
+            mkdir -p ${HOME}/.chemaxon
+            chattr +i ${HOME}/.chemaxon
+        fi
     fi
 
     # Preparing the JVM
