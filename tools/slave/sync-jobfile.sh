@@ -1,19 +1,22 @@
-#!/bin/bash
-# ---------------------------------------------------------------------------
+#!/usr/bin/env bash
+
+# Copyright (C) 2019 Christoph Gorgulla
 #
-# Usage: . sync-jobfile.sh jobline_no
+# This file is part of VirtualFlow.
 #
-# Description: Synchronizes the jobfile with the settings in the VF_CONTROLFILE
-# (the global or local VF_CONTROLFILE if existent).
+# VirtualFlow is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Revision history:
-# 2015-12-05  Created (version 1.2)
-# 2015-12-12  Various improvements (version 1.10)
-# 2015-12-16  Adaption to version 2.1
-# 2016-07-16  Various improvements
-# 2017-03-18  Including the parition in the config file
+# VirtualFlow is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# ---------------------------------------------------------------------------
+# You should have received a copy of the GNU General Public License
+# along with VirtualFlow.  If not, see <https://www.gnu.org/licenses/>.
+
 # Displaying help if first argument is -h
 if [ "${1}" = "-h" ]; then
 usage="Usage: . sync-jobfile.sh jobline_no"

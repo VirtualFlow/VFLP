@@ -1,21 +1,22 @@
-#!/bin/bash
-# ---------------------------------------------------------------------------
+#!/usr/bin/env bash
+
+# Copyright (C) 2019 Christoph Gorgulla
 #
-# Usage: . exchange-jobfile template_file VF_JOBLINE_NO [quiet]
+# This file is part of VirtualFlow.
 #
-# Description: Exchanges a jobfile in use with a new (template) jobfile.
+# VirtualFlow is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Option: quiet (optional)
-#    Possible values:
-#        quiet: No information is displayed on the screen.
+# VirtualFlow is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# Revision history:
-# 2015-12-05  Created (version 1.2)
-# 2015-12-12  Various improvements (version 1.10)
-# 2015-12-16  Adaption to version 2.1
-# 2016-07-16  Various improvements
-#
-# ---------------------------------------------------------------------------
+# You should have received a copy of the GNU General Public License
+# along with VirtualFlow.  If not, see <https://www.gnu.org/licenses/>.
+
 # Displaying help if the first argument is -h
 usage="Usage: . exchange-jobfile template_file VF_JOBLINE_NO [quiet]"
 if [ "${1}" = "-h" ]; then

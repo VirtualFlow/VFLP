@@ -1,18 +1,21 @@
-#!/bin/bash
-# ---------------------------------------------------------------------------
-#
-# Description: Torque job file.
-#
-# Revision history:
-# 2015-12-05  Created (version 1.2)
-# 2015-12-07  Various improvemnts (version 1.3)
-# 2015-12-12  Various improvements (version 1.10)
-# 2015-12-16  Adaption to version 2.1
-# 2016-07-16  Various improvements
-# 2017-04-08  Adjustment to version 9.2
-#
-# ---------------------------------------------------------------------------
+#!/usr/bin/env bash
 
+# Copyright (C) 2019 Christoph Gorgulla
+#
+# This file is part of VirtualFlow.
+#
+# VirtualFlow is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# VirtualFlow is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with VirtualFlow.  If not, see <https://www.gnu.org/licenses/>.
 
 # PBS/Moab Settings
 ###############################################################################
