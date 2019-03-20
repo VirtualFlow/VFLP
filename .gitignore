@@ -1,6 +1,7 @@
 # remove some files in .idea
 workspace.xml
 tasks.xml
+*.iws
 
 *.pyc
 .dropbox.attr
