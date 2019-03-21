@@ -54,7 +54,7 @@ elif [ "${batchsystem}" == "SGE" ]; then
 elif [ "${batchsystem}" == "LSF" ]; then
     bsub < ${jobfile}
 fi
-cd slave
+cd helpers
 
 # Printing some information
 if [ ! "$*" = *"quiet"* ]; then
