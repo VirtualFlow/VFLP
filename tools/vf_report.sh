@@ -37,7 +37,7 @@ trap 'error_response_nonstd $LINENO' ERR
 
 # Clean up
 clean_up() {
-    rm -r ${tmp_dir}/ 2>/dev/null || true
+    rm -r ${tempdir}/ 2>/dev/null || true
 }
 trap 'clean_up' EXIT
 
@@ -57,6 +57,9 @@ line=$(cat ${controlfile} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
 export LC_ALL=C
 export LANG=C
+vf_tempdir="$(grep -m 1 "^tempdir=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_JOBLETTER="$(grep -m 1 "^job_letter=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+
 
 # Getting the batchsystem type
 line=$(grep -m 1 "^batchsystem" ../workflow/control/all.ctrl)
@@ -65,7 +68,7 @@ line=$(grep -m 1 "^job_letter" ../workflow/control/all.ctrl)
 job_letter=${line/"job_letter="}
 
 # Tempdir creation
-tmp_dir=/tmp/${USER}/vfvs_report_$(date | tr " :" "_")
+tempdir=${vf_tempdir}/$USER/VFLP/${VF_JOBLETTER}/vf_report_$(date | tr " :" "_")
 
 # Verbosity
 verbosity="$(grep -m 1 "^verbosity_commands=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
@@ -74,7 +77,7 @@ if [ "${verbosity}" = "debug" ]; then
 fi
 
 # Folders
-mkdir -p tmp
+mkdir -p ${tempdir}
 
 # Treating the input arguments
 category_flag="false"
@@ -197,11 +200,11 @@ if [[ "${category}" = "workflow" ]]; then
     fi
     if [[ "${batchsystem}" == "LSF" || "${batchsystem}" == "SLURM" || "{batchsystem}" == "SGE" ]]; then
         if [[ "${batchsystem}" == "SLURM" ]]; then
-            squeue -o "%.18i %.9P %.8j %.8u %.8T %.10M %.9l %.6D %R %C" | grep RUN | grep "${USER:0:8}" | grep "${job_letter}\-" | awk '{print $10}' > tmp/report.tmp
+            squeue -o "%.18i %.9P %.8j %.8u %.8T %.10M %.9l %.6D %R %C" | grep RUN | grep "${USER:0:8}" | grep "${job_letter}\-" | awk '{print $10}' > ${tempdir}/report.tmp
         elif [[ "${batchsystem}" == "LSF" ]]; then
-            bin/sqs | grep RUN | grep "${USER:0:8}" | grep "${job_letter}\-" | awk -F " *" '{print $6}' > tmp/report.tmp
+            bin/sqs | grep RUN | grep "${USER:0:8}" | grep "${job_letter}\-" | awk -F " *" '{print $6}' > ${tempdir}/report.tmp
         elif [[ "${batchsystem}" == "SGE" ]]; then
-            bin/sqs | grep " r " | grep "${USER:0:8}" | grep "${job_letter}\-" | awk '{print $7}' > tmp/report.tmp
+            bin/sqs | grep " r " | grep "${USER:0:8}" | grep "${job_letter}\-" | awk '{print $7}' > ${tempdir}/report.tmp
         fi
         sumCores='0'
         while IFS='' read -r line || [[ -n  "${line}" ]]; do 
@@ -211,9 +214,9 @@ if [[ "${category}" = "workflow" ]]; then
                 coreNumber=1
             fi
             sumCores=$((sumCores + coreNumber))
-        done < tmp/report.tmp
+        done < ${tempdir}/report.tmp
         echo " Number of cores/slots currently used by the workflow: ${sumCores}"
-        rm tmp/report.tmp || true
+        rm ${tempdir}/report.tmp || true
     fi
     
     echo
