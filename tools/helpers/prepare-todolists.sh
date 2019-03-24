@@ -383,14 +383,26 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                 # Checking if there is one more ligand collection to be done
                 if [ "${no_collections_remaining}" -eq "0" ]; then
 
-                    # Checking if there is one more todo list
-                    next_todo_list
-                    no_collections_remaining="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
+                    # Checking if there is one more ligand collection to be done
+                    if [ "${no_collections_remaining}" -eq "0" ]; then
 
-                    # If no more new todo list, quitting
-                    if [[ "${no_collections_remaining}" = "0" ]]; then
-                        echo "There is no more ligand collection in the todo.all file. Stopping the refilling procedure."
-                        break 4
+                        # Checking if there is one more todo list
+                        next_todo_list1
+                        no_collections_incomplete="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
+
+                        # Checking if no more collections
+                        if [[ "${no_collections_incomplete}" = "0" ]]; then
+
+                            # Using the alternative method
+                            next_todo_list2
+                            no_collections_incomplete="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
+
+                            # If no more new collections, quitting
+                            if [[ "${no_collections_remaining}" = "0" ]]; then
+                                echo "There is no more ligand collection in the todo.all file. Stopping the refilling procedure."
+                                break 4
+                            fi
+                        fi
                     fi
                 fi
 
