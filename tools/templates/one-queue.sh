@@ -351,7 +351,7 @@ clean_collection_files_tmp() {
             if [ "${keep_ligand_summary_logs}" = "true" ]; then
 
                 # Directory preparation
-                mkdir  -p ../output-files/complete/logfiles/${local_ligand_collection_metatranch}
+                mkdir -p ../output-files/complete/logfiles/${local_ligand_collection_metatranch}
 
                 # Compressing and archiving the status file
                 gzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranch}/${local_ligand_collection_tranch}/${local_ligand_collection_ID}.status
