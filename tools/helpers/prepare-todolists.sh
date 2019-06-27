@@ -101,6 +101,9 @@ next_todo_list1() {
 
         # Changing variables
         current_todo_list_index=${next_todo_list_index}
+        no_collections_remaining="$(grep -cv '^\s*$' ${todo_file_temp} || true)"
+        no_collections_assigned=0
+        no_collections_beginning=${no_collections_remaining}
     fi
 }
 
@@ -126,6 +129,9 @@ next_todo_list2() {
 
         # Changing variables
         current_todo_list_index=${next_todo_list_index}
+        no_collections_remaining="$(grep -cv '^\s*$' ${todo_file_temp} || true)"
+        no_collections_assigned=0
+        no_collections_beginning=${no_collections_remaining}
     fi
 }
 
