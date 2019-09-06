@@ -279,7 +279,7 @@ mv ${todo_file_temp}.tmp ${todo_file_temp}
 line=$(cat ../${VF_CONTROLFILE} | grep "collection_folder=" | sed 's/\/$//g')
 collection_folder=${line/"collection_folder="}
 collection_folder=${collection_folder%/}
-VF_START_TIME_SECONDS="$(date +%s)"
+start_time_seconds="$(date +%s)"
 
 # Getting the number of ligands to-do per queue
 line=$(cat ../${VF_CONTROLFILE} | grep "ligands_todo_per_queue=")
@@ -458,7 +458,7 @@ fi
 if [[ ! "$*" = *"quiet"* ]]; then
     end_time_seconds="$(date +%s)"
     echo
-    echo "The todo lists for the queues were (re)filled in $((end_time_seconds-VF_START_TIME_SECONDS)) second(s) (waiting time not included)."
+    echo "The todo lists for the queues were (re)filled in $((end_time_seconds-start_time_seconds)) second(s) (waiting time not included)."
     echo "The waiting time was $((end_time_waiting-start_time_waiting)) second(s)."
     echo
 fi
