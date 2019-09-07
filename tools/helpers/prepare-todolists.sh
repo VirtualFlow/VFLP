@@ -200,7 +200,7 @@ clean_up() {
 #        echo "Warning: The file ../../workflow/ligand-collections/todo/todo.all already exists."
 #        no_of_lines_1=$(fgrep -c "" ../../workflow/ligand-collections/todo/todo.all)
 #        no_of_lines_2=$(fgrep -c "" "${todo_file_temp}")
-#        other_todofile_exists="true"
+#        other_todofile_exists="true"   .
 #        other_todofile_is_larger="false"
 #        if [ "${no_of_lines_1}" -ge "${no_of_lines_2}" ]; then
 #            echo "The number of lines in the found todo file is larger than in our one. Discarding our version."
