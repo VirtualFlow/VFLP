@@ -30,7 +30,7 @@ if [ "${1}" == "-h" ]; then
    echo -e "\n${usage}\n\n"
    exit 0
 fi
-if [ "$#" -ne "3" ]; then
+if [ "$#" -ne "2" ]; then
    echo -e "\nWrong number of arguments. Exiting..."
    echo -e "\n${usage}\n\n"
    exit 1
@@ -80,6 +80,7 @@ determine_controlfile() {
             false
         fi
     fi
+    cd helpers
 }
 
 
