@@ -90,7 +90,7 @@ end_jobline_no=$2
 
 # Body
 cd helpers
-for i in {$start_jobline_no..$end_jobline_no}; do
+for i in $(seq $start_jobline_no $end_jobline_no); do
 
     # Determining the controlfile
     export VF_JOBLINE_NO=$i
