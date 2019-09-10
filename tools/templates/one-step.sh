@@ -153,7 +153,7 @@ ng_server_check() {
 
 # Preparing the temporary controlfile
 export VF_CONTROLFILE_TEMP=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/controlfile
-mkdir ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/
+mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/
 cp ${VF_CONTROLFILE} ${VF_CONTROLFILE_TEMP}
 
 # Setting and exporting variables
