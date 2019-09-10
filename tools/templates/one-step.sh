@@ -153,6 +153,7 @@ ng_server_check() {
 
 # Preparing the temporary controlfile
 export VF_CONTROLFILE_TEMP=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/controlfile
+mkdir VF_CONTROLFILE_TEMP=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/
 cp ${VF_CONTROLFILE} ${VF_CONTROLFILE_TEMP}
 
 # Setting and exporting variables
@@ -162,13 +163,13 @@ export VF_LITTLE_TIME="false";
 export VF_START_TIME_SECONDS
 export VF_TIMELIMIT_SECONDS
 pids=""
-protonation_state_generation="$(grep -m 1 "^protonation_state_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-protonation_program_1="$(grep -m 1 "^protonation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-protonation_program_2="$(grep -m 1 "^protonation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-conformation_generation="$(grep -m 1 "^conformation_generation=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-conformation_program_1="$(grep -m 1 "^conformation_program_1=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-conformation_program_2="$(grep -m 1 "^conformation_program_2=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-store_queue_log_files="$(grep -m 1 "^store_queue_log_files=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_state_generation="$(grep -m 1 "^protonation_state_generation=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_program_1="$(grep -m 1 "^protonation_program_1=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+protonation_program_2="$(grep -m 1 "^protonation_program_2=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_generation="$(grep -m 1 "^conformation_generation=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_program_1="$(grep -m 1 "^conformation_program_1=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+conformation_program_2="$(grep -m 1 "^conformation_program_2=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+store_queue_log_files="$(grep -m 1 "^store_queue_log_files=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Creating required folders
 mkdir -p ../workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/
@@ -180,8 +181,8 @@ mkdir -p ../workflow/ligand-collections/done/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/
 if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_1}" == "cxcalc" || "${protonation_program_2}" == "cxcalc" )) || ( "${conformation_generation}" == "true" && ( "${conformation_program_1}" == "molconvert" || "${conformation_program_2}" == "molconvert" )) ]]; then
 
     # Preparing the JChem Package
-    chemaxon_license_filename="$(grep -m 1 "^chemaxon_license_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    jchem_package_filename="$(grep -m 1 "^jchem_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    chemaxon_license_filename="$(grep -m 1 "^chemaxon_license_filename=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    jchem_package_filename="$(grep -m 1 "^jchem_package_filename=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/
     tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/ -xvzf packages/${jchem_package_filename}
     #chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/bin/*
@@ -220,7 +221,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     fi
 
     # Preparing the JVM
-    java_package_filename="$(grep -m 1 "^java_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    java_package_filename="$(grep -m 1 "^java_package_filename=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
     if [[ ${java_package_filename} != "none" ]]; then
         if [[ -f packages/${java_package_filename} ]]; then
@@ -242,7 +243,7 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
         else
 
             # Error
-            echo " Error: The Java package file (java_package_filename=${java_package_filename}) which was specified in the relevant controlfile (${VF_CONTROLFILE}) was was not found..."
+            echo " Error: The Java package file (java_package_filename=${java_package_filename}) which was specified in the relevant controlfile (${VF_CONTROLFILE_TEMP}) was was not found..."
 
             # Causing an error
             error_response_std $LINENO
@@ -250,8 +251,8 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     fi
 
     # Preparing ng
-    java_max_heap_size="$(grep -m 1 "^java_max_heap_size=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    ng_package_filename="$(grep -m 1 "^ng_package_filename=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    java_max_heap_size="$(grep -m 1 "^java_max_heap_size=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    ng_package_filename="$(grep -m 1 "^ng_package_filename=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/ -xvzf packages/${ng_package_filename}
     export CLASSPATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-server/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-examples/target/classes:${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/chemaxon/jchemsuite/lib/*"
     chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/nailgun/nailgun-client/target/ng
@@ -291,7 +292,7 @@ for i in $(seq 1 ${VF_QUEUES_PER_STEP}); do
     elif [ ${store_queue_log_files} == "none" ]; then
         source ../workflow/job-files/sub/one-queue.sh 2>&1 >/dev/null &
     else
-        echo "Error: The variable store_log_file in the control file ${VF_CONTROLFILE} has an unsupported value (${store_queue_log_files})."
+        echo "Error: The variable store_log_file in the control file ${VF_CONTROLFILE_TEMP} has an unsupported value (${store_queue_log_files})."
         false
     fi
     pids[$(( i - 1 ))]=$!
