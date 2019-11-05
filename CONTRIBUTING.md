@@ -1,4 +1,4 @@
-## How to contribute to VFLP
+## How to contribute to VirtualFlow
 
 #### Table of Contents
 
