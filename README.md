@@ -1,5 +1,7 @@
 ## VFLP - VirtualFlow for Ligand Preparation
 
+Welcome to the VirtualFlow project. 
+
 VirtualFlow is a versatile, parallel workflow platform for carrying out virtual screening related tasks on Linux-based computer clusters of any type and size which are managed by a batchsystem (such as SLURM). 
 
 Currently, there exist two versions of VirtualFlow, which are tailored to different types of tasks:
@@ -26,10 +28,16 @@ The following gives an overview of the various resources related to VirtualFlow:
 
 ### Contributing
 
-If you are interested in contributing to VirtualFlow, please see the file [CONTRIBUTING.md](CONTRIBUTING.md) and the file [CODE_OF_CONDUCT.md](file CODE_OF_CONDUCT.md).
+If you are interested in contributing to VirtualFlow, whether it is to report a bug or to extend VirtualFlow with your own code, please see the file [CONTRIBUTING.md](CONTRIBUTING.md) and the file [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 
 
 ### License
 
-The project ist distributed under the GNU GPL v3. Please see the file [LICENSE.md](LICENSE.md) for more details. 
+The project ist distributed under the GNU GPL v3.0. Please see the file [LICENSE](LICENSE) for more details. 
+
+
+
+### Contact
+
+If you have any questions, or would to get in touch with us, please contact Christoph Gorgulla (cgorgulla@g.harvard.edu).
