@@ -1,6 +1,7 @@
 ## VFLP - VirtualFlow for Ligand Preparation
 
-Welcome to the VirtualFlow project. 
+
+Welcome to the VirtualFlow project!
 
 VirtualFlow is a versatile, parallel workflow platform for carrying out virtual screening related tasks on Linux-based computer clusters of any type and size which are managed by a batchsystem (such as SLURM). 
 
