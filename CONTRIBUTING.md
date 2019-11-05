@@ -35,7 +35,7 @@ This project and everyone participating in it is governed by the Atom Code of Co
 We aspire to create a welcoming environment for collaboration on this project. To that end, we follow the [Contributor Covenant Code of Conduct Code](CODE_OF_CONDUCT.md). Please read and follow it if you would like to become a contributor to our project.
 
 
-### Important Resources
+### Resources
 
 The following gives an overview of the various resources related to VirtualFlow:
 
