@@ -1,3 +1,5 @@
+## How to contribute to VFLP
+
 #### Table of Contents
 
 - [Introduction](#introduction)
@@ -29,8 +31,6 @@ VirtuaFlow is an open source project and we love to receive contributions from o
 
 
 ### Code of Conduct
-
-This project and everyone participating in it is governed by the Atom Code of Conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to atom@github.com.
 
 We aspire to create a welcoming environment for collaboration on this project. To that end, we follow the [Contributor Covenant Code of Conduct Code](CODE_OF_CONDUCT.md). Please read and follow it if you would like to become a contributor to our project.
 
@@ -64,17 +64,17 @@ Bug reports can be done via our GitHub issue tracker:
 
 #### Improving/Extending the Documentation
 
-If you would like to extend the documenation, please contact Christoph Gorgulla (cgorgulla@g.harvard.edu) for futher coordination.
+If you would like to extend the documenation, please contact us for futher coordination.
 
 
 #### Improving/Extending the Tutorials
 
-If you would like to improve/extend the tutorials, please contact Christoph Gorgulla (cgorgulla@g.harvard.edu) for futher coordination.
+If you would like to improve/extend the tutorials, please contact us for futher coordination.
 
 
 #### Resolution of One of the GitHub Issues
 
-If you would like to help to resolve the issues coming up in our issue trackers, please contact Christoph Gorgulla (cgorgulla@g.harvard.edu) for futher coordination.
+If you would like to help to resolve the issues coming up in our issue trackers, please contactus for futher coordination.
 
 
 #### Contributing Code
