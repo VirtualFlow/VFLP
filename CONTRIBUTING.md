@@ -17,8 +17,8 @@
         - [Development Process](#development-process)
         - [Testing](#testing)
         - [Style Guidelines](#style-guidelines)
-- [Questions](#questions)
 - [Links](#links) -->
+- [Contact](#contact)
 
 
 ### Introduction
@@ -95,7 +95,9 @@ Working on your first Pull Request? You can learn how from this free series:
 
 ##### Style Guidelines 
 
-### Questions
-
 ### Links
 -->
+
+### Contact
+
+If you have any questions, or would to get in touch with us, please contact Christoph Gorgulla (cgorgulla@g.harvard.edu).
