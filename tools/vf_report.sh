@@ -308,3 +308,4 @@ if [[ "${category}" = "workflow" ]]; then
 
     echo
     echo
+fi
