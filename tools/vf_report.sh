@@ -57,13 +57,13 @@ collection_folder="$(grep -m 1 "^collection_folder=" ${controlfile} | tr -d '[[:
 outputfiles_level="$(grep -m 1 "^outputfiles_level=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 export LC_ALL=C
 export LANG=C
-vf_tempdir="$(grep -m 1 "^tempdir=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+vf_tempdir="$(grep -m 1 "^tempdir_default=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 export VF_JOBLETTER="$(grep -m 1 "^job_letter=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 batchsystem="$(grep -m 1 "^batchsystem=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 job_letter="$(grep -m 1 "^job_letter=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 
 # Tempdir
-vf_tempdir="$(grep -m 1 "^tempdir=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+vf_tempdir="$(grep -m 1 "^tempdir_default=" ${controlfile} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 tempdir=${vf_tempdir}/$USER/VFLP/${VF_JOBLETTER}/vf_report_$(date | tr " :" "_")
 mkdir -p ${tempdir}
 

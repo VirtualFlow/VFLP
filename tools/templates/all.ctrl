@@ -1,3 +1,5 @@
+# Each line which starts with '#' is a comment/description of the variable above the comment
+
 *****************************************************************************************************************************************************************
 ***************************************************************    Job Resource Configuration    ****************************************************************
 *****************************************************************************************************************************************************************
@@ -132,9 +134,16 @@ error_response=fail
 #   * fail      : exit workflow with failure (exit code 1)
 # Settable via range control files: Yes
 
-tempdir=/dev/shm
-# The directory which is used for the temporary workflow files
-# Should be a very fast filesystem not part of the distributed cluster filesystem, e.g. a local ramfs (as normally provided by ${VF_TMPDIR})
+tempdir_default=/tmp
+# The directory which is used for the temporary workflow files which need a normal performance
+# Is normally a local SSD or HDD
+# The directory does only need to be available on the node on which the job step/queue is running
+# In the tempdir, a subfolder named ${USER} will automatically be created
+# Settable via range control files: Yes
+
+tempdir_fast=/dev/shm
+# The directory which is used for the temporary workflow files which need a fast perfomance
+# Should be a a local ram filesystem/ramdisk
 # The directory does only need to be available on the node on which the job step/queue is running
 # In the tempdir, a subfolder named ${USER} will automatically be created
 # Settable via range control files: Yes
@@ -311,10 +320,57 @@ obabel_time_limit=50
 # Settable via range control files: Yes
 
 
+********************************************************************    Tranche Reassignments    ****************************************************************
+
+tranche_reassignments=true
+# Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
+# This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
+
+tranche_type_count=6
+# Total number of new tranche types
+# Minimum number: 3
+# Each new tranche type is given an index <X>, starting at 1.
+# For each tranch type <X>, in this configuration file has to be set the following two varables (tranche_<X>_type and tranche_<X>_partition):
+#       * tranche_<X>_type: This sets the type of tranche <X>, which is one of the following properties:
+#                               * mw: molecular weight
+#                               * logp: octanol water partition coefficient
+#                               * hba: hydrogen bond acceptor count
+#                               * hbd: hydrogen bond donor count
+#                               * rotb: rotatable bond count
+#                               * tpsa: topological polar sruface area
+#                               * atoms: number of atoms (including hydrogen)
+#                               * bonds: numner of bonds (including hydrogen-heavy atom bonds)
+#                               * rings: number of rings
+#                               * aromaticrings: number of aromatic rings
+#                               * mr: molecular refractivity
+#                               * charge: total (formal) charge of the molecule
+#       * tranche_<X>_partition: This has to be a set of N values (at least one), separated by colons, which partitions the value range of the molecular propertiy of tranche <X> into N+1 intervals. For example, the parition '0:1:2' would result in the 4 intervals: (-∞,0], (0,1], (1,2], (2,∞). The maximum number of allowed intervals is 26 (corresponding to 25 values). Each value has to be an integer or float, and the values have to be in ascending order.
+
+tranche_1_type=mw
+tranche_1_partition=200:250:300:325:350:375:400:425:450:500
+
+tranche_2_type=logp
+tranche_2_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+
+tranche_3_type=hba
+tranche_3_partition=1:3:5:7:9:10
+
+tranche_4_type=hdb
+tranche_4_partition=1:2:3:4:5
+
+tranche_5_type=rotb
+tranche_5_partition=1:3:5:7:9:10
+
+tranche_6_type=tpsa
+tranche_6_partition=20:40:60:80:100:120:140
+
+
+
+
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
 jchem_package_filename=jchemsuite.tar.gz
-# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps, and if tranche_reassignments=true
 # The filename of the JChem package located in the folder tools/packages/ in the tar.gz format (available on the ChemAxon homepage)
 # The root folder in the archive has to have the name jchemsuite (normally distributed by ChemAxon in this way)
 # Possible values:
