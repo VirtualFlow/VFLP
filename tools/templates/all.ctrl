@@ -113,6 +113,7 @@ keep_ligand_summary_logs=true
 # Summary log files which show for each ligand the success status of conversion and the conversion time.
 # If the conversion failed, a reason is stated.
 # If the transformation succeeded, the conversion programs which were used are stated.
+# After the screening of a ligand collection was completed, these summary log files will be stored in the output-files/complete/<docking-sceanrio>/ligands-lists folder.
 # Possible values:
 #   * false
 #   * true
@@ -309,6 +310,19 @@ obabel_time_limit=50
 # In seconds
 # OpenBabel seems to have an internal limit of 240 seconds for conformation generation
 # Settable via range control files: Yes
+
+
+************************************************************************    Energy Check    *********************************************************************
+
+energy_check=true
+# Checking of the potential energy of the final output molecule. Helpful to filter out broken molecules. If the energy of the molecule is above the set energy treshold (via max_obabel_energy), the molecule is filtered out and not contained in the output database.
+# Possible values:
+#   * false
+#   * true
+
+max_obabel_energy=10000
+# If the molecule is broken, which happens rarely, but is possible, usually the obabel_energy is above 10 000.
+# Possible values: Any integer
 
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
