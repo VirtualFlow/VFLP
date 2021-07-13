@@ -39,6 +39,14 @@ The project ist distributed under the GNU GPL v3.0. Please see the file [LICENSE
 
 
 
+### Citation
+
+The use of VirtualFlow or the VirtualFlow ligand libraries in any reports or publications should be acknowledged by including a citation to:
+
+- Gorgulla, C., Boeszoermenyi, A., Wang, Z. et al. An open-source drug discovery platform enables ultra-large virtual screens. Nature (2020). https://doi.org/10.1038/s41586-020-2117-z
+
+
+
 ### Contact
 
 If you have any questions, or would to get in touch with us, please contact Christoph Gorgulla (cgorgulla@g.harvard.edu).
