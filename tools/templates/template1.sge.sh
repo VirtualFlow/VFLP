@@ -26,9 +26,9 @@
 #$ -o ../workflow/output-files/jobs/job-1.1_$JOB_ID.out
 #$ -e ../workflow/output-files/jobs/job-1.1_$JOB_ID.out
 #$ -l h_rt=12:00:00
-#$ -q wagnerlab
+#$ -q <queue>
 #$ -m a
-#$ -M cgorgulla@crystal.harvard.edu
+#$ -M
 #$ -notify
 
 # Job Information

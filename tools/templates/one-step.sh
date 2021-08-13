@@ -121,7 +121,7 @@ start_ng_server() {
 ng_server_check() {
 
     # Testing if the ng-server is still working
-    ng --nailgun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
+    ng --dun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
     exit_code=$?
 
     # Checking the exit status

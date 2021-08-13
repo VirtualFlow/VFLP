@@ -53,6 +53,8 @@ elif [ "${batchsystem}" == "SGE" ]; then
     qsub ${jobfile}
 elif [ "${batchsystem}" == "LSF" ]; then
     bsub < ${jobfile}
+elif [ "${batchsystem}" == "BASH" ]; then
+    bash ${jobfile}
 else
     echo
     echo "Error: The batch system (${batchsystem}) which was specified in the control file (${VF_CONTROLFILE}) is not supported."

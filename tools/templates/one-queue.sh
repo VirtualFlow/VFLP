@@ -271,7 +271,6 @@ prepare_collection_files_tmp() {
         rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/*
     fi
 
-
     # Copying the required files
     if [ ! -f ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar ]; then
         if [ -f ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ]; then
@@ -308,6 +307,7 @@ prepare_collection_files_tmp() {
             tar -xzf ../output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/ || true
         done
 
+        # Copying the status file
         if [[ -f  ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status ]]; then
             cp ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
         fi
@@ -396,7 +396,7 @@ clean_collection_files_tmp() {
                 # Compressing and archiving the status file
                 gzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status
 
-                # Chekcing output file level
+                # TODO Checking output file level
                 if [ "${outputfiles_level}" == "tranche" ]; then
 
                     # Directory preparation
@@ -422,7 +422,7 @@ clean_collection_files_tmp() {
         else
             # Loop for each target format
             for targetformat in ${targetformats//:/ }; do
-                # Compressing the collecion
+                # Compressing the collection
                 tar -czf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/ ${local_ligand_collection_ID} || true
 
                 # Copying the files which should be kept in the permanent storage location
@@ -477,7 +477,7 @@ end_queue() {
 check_pdb_coordinates() {
 
     # Checking the coordinates
-    no_nonzero_coord="$(grep -E "ATOM|HETATM" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | awk -F ' ' '{print $6,$7,$8}' | tr -d '0.\n\+\- ' | wc -m)"
+    no_nonzero_coord="$(grep -E "ATOM|HETATM" ${pdb_intermediate_output_file} | awk -F ' ' '{print $6,$7,$8}' | tr -d '0.\n\+\- ' | wc -m)"
     if [ "${no_nonzero_coord}" -eq "0" ]; then
         echo "The pdb(qt) file only contains zero coordinates."
         return 1
@@ -705,10 +705,17 @@ molconvert_generate_conformation() {
     # Checking the NG Server
     ng_server_check
 
+    # Variables
+    if [ "${tranche_reassignments}" == "false" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    elif [ "${tranche_reassignments}" == "false" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
+    fi
+    
     # Converting SMILES to 3D PDB
     # Trying conversion with molconvert
     trap '' ERR
-    { timeout 300 bin/time_bin -f "    * Timings of molconvert (user real system): %U %e %S" ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.formats.MolConverter pdb:+H -3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -o ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2) ; } 2>&1
+    { timeout 300 bin/time_bin -f "    * Timings of molconvert (user real system): %U %e %S" ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.formats.MolConverter pdb:+H -3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -o ${pdb_intermediate_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2) ; } 2>&1
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
@@ -720,7 +727,7 @@ molconvert_generate_conformation() {
         error_response_std $LINENO
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E'failed|timelimit|error|no such file|not found' &>/dev/null; then
         echo "    * Warning: Conformation generation with molconvert failed. An error flag was detected in the log files..."
-    elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+    elif [ ! -s ${output_file} ]; then
         echo "    * Warning: Conformation generation with molconvert failed. No valid PDB file was generated (empty or nonexistent)..."
     elif ! check_pdb_coordinates; then
         echo "    * Warning: The output PDB file exists but does not contain valid coordinates."
@@ -735,18 +742,25 @@ molconvert_generate_conformation() {
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction of the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
-        mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
 }
 
 # Conformation generation with obabel
 obabel_generate_conformation(){
 
+    # Variables
+    if [ "${tranche_reassignments}" == "false" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    elif [ "${tranche_reassignments}" == "false" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
+    fi
+
     # Converting SMILES to 3D PDB
     # Trying conversion with obabel
     trap '' ERR
-    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel --gen3d -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
+    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel --gen3d -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${pdb_intermediate_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
@@ -755,7 +769,7 @@ obabel_generate_conformation(){
         echo "    * Warning: Conformation generation with obabel failed. Open Babel was interrupted by the timeout command..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found' &>/dev/null; then
         echo "    * Warning: Conformation generation with obabel failed. An error flag was detected in the log files..."
-    elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+    elif [ ! -s ${pdb_intermediate_output_file} ]; then
         echo "    * Warning: Conformation generation with obabel failed. No valid PDB file was generated (empty or nonexistent)..."
     elif ! check_pdb_coordinates; then
         echo "    * Warning: The output PDB file exists but does not contain valid coordinates."
@@ -770,18 +784,25 @@ obabel_generate_conformation(){
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/COMPND/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
-        mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
 }
 
 # PDB generation with obabel
 obabel_generate_pdb() {
 
+    # Variables
+    if [ "${tranche_reassignments}" == "false" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    elif [ "${tranche_reassignments}" == "false" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
+    fi
+
     # Converting SMILES to PDB
     # Trying conversion with obabel
     trap '' ERR
-    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}//${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
+    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -opdb -O ${pdb_intermediate_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
@@ -790,7 +811,7 @@ obabel_generate_pdb() {
         echo "    * Warning: PDB generation with obabel failed. Open Babel was interrupted by the timeout command..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found' &>/dev/null; then
         echo "    * Warning:  PDB generation with obabel failed. An error flag was detected in the log files..."
-    elif [ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb ]; then
+    elif [ ! -s ${pdb_intermediate_output_file} ]; then
         echo "    * Warning: PDB generation with obabel failed. No valid PDB file was generated (empty or nonexistent)..."
     elif ! check_pdb_coordinates; then
         echo "    * Warning: The output PDB file exists but does not contain valid coordinates."
@@ -804,17 +825,24 @@ obabel_generate_pdb() {
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/COMPND/d' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}//${next_ligand}.pdb | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp
-        mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb.tmp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        mv ${pdb_intermediate_output_file}.tmp /${pdb_intermediate_output_file}
     fi
 }
 
 # Target format generation with obabel
 obabel_generate_targetformat() {
 
+    # Variables
+    if [ "${tranche_reassignments}" == "false" ]; then
+        targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
+    elif [ "${tranche_reassignments}" == "false" ]; then
+        targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.${targetformat}    
+    fi
+    
     # Converting pdb to target the format
     trap '' ERR
-    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ipdb ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} ${additional_obabel_options} -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
+    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ipdb ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} ${additional_obabel_options} -O ${targetformat_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
@@ -823,7 +851,7 @@ obabel_generate_targetformat() {
         echo "    * Warning: Target format generation with obabel failed. Open Babel was interrupted by the timeout command..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|not found'; then
         echo "    * Warning:  Target format generation with obabel failed. An error flag was detected in the log files..."
-    elif [ ! -f ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} ]; then
+    elif [ ! -f ${targetformat_output_file} ]; then
         echo "    * Warning: target format generation with obabel failed. No valid target format file was generated (empty or nonexistent)..."
     elif [[ "${targetformat}" == "pdb" ||"${targetformat}" == "pdbqt" ]] && ! check_pdb_coordinates ; then
         echo "    * Warning: The output PDB(QT) file exists but does not contain valid coordinates."
@@ -840,87 +868,1019 @@ obabel_generate_targetformat() {
             pdb_targetformat_remark="REMARK    Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
 
             # Modifying the header of the targetformat file
-            sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\nREMARK    Created on $(date)|g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}.tmp
-            mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}.tmp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
+            sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
+            mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         fi
     fi
 }
 
 # Determining and assigning the tranche
-assign_tranche_to_ligand() {
+assign_tranches_to_ligand() {
 
     # Determining the tranche
-    for i in $(seq 1 ${tranche_type_count}); do
+    reassigned_tranche=""
+    tranche_letters=(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z)
 
+    # Loop
+    for tranche_type in ${tranche_types[@]}); do
 
-#                               * mw: molecular weight
-#                               * logp: octanol water partition coefficient
-#                               * hba: hydrogen bond acceptor count
-#                               * hbd: hydrogen bond donor count
-#                               * rotb: rotatable bond count
-#                               * tpsa: topological polar sruface area
-#                               * atoms: number of atoms (including hydrogen)
-#                               * bonds: numner of bonds (including hydrogen-heavy atom bonds)
-#                               * rings: number of rings
-#                               * aromaticrings: number of aromatic rings
-#                               * mr: molecular refractivity
-#                               * charge: total (formal) charge of the molecule
-
-        # Variables
-
-        case tranche_${i}_type in
+        case ${tranche_type} in
 
             mw)
-                ligand_mw="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}//${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | grep "^mol_weight " | awk '{print $2}')"
+                # Variables
+                ligand_mw="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^mol_weight " | awk '{print $2}')"
+                separator_count=$(echo ${tranche_mw_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_mw has a valid value
+                if ! [[ "$ligand_mw" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The MW $(${ligand_mw}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (MW)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_mw > ${tranche_mw_partition[((interval_index-2))]} && $ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_mw > ${tranche_mw_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The MW $(${ligand_mw}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (MW)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             logp)
-                ligand_logp="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}//${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | grep "^logP " | awk '{print $2}')"
+                # Variables
+                ligand_logp="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^logP " | awk '{print $2}')"
+                separator_count=$(echo ${tranche_logp_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_logp has a valid value
+                if ! [[ "$ligand_logp" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The logP $(${ligand_logp}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (logP)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_logp > ${tranche_logp_partition[((interval_index-2))]} && $ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_logp > ${tranche_logp_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The logP $(${ligand_logp}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (LogP)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             hba)
-                ligand_hba="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator acceptorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | tail -n 1 | awk '{print $2}')"
+                # Variables
+                ligand_hba="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator acceptorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_hba_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_hba has a valid value
+                if ! [[ "$ligand_hba" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The HBA count $(${ligand_hba}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (HBA)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_hba <= ${tranche_hba_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_hba > ${tranche_hba_partition[((interval_index-2))]} && $ligand_hba <= ${tranche_hba_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_hba > ${tranche_hba_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The HBA count $(${ligand_hba}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (HBA)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             hbd)
-                ligand_hbd="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator donorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | tail -n 1 | awk '{print $2}')"
+                # Variables
+                ligand_hbd="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator donorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_hbd_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_hbd has a valid value
+                if ! [[ "$ligand_hbd" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The HBD count $(${ligand_hbd}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (HBD)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_hbd <= ${tranche_hbd_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_hbd > ${tranche_hbd_partition[((interval_index-2))]} && $ligand_hbd <= ${tranche_hbd_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_hbd > ${tranche_hbd_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The HBD count $(${ligand_hbd}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (HBD)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             rotb)
-                ligand_rotb="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator rotatablebondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | tail -n 1 | awk '{print $2}')"
+                # Variables
+                ligand_rotb="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator rotatablebondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_rotb_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_rotb has a valid value
+                if ! [[ "$ligand_rotb" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The RotB count $(${ligand_rotb}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (RotB)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_rotb <= ${tranche_rotb_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_rotb > ${tranche_rotb_partition[((interval_index-2))]} && $ligand_rotb <= ${tranche_rotb_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_rotb > ${tranche_rotb_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The RotB count $(${ligand_rotb}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (RotB)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             tpsa)
-                ligand_tpsa="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator polarsurfacearea ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | tail -n 1 | awk '{print $2}')"
+                # Variables
+                ligand_tpsa="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator polarsurfacearea ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_tpsa_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_tpsa has a valid value
+                if ! [[ "$ligand_tpsa" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The TPSA $(${ligand_tpsa}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (TPSA)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_tpsa <= ${tranche_tpsa_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_tpsa > ${tranche_tpsa_partition[((interval_index-2))]} && $ligand_tpsa <= ${tranche_tpsa_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_tpsa > ${tranche_tpsa_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The TPSA $(${ligand_tpsa}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (TPSA)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             atomcount)
-                ligand_atomcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | grep "^num_atoms " | awk '{print $2}')"
+                # Variables
+                ligand_atomcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_atoms " | awk '{print $2}')"
+                separator_count=$(echo ${tranche_atomcount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_atomcount has a valid value
+                if ! [[ "$ligand_atomcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The atom count $(${ligand_atomcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (atom count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_atomcount <= ${tranche_atomcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_atomcount > ${tranche_atomcount_partition[((interval_index-2))]} && $ligand_atomcount <= ${tranche_atomcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_atomcount > ${tranche_atomcount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The atom count $(${ligand_atomcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (atom count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             bondcount)
-                ligand_bondcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | grep "^num_bonds " | awk '{print $2}')"
+                # Variables
+                ligand_bondcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_bonds " | awk '{print $2}')"
+                separator_count=$(echo ${tranche_bondcount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_bondcount has a valid value
+                if ! [[ "$ligand_bondcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The bond count $(${ligand_bondcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (bond count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_bondcount <= ${tranche_bondcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_bondcount > ${tranche_bondcount_partition[((interval_index-2))]} && $ligand_bondcount <= ${tranche_bondcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_bondcount > ${tranche_bondcount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The bond count $(${ligand_bondcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (bond count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             ringcount)
-                ligand_ringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator ringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | tail -n 1 | awk '{print $2}')"
+                # Variables
+                ligand_ringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator ringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_ringcount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_ringcount has a valid value
+                if ! [[ "$ligand_ringcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The ring count $(${ligand_ringcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (ring count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_ringcount <= ${tranche_ringcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_ringcount > ${tranche_ringcount_partition[((interval_index-2))]} && $ligand_ringcount <= ${tranche_ringcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_ringcount > ${tranche_ringcount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The ring count $(${ligand_ringcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (ring count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             aromaticringcount)
-                ligand_aromaticringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator aromaticringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | tail -n 1 | awk '{print $2}')"
+                # Variables
+                ligand_aromaticringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator aromaticringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_aromaticringcount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_aromaticringcount has a valid value
+                if ! [[ "$ligand_aromaticringcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The aromatic ring count $(${ligand_aromaticringcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (aromatic ring count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_aromaticringcount <= ${tranche_aromaticringcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_aromaticringcount > ${tranche_aromaticringcount_partition[((interval_index-2))]} && $ligand_aromaticringcount <= ${tranche_aromaticringcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_aromaticringcount > ${tranche_aromaticringcount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The aromatic ring count $(${ligand_aromaticringcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (aromatic ring count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             mr)
-                ligand_mr="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}//${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | grep "^MR " | awk '{print $2}')"
+                # Variables
+                ligand_mr="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^MR " | awk '{print $2}')"
+                separator_count=$(echo ${tranche_mr_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_mr has a valid value
+                if ! [[ "$ligand_mr" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The MR $(${ligand_mr}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (MR)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_mr <= ${tranche_mr_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_mr > ${tranche_mr_partition[((interval_index-2))]} && $ligand_mr <= ${tranche_mr_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_mr > ${tranche_mr_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The MR $(${ligand_mr}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (MR)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
-            charge)
-                ligand_aromaticringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator formalcharge ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb | tail -n 1 | awk '{print $2}')"
+            formalcharge)
+                # Variables
+                ligand_formalcharge="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/-2/--/" | sed "s/+2/++/" | grep -o "[+-]" | wc -l)"
+                separator_count=$(echo ${tranche_formalcharge_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_formalcharge has a valid value
+                if ! [[ "$ligand_formalcharge" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The formal charge $(${ligand_formalcharge}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (formal charge)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_formalcharge <= ${tranche_formalcharge_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_formalcharge > ${tranche_formalcharge_partition[((interval_index-2))]} && $ligand_formalcharge <= ${tranche_formalcharge_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_formalcharge > ${tranche_formalcharge_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The formal charge $(${ligand_formalcharge}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (formal charge)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            positivechargecount)
+                # Variables
+                ligand_positivechargecount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/+2/++/" | grep -o "+" | wc -l)"
+                separator_count=$(echo ${tranche_positivechargecount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_positivechargecount has a valid value
+                if ! [[ "$ligand_positivechargecount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The positive charge count $(${ligand_positivechargecount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (positive charge count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_positivechargecount <= ${tranche_positivechargecount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_positivechargecount > ${tranche_positivechargecount_partition[((interval_index-2))]} && $ligand_positivechargecount <= ${tranche_positivechargecount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_positivechargecount > ${tranche_positivechargecount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The positive charge count $(${ligand_positivechargecount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (positive charge count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            negativechargecount)
+                # Variables
+                ligand_negativechargecount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/-2/--/" | grep -o "-" | wc -l)"
+                separator_count=$(echo ${tranche_negativechargecount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_negativechargecount has a valid value
+                if ! [[ "$ligand_negativechargecount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The negative charge count $(${ligand_negativechargecount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (negative charge count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_negativechargecount <= ${tranche_negativechargecount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_negativechargecount > ${tranche_negativechargecount_partition[((interval_index-2))]} && $ligand_negativechargecount <= ${tranche_negativechargecount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_negativechargecount > ${tranche_negativechargecount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The negative charge count $(${ligand_negativechargecount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (negative charge count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            fsp3)
+                # Variables
+                ligand_fsp3="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator fsp3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_fsp3_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_fsp3 has a valid value
+                if ! [[ "$ligand_fsp3" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The Fsp3 value $(${ligand_fsp3}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (Fsp3)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_fsp3 <= ${tranche_fsp3_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_fsp3 > ${tranche_fsp3_partition[((interval_index-2))]} && $ligand_fsp3 <= ${tranche_fsp3_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_fsp3 > ${tranche_fsp3_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The Fsp3 value $(${ligand_fsp3}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (Fsp3)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            chiralcentercount)
+                # Variables
+                ligand_chiralcentercount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator chiralcentercount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo ${tranche_chiralcentercount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_chiralcentercount has a valid value
+                if ! [[ "$ligand_chiralcentercount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The chiral center count value $(${ligand_chiralcentercount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (chiral center count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_chiralcentercount <= ${tranche_chiralcentercount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_chiralcentercount > ${tranche_chiralcentercount_partition[((interval_index-2))]} && $ligand_chiralcentercount <= ${tranche_chiralcentercount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_chiralcentercount > ${tranche_chiralcentercount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The chiral center count value $(${ligand_chiralcentercount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (chiral center count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            halogencount)
+                # Variables
+                ligand_fluorine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "F" | wc -l)"
+                ligand_chlorine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "Cl" | wc -l)"
+                ligand_bromine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "Br" | wc -l)"
+                ligand_iodine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "I" | wc -l)"
+                ligand_halogencount=$((ligand_fluorine_count+ligand_chlorine_count+ligand_bromine_count+ligand_iodine_count))
+                separator_count=$(echo ${tranche_halogencount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_halogencount has a valid value
+                if ! [[ "$ligand_halogencount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The chiral halogen count $(${ligand_halogencount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (halogen count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_halogencount <= ${tranche_halogencount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_halogencount > ${tranche_halogencount_partition[((interval_index-2))]} && $ligand_halogencount <= ${tranche_halogencount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_halogencount > ${tranche_halogencount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The halogen count value $(${ligand_halogencount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (halogen count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            sulfurcount)
+                # Variables
+                ligand_sulfurcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Si//" | grep -io "S" | wc -l)"
+                separator_count=$(echo ${tranche_sulfurcount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_sulfurcount has a valid value
+                if ! [[ "$ligand_sulfurcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The chiral sulfur count $(${ligand_sulfurcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (sulfur count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_sulfurcount <= ${tranche_sulfurcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_sulfurcount > ${tranche_sulfurcount_partition[((interval_index-2))]} && $ligand_sulfurcount <= ${tranche_sulfurcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_sulfurcount > ${tranche_sulfurcount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The sulfur count value $(${ligand_sulfurcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (sulfur count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            NOcount)
+                # Variables
+                ligand_NOcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | grep -io "[NO]" | wc -l)"
+                separator_count=$(echo ${tranche_NOcount_partition[@]} | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_NOcount has a valid value
+                if ! [[ "$ligand_NOcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The chiral NO count $(${ligand_NOcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (NO count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index == 1 ]]; then
+                        if [[ echo "$ligand_NOcount <= ${tranche_NOcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index < ${interval_count} ]]
+                        if [[ echo "$ligand_NOcount > ${tranche_NOcount_partition[((interval_index-2))]} && $ligand_NOcount <= ${tranche_NOcount_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index == ${interval_count} ]]
+                        if [[ echo "$ligand_NOcount > ${tranche_NOcount_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The NO count value $(${ligand_NOcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (NO count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
                 ;;
 
             *)
                 # Printing some information
-                echo -e " Error: The value ("${tranche_${i}_type}") of the variable tranche_types is not allowed."
+                echo -e " Error: The value ("${tranche_type}") of the variable tranche_types is not supported."
                 error_response_std $LINENO
                 ;;
         esac
@@ -930,7 +1890,6 @@ assign_tranche_to_ligand() {
     # Copying the ligand to the new output directly with the new tranche
 
 }
-
 
 determine_controlfile() {
 
@@ -1089,24 +2048,21 @@ tranche_reassignments="$(grep -m 1 "^tranche_reassignments=" ${VF_CONTROLFILE_TE
 if [ "${tranche_reassignments}" == "true" ]; then
 
     # Variables
-    tranche_type_count="$(grep -m 1 "^tranche_type_count=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    if [ -n "${tranche_type_count}" ] && [ "$tranche_type_count" -eq "$tranche_type_count" ]; then
+    tranche_types="$(grep -m 1 "^tranche_types=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    IFS=':' read -a tranche_types <<< "${tranche_types}"
 
-        # Loop for each tranch type
-        for i in $(seq 1 ${tranche_type_count}); do
+    # Loop for each tranche type
+    for tranche_type in ${tranche_types[@]}); do
 
-            # Variables
-            tranche_${i}_type="$(grep -m 1 "^tranche_${i}_type=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-            tranche_${i}_partition="$(grep -m 1 "^tranche_${i}_partition=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+        if [[ "${tranche_type}" != @(mw|logp|hbd|hba|rotb|tpsa|) ]]; then
+            echo -e " Error: The value (${tranche_type}) was present in the variable tranche_types, but this value is invalid..."
+            error_response_std $LINENO
+        fi
 
-        done
-
-    else
-        echo -e " Error: The value (${tranche_type_count}) for tranche_type_count which was specified in the controlfile is invalid..."
-        error_response_std $LINENO
-    fi
+        # Variables
+        IFS=':' read -a tranche_${tranche_type}_partition < <(grep -m 1 "^tranche_${tranche_type}_partition=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')
+    done
 fi
-
 
 # Saving some information about the VF_CONTROLFILEs
 echo
@@ -1375,6 +2331,72 @@ while true; do
 
     fi
 
+     # TODO Determine reassigned_tranche
+     # function?
+
+
+#     # Stereoisomer generation
+#     stereoisomer_generation=""
+#     if [ "${stereoisomer_generation}" == "true" ]; then
+#
+#         # Variables
+#         stereoisomer_generation_success="false"
+#
+#         # Printing information
+#         echo -e "\n * Starting the stereoisomer generation with cxcalc"
+#
+#         # Carrying out the tautomerization
+#         cxcalc_stereoisomer_generation
+#
+#         # Checking if the stereoisomer generation has failed
+#         if [ "${stereoisomer_generation_success}" == "false" ]; then
+#
+#             # Printing information
+#             echo "    * Warning: The tautomerization has failed."
+#
+#             # Adjusting the ligand-list file
+#             ligand_list_entry="${ligand_list_entry} tautomerization:failed"
+#
+#             # Checking if tautomerization is mandatory
+#             if [ "${tautomerization_obligatory}" == "true" ]; then
+#
+#                 # Printing some information
+#                 echo "    * Warning: Ligand will be skipped since a successful tautomerization is required according to the controlfile."
+#
+#                 # Updating the ligand list
+#                 update_ligand_list_end false "during tautomerization"
+#
+#                 # Skipping the ligand
+#                 continue
+#             else
+#
+#                 # Printing some information
+#                 echo "    * Warning: Ligand will be further processed without tautomerization"
+#
+#                 # Variables
+#                 next_ligand_tautomers=${next_ligand}
+#
+#                 # Copying the original ligand
+#                 cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
+#             fi
+#         else
+#
+#             # Adjusting the ligand-list file
+#             next_ligand_tautomers_count=$(echo ${next_ligand_tautomers} | wc -w)
+#             ligand_list_entry="${ligand_list_entry} tautomerization(${next_ligand_tautomers_count}):success"
+#         fi
+#     else
+#
+#         # Copying the original ligand
+#         cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
+#
+#         # Variables
+#         next_ligand_tautomers=${next_ligand}
+#
+#     fi
+
+
+
     # Tautomer generation
     pdb_tautomerization_remark=""
     if [ "${tautomerization}" == "true" ]; then
@@ -1544,8 +2566,12 @@ while true; do
 
         fi
 
+        # Reassigning the tranches if needed
+        if [ "${tranche_reassignments}" == "true" ]; then
+            assign_tranches_to_ligand
+        fi
 
-         # 3D conformation generation
+        # 3D conformation generation
         if [ "${conformation_generation}" == "true" ]; then
 
             # Variables
@@ -1587,6 +2613,7 @@ while true; do
                         ;;
                 esac
             fi
+            # TODO: Checking the energy. Does PDBQT corrupt also mean PDB corrupt? Do we need to check all formats, or just PDB?
 
             # Checking if both of the 3D conformation generation attempts have failed
             if [ "${conformation_success}" == "false" ]; then
@@ -1623,7 +2650,6 @@ while true; do
                 ligand_list_entry="${ligand_list_entry} conformation:success(${conformation_program})"
             fi
         fi
-
 
         # PDB generation
         # If conformation generation failed, and we reached this point, then conformation_obligatory=false, so we do not need to check this
@@ -1696,11 +2722,6 @@ while true; do
             fi
         done
 
-        # Reassigning the tranches if needed
-        if [ "${tranche_reassignments}" == "true" ]; then
-            assign_tranche_to_ligand
-        fi
-
         # Updating the ligand list
         if [ "${next_ligand_tautomers_count}" -eq "1" ]; then
             update_ligand_list_end true "complete pipeline"
@@ -1713,3 +2734,4 @@ while true; do
     done
 
 done
+

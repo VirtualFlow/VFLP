@@ -29,7 +29,7 @@
 #PBS -A bec00123
 #PBS -q mpp2testq
 #PBS -m a
-#PBS -M silmaril@zedat.fu-berlin.de
+#PBS -M
 #PBS -l signal=10@300
 
 # Job Information

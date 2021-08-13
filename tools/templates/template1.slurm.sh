@@ -21,7 +21,7 @@
 ###############################################################################
 
 #SBATCH --job-name=h-1.1
-#SBATCH --mail-user=cgorgulla@crystal.harvard.edu
+#SBATCH --mail-user=
 #SBATCH --mail-type=fail
 #SBATCH --time=00-12:00:00
 #SBATCH --mem-per-cpu=1G
@@ -31,8 +31,6 @@
 #SBATCH --output=../workflow/output-files/jobs/job-1.1_%j.out           # File to which standard out will be written
 #SBATCH --error=../workflow/output-files/jobs/job-1.1_%j.out            # File to which standard err will be written
 #SBATCH --signal=10@300
-##SBATCH --constraint="holyib"
-##SBATCH --constraint="scratch2"
 
 # Loading Modules
 # Odyssey
@@ -330,7 +328,7 @@ sed -i "s/^#SBATCH --job-name=${VF_JOBLETTER}.*/#SBATCH --job-name=${VF_JOBLETTE
 
 # Changing the output filenames
 sed -i "s|^#SBATCH --output=.*|#SBATCH --output=../workflow/output-files/jobs/job-${new_job_no}_%j.out|g" ../workflow/job-files/main/${VF_JOBLINE_NO}.job
-sed -i "s|^#SBATCH --error=.*|#SBATCH --output=../workflow/output-files/jobs/job-${new_job_no}_%j.out|g" ../workflow/job-files/main/${VF_JOBLINE_NO}.job
+sed -i "s|^#SBATCH --error=.*|#SBATCH --output=../workflow/output-files/jobs/job-${new_job_no}_%j.err|g" ../workflow/job-files/main/${VF_JOBLINE_NO}.job
 
 # Checking how much time has passed since the job has been started
 end_time_seconds="$(date +%s)"
