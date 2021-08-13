@@ -320,6 +320,18 @@ obabel_time_limit=50
 # Settable via range control files: Yes
 
 
+*************************************************************************    Energy Check    **********************************************************************
+
+energy_check=true
+# Determines whether the potential energy is checked by obenergy (Open Babel Enegy). This can be useuful to filter out compounds with unrealistic predicted 3D geometry
+# Possible values:
+#   * true
+#   * false
+
+energy_max=10000
+# Maximum allowed energy value. Recommended: 10000
+# Possible values: Positive integer
+
 ********************************************************************    Tranche Reassignments    ****************************************************************
 
 tranche_reassignments=true

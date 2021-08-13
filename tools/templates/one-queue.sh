@@ -489,7 +489,6 @@ check_pdb_coordinates() {
 # Desalting
 desalt() {
 
-
     # Number of fragments in SMILES
     number_of_smiles_fragments="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tr "." "\n" | wc -l)"
 
@@ -871,6 +870,19 @@ obabel_generate_targetformat() {
             sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         fi
+    fi
+}
+
+# Determining and assigning the tranche
+obabel_check_energy() {
+
+    # Computing the energy
+    ligand_energy=""
+    ligand_energy="$(obenergy ${pdb_intermediate_output_file} | tail -n 1 | awk '{print $4}')"
+
+    # Checking if the energy is below threshold
+    if [[ "${ligand_energy}" -le "${energy_max}" ]]; then
+        energy_check_success="true"
     fi
 }
 
@@ -2043,6 +2055,19 @@ if [ "${conformation_generation}" == "true" ]; then
     fi
 fi
 
+# Potential energy check
+energy_check="$(grep -m 1 "^energy_check=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+if [ "${energy_check}" == "true" ]; then
+    energy_max="$(grep -m 1 "^energy_max=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    if [[ $energy_max =~ ^[0-9]+$ ]]; then
+        echo -e " Error: The value (${energy_max}) for variable energy_max which was specified in the controlfile is invalid..."
+        error_response_std $LINENO
+    fi
+elif [[ "${energy_check}" != "false" ]]; then
+    echo -e " Error: The value (${energy_check}) for variable energy_check which was specified in the controlfile is invalid..."
+    error_response_std $LINENO
+fi
+
 # Reassignment of tranches
 tranche_reassignments="$(grep -m 1 "^tranche_reassignments=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 if [ "${tranche_reassignments}" == "true" ]; then
@@ -2656,7 +2681,6 @@ while true; do
         pdb_generation_remark=""
         if [[ "${conformation_generation}" == "false" ]] || [[ "${conformation_success}" == "false" ]]; then
 
-
             # Variables
             pdb_generation_success="false"
 
@@ -2688,6 +2712,41 @@ while true; do
             fi
         fi
 
+        # Checking the potential energy
+        if [[ "${energy_check}" == "true" ]]; then
+
+            # Variables
+            energy_check_success="false"
+
+            # Printing information
+            echo -e "\n * Starting to check the potential energy of the ligand"
+
+            # Attempting the energy check with obabel
+            obabel_check_energy
+
+            # Checking if energy check generation attempt has failed and is mandatory
+            if [[ "${energy_check_success}" == "false" ]]; then
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} energy-check:failed"
+
+                # Printing some information
+                echo "    * Warning: Ligand will be skipped since it did not pass the energy-check."
+
+                # Updating the ligand list
+                update_ligand_list_end false "during energy check"
+
+                # Removing the pdb file
+                rm ${pdb_intermediate_output_file} &>/dev/null || true
+
+                # Skipping the ligand
+                continue
+            else
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} energy-check:success"
+            fi
+        fi
 
         # Generating the target formats
         # Printing information
