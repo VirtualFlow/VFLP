@@ -61,9 +61,9 @@ echo -e "\n * Preparing the to-do lists for jobline ${queue_no_1}\n"
 
 # Standard error response
 error_response_std() {
-    echo "Error has been trapped."
-    echo "Error in bash script $(basename ${BASH_SOURCE[0]})"
-    echo "Error on line $1"
+    echo "Error has been trapped." | tee -a /dev/stderr
+    echo "Error in bash script $(basename ${BASH_SOURCE[0]})" | tee -a /dev/stderr
+    echo "Error on line $1" | tee -a /dev/stderr
 
     #clean_up
     if [[ "${VF_ERROR_RESPONSE}" == "ignore" ]]; then
@@ -131,10 +131,12 @@ next_todo_list1() {
             #no_collections_remaining="$(cat ${todo_file_temp} 2>/dev/null | grep -c "[^[:blank:]]" || true)"
             no_collections_assigned=0
             no_collections_beginning=${no_collections_remaining}
+            initial_todolist=false
         else
-            next_todo_list_index=$(printf "%04d" $((10#${current_todo_list_index}-1)) )
+            next_todo_list_index=$(printf "%04d" $((10#${current_todo_list_index})) )
             next_todo_list=../../workflow/ligand-collections/todo/todo.all.${next_todo_list_index}
             no_collections_remaining="0"
+            rm ../../workflow/ligand-collections/todo/todo.all.locked || true
             echo " * Info: No more todo lists."
         fi
     else
@@ -145,7 +147,7 @@ next_todo_list1() {
 next_todo_list2() {
 
     # Changing the locked file
-    if [[ -f ../../workflow/ligand-collections/todo/todo.all.locked ]]; then
+    if [[ -f ../../workflow/ligand-collections/todo/todo.all.locked ]] && [[ ${initial_todolist} == "true" ]]; then
 
         echo " * Warning: There exists an old (locked) todo file. Trying to take care of it..."
         if [[ ! -L ../../workflow/ligand-collections/todo/todo.all.locked ]] && [[ -s ../../workflow/ligand-collections/todo/todo.all.locked ]]; then
@@ -187,6 +189,7 @@ next_todo_list2() {
         no_collections_remaining="$(grep -cv '^\s*$' ${todo_file_temp} || true)"
         no_collections_assigned=0
         no_collections_beginning=${no_collections_remaining}
+        initial_todolist=false
     fi
 }
 
@@ -200,7 +203,7 @@ clean_up() {
 #        echo "Warning: The file ../../workflow/ligand-collections/todo/todo.all already exists."
 #        no_of_lines_1=$(fgrep -c "" ../../workflow/ligand-collections/todo/todo.all)
 #        no_of_lines_2=$(fgrep -c "" "${todo_file_temp}")
-#        other_todofile_exists="true"   .
+#        other_todofile_exists="true"
 #        other_todofile_is_larger="false"
 #        if [ "${no_of_lines_1}" -ge "${no_of_lines_2}" ]; then
 #            echo "The number of lines in the found todo file is larger than in our one. Discarding our version."
@@ -241,6 +244,7 @@ clean_up() {
 }
 trap 'clean_up' EXIT
 
+
 # Creating the working directory
 mkdir -p ${VF_TMPDIR_FAST}/${USER}/VFLP/${VF_JOBLETTER}/${VF_JOBLINE_NO}/prepare-todolists/
 
@@ -253,6 +257,7 @@ collection_folder="$(grep -m 1 "^collection_folder=" ${vf_controlfile_temp} | tr
 collection_folder=${collection_folder%/}
 ligands_todo_per_queue="$(grep -m 1 "^ligands_todo_per_queue=" ${vf_controlfile_temp} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 ligands_per_refilling_step="$(grep -m 1 "^ligands_per_refilling_step=" ${vf_controlfile_temp} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+initial_todolist=true
 
 # Screen formatting output
 if [[ ! "$*" = *"quiet"* ]]; then
@@ -471,12 +476,17 @@ for refill_step in $(seq 1 ${no_of_refilling_steps}); do
                     fi
                 fi
 
-                echo "${next_ligand_collection_and_length}" >> ${todofile_queue_new_temp[${queue_no_2}0000${queue_no_3}]}
                 no_to_add=${next_ligand_collection_and_length//* }
                 if ! [ "${no_to_add}" -eq "${no_to_add}" ]; then
-                    echo " * Warning: Could not get the length of collection ${next_ligand_collection}. Found value is: ${no_to_add}. Exiting."
-                    exit 1
+                    sleep 1
+                    next_ligand_collection_and_length="$(head -n 1 ${todo_file_temp})"
+                    no_to_add=${next_ligand_collection_and_length//* }
+                    if ! [ "${no_to_add}" -eq "${no_to_add}" ]; then
+                        echo " * Warning: Could not get the length of collection ${next_ligand_collection}. Found value is: ${no_to_add}. Exiting."
+                        exit 1
+                    fi
                 fi
+                echo "${next_ligand_collection_and_length}" >> ${todofile_queue_new_temp[${queue_no_2}0000${queue_no_3}]}
                 ligands_todo[${queue_no_2}0000${queue_no_3}]=$(( ${ligands_todo[${queue_no_2}0000${queue_no_3}]} + ${no_to_add} ))
                 queue_collection_numbers[${queue_no_2}0000${queue_no_3}]=$((queue_collection_numbers[${queue_no_2}0000${queue_no_3}] + 1 ))
                 # Removing the new collection from the ligand-collections-to-do file
