@@ -920,17 +920,18 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index == 1 ]]; then
-                        if [[ echo "$ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+
+                        if (( $(echo "$ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
-                    elif [[ $interval_index < ${interval_count} ]]
-                        if [[ echo "$ligand_mw > ${tranche_mw_partition[((interval_index-2))]} && $ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                    elif [[ $interval_index < ${interval_count} ]]; then
+                        if (( $(echo "${tranche_mw_partition[((interval_index-2))]} < $ligand_mw && $ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
-                    elif [[ $interval_index == ${interval_count} ]]
-                        if [[ echo "$ligand_mw > ${tranche_mw_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                    elif [[ $interval_index == ${interval_count} ]]; then
+                        if (( $(echo "$ligand_mw > ${tranche_mw_partition[((interval_index-2))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
@@ -972,17 +973,17 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index == 1 ]]; then
-                        if [[ echo "$ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                        if (( $(echo "$ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
-                    elif [[ $interval_index < ${interval_count} ]]
-                        if [[ echo "$ligand_logp > ${tranche_logp_partition[((interval_index-2))]} && $ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l | grep -q 1 ]]; then
+                    elif [[ $interval_index < ${interval_count} ]]; then
+                        if (( $(echo "${tranche_logp_partition[((interval_index-2))]} < $ligand_logp && $ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
-                    elif [[ $interval_index == ${interval_count} ]]
-                        if [[ echo "$ligand_logp > ${tranche_logp_partition[((interval_index-2))]}" | bc -l | grep -q 1 ]]; then
+                    elif [[ $interval_index == ${interval_count} ]]; then
+                        if (( $(echo "$ligand_logp > ${tranche_logp_partition[((interval_index-2))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
