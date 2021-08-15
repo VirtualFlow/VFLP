@@ -1897,10 +1897,6 @@ assign_tranches_to_ligand() {
                 ;;
         esac
     done
-    ligand
-
-    # Copying the ligand to the new output directly with the new tranche
-
 }
 
 determine_controlfile() {

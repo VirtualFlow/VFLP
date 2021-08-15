@@ -102,7 +102,7 @@ prepare_queue_files_tmp() {
 
     # Copying the requires files
     if ls -1 ../workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/queue-${VF_QUEUE_NO}.* > /dev/null 2>&1; then
-        cp ../workflow/output-files/queues/${VF_QUEUE_NO_1}/$/{VF_QUEUE_NO_2}/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/
+        cp ../workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/
     fi
 }
 
@@ -300,7 +300,7 @@ done
 
 # Checking if all queues exited without error ("wait" waits for all of them, but always returns 0)
 exit_code=0
-for pid in ${pids[@]}; do
+for pid in "${pids[@]}"; do
     wait $pid || let "exit_code=1"
 done
 if [ "$exit_code" == "1" ]; then
