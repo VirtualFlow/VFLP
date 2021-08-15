@@ -125,7 +125,7 @@ ng_server_check() {
     exit_code=$?
 
     # Checking the exit status
-    if [[ ${exit_code} != 0 || ${exit_code} != 130  ]]; then
+    if [[ ${exit_code} != 0 && ${exit_code} != 130  ]]; then
 
         # Printing warning message
         echo " * Warning: The NG Server seems to be not running anymore. Trying to restart..."
@@ -138,7 +138,7 @@ ng_server_check() {
         exit_code=$?
 
         # Checking the exit status
-        if [[ ${exit_code} != 0 || ${exit_code} != 130  ]]; then
+        if [[ ${exit_code} != 0 && ${exit_code} != 130  ]]; then
 
             # Printing warning message
             echo " * Error: Restarting of the NG Server has failed... "
