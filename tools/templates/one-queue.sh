@@ -877,7 +877,7 @@ obabel_check_energy() {
     ligand_energy="$(obenergy ${pdb_intermediate_output_file} | tail -n 1 | awk '{print $4}')"
 
     # Checking if the energy is below threshold
-    if [[ "${ligand_energy}" -le "${energy_max}" ]]; then
+    if (( $(echo "$ligand_energy <= ${energy_max}" | bc -l) )); then
         energy_check_success="true"
     fi
 }
