@@ -707,7 +707,7 @@ molconvert_generate_conformation() {
     # Variables
     if [ "${tranche_reassignments}" == "false" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
-    elif [ "${tranche_reassignments}" == "false" ]; then
+    elif [ "${tranche_reassignments}" == "true" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
     fi
     
@@ -752,7 +752,7 @@ obabel_generate_conformation(){
     # Variables
     if [ "${tranche_reassignments}" == "false" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
-    elif [ "${tranche_reassignments}" == "false" ]; then
+    elif [ "${tranche_reassignments}" == "true" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
     fi
 
@@ -792,11 +792,7 @@ obabel_generate_conformation(){
 obabel_generate_pdb() {
 
     # Variables
-    if [ "${tranche_reassignments}" == "false" ]; then
-        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
-    elif [ "${tranche_reassignments}" == "false" ]; then
-        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
-    fi
+    pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
 
     # Converting SMILES to PDB
     # Trying conversion with obabel
@@ -835,10 +831,10 @@ obabel_generate_targetformat() {
     # Variables
     if [ "${tranche_reassignments}" == "false" ]; then
         targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
-    elif [ "${tranche_reassignments}" == "false" ]; then
-        targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.${targetformat}    
+    elif [ "${tranche_reassignments}" == "true" ]; then
+        targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.${targetformat}
     fi
-    
+
     # Converting pdb to target the format
     trap '' ERR
     (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ipdb ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} ${additional_obabel_options} -O ${targetformat_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
