@@ -897,6 +897,7 @@ assign_tranches_to_ligand() {
             mw)
                 # Variables
                 ligand_mw="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^mol_weight " | awk '{print $2}')"
+                tranche_mw_partition=(${tranche_mw_partition//:/ })
                 separator_count=$(echo "${tranche_mw_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -949,6 +950,7 @@ assign_tranches_to_ligand() {
             logp)
                 # Variables
                 ligand_logp="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^logP " | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_logp_partition//:/ })
                 separator_count=$(echo "${tranche_logp_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1001,6 +1003,7 @@ assign_tranches_to_ligand() {
             hba)
                 # Variables
                 ligand_hba="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator acceptorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_hba_partition//:/ })
                 separator_count=$(echo "${tranche_hba_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1053,6 +1056,7 @@ assign_tranches_to_ligand() {
             hbd)
                 # Variables
                 ligand_hbd="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator donorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_hbd_partition//:/ })
                 separator_count=$(echo "${tranche_hbd_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1105,6 +1109,7 @@ assign_tranches_to_ligand() {
             rotb)
                 # Variables
                 ligand_rotb="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator rotatablebondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_rotb_partition//:/ })
                 separator_count=$(echo "${tranche_rotb_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1157,6 +1162,7 @@ assign_tranches_to_ligand() {
             tpsa)
                 # Variables
                 ligand_tpsa="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator polarsurfacearea ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_tpsa_partition//:/ })
                 separator_count=$(echo "${tranche_tpsa_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1209,6 +1215,7 @@ assign_tranches_to_ligand() {
             atomcount)
                 # Variables
                 ligand_atomcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_atoms " | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_atomcount_partition//:/ })
                 separator_count=$(echo "${tranche_atomcount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1261,6 +1268,7 @@ assign_tranches_to_ligand() {
             bondcount)
                 # Variables
                 ligand_bondcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_bonds " | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_bondcount_partition//:/ })
                 separator_count=$(echo "${tranche_bondcount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1313,6 +1321,7 @@ assign_tranches_to_ligand() {
             ringcount)
                 # Variables
                 ligand_ringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator ringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_ringcount_partition//:/ })
                 separator_count=$(echo "${tranche_ringcount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1365,6 +1374,7 @@ assign_tranches_to_ligand() {
             aromaticringcount)
                 # Variables
                 ligand_aromaticringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator aromaticringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_aromaticringcount_partition//:/ })
                 separator_count=$(echo "${tranche_aromaticringcount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1417,6 +1427,7 @@ assign_tranches_to_ligand() {
             mr)
                 # Variables
                 ligand_mr="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^MR " | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_mr_partition//:/ })
                 separator_count=$(echo "${tranche_mr_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1469,6 +1480,7 @@ assign_tranches_to_ligand() {
             formalcharge)
                 # Variables
                 ligand_formalcharge="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/-2/--/" | sed "s/+2/++/" | grep -o "[+-]" | wc -l)"
+                tranche_logp_partition=(${tranche_formalcharge_partition//:/ })
                 separator_count=$(echo "${tranche_formalcharge_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1521,6 +1533,7 @@ assign_tranches_to_ligand() {
             positivechargecount)
                 # Variables
                 ligand_positivechargecount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/+2/++/" | grep -o "+" | wc -l)"
+                tranche_logp_partition=(${tranche_positivechargecount_partition//:/ })
                 separator_count=$(echo "${tranche_positivechargecount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1573,6 +1586,7 @@ assign_tranches_to_ligand() {
             negativechargecount)
                 # Variables
                 ligand_negativechargecount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/-2/--/" | grep -o "-" | wc -l)"
+                tranche_logp_partition=(${tranche_negativechargecount_partition//:/ })
                 separator_count=$(echo "${tranche_negativechargecount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1625,6 +1639,7 @@ assign_tranches_to_ligand() {
             fsp3)
                 # Variables
                 ligand_fsp3="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator fsp3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_fsp3_partition//:/ })
                 separator_count=$(echo "${tranche_fsp3_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1677,6 +1692,7 @@ assign_tranches_to_ligand() {
             chiralcentercount)
                 # Variables
                 ligand_chiralcentercount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator chiralcentercount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_partition=(${tranche_chiralcentercount_partition//:/ })
                 separator_count=$(echo "${tranche_chiralcentercount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1733,6 +1749,7 @@ assign_tranches_to_ligand() {
                 ligand_bromine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "Br" | wc -l)"
                 ligand_iodine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "I" | wc -l)"
                 ligand_halogencount=$((ligand_fluorine_count+ligand_chlorine_count+ligand_bromine_count+ligand_iodine_count))
+                tranche_logp_partition=(${tranche_halogencount_partition//:/ })
                 separator_count=$(echo "${tranche_halogencount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1785,6 +1802,7 @@ assign_tranches_to_ligand() {
             sulfurcount)
                 # Variables
                 ligand_sulfurcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Si//" | grep -io "S" | wc -l)"
+                tranche_logp_partition=(${tranche_sulfurcount_partition//:/ })
                 separator_count=$(echo "${tranche_sulfurcount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1837,6 +1855,7 @@ assign_tranches_to_ligand() {
             NOcount)
                 # Variables
                 ligand_NOcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | grep -io "[NO]" | wc -l)"
+                tranche_logp_partition=(${tranche_NOcount_partition//:/ })
                 separator_count=$(echo "${tranche_NOcount_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -2071,7 +2090,7 @@ if [ "${tranche_reassignments}" == "true" ]; then
     # Loop for each tranche type
     for tranche_type in "${tranche_types[@]}"; do
 
-        if [[ "${tranche_type}" != @(mw|logp|hbd|hba|rotb|tpsa|) ]]; then
+        if [[ "${tranche_type}" != @(mw|logp|hbd|hba|rotb|tpsa|atomcount|bondcount|ringcount|aromaticringcount|mr|formalcharge|positivechargecount|negativechargecount|fsp3|chiralcentercount|halogencount|sulfurcount|NOcount) ]]; then
             echo -e " Error: The value (${tranche_type}) was present in the variable tranche_types, but this value is invalid..."
             error_response_std $LINENO
         fi
