@@ -344,23 +344,23 @@ tranche_type_count=6
 
 tranche_types=mw:logp:hba:hbd:rotb:tpsa
 #   * mw: molecular weight
-#   * logp-jchem: octanol water partition coefficient by JChem's cxcalc
-#   * logp-obabel: octanol water partition coefficient by Open Babel
-#   * hba-jchem: hydrogen bond acceptor count
-#   * hba-obabel: hydrogen bond acceptor count
-#   * hbd-jchem: hydrogen bond donor count
+#   * logp_jchem: octanol water partition coefficient by JChem's cxcalc
+#   * logp_obabel: octanol water partition coefficient by Open Babel
+#   * hba_jchem: hydrogen bond acceptor count
+#   * hba_obabel: hydrogen bond acceptor count
+#   * hbd_jchem: hydrogen bond donor count
 #   * hbd_obabel: hydrogen bond donor count
 #   * rotb: rotatable bond count
-#   * tpsa-jchem: topological polar surface area by JChem's cxcalc
-#   * tpsa-obabel: topological polar surface area by Open Babel
+#   * tpsa_jchem: topological polar surface area by JChem's cxcalc
+#   * tpsa_obabel: topological polar surface area by Open Babel
 #   * logd: octanol water partition coefficient
 #   * logs: aqueous solubility in mol/L
 #   * atomcount: number of atoms (including hydrogen)
 #   * bondcount: numner of bonds (including hydrogen-heavy atom bonds)
 #   * ringcount rings: number of non-aromatic rings
 #   * aromaticringcount: number of aromatic rings
-#   * mr-jchem: molecular refractivity by JChem's cxcalc
-#   * mr-obabel: molecular refractivity by Open Babel
+#   * mr_jchem: molecular refractivity by JChem's cxcalc
+#   * mr_obabel: molecular refractivity by Open Babel
 #   * formalcharge: total (formal) charge of the molecule
 #   * positivechargecount: number of positive charged functional groups/atoms
 #   * negativechargecount: number of negatively charged functional groups/atoms
