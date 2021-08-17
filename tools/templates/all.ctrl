@@ -332,9 +332,9 @@ energy_max=10000
 # Maximum allowed energy value. Recommended: 10000
 # Possible values: Positive integer
 
-********************************************************************    Tranche Reassignments    ****************************************************************
+********************************************************************    Tranche Aassignments    ****************************************************************
 
-tranche_reassignments=true
+tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
@@ -417,7 +417,7 @@ tranche_electronegativeatomcount_partition=0:1:2:3:4:5:6:7:8:9:10
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
 jchem_package_filename=jchemsuite.tar.gz
-# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps, and if tranche_reassignments=true
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps, and if tranche_assignments=true
 # The filename of the JChem package located in the folder tools/packages/ in the tar.gz format (available on the ChemAxon homepage)
 # The root folder in the archive has to have the name jchemsuite (normally distributed by ChemAxon in this way)
 # Possible values:

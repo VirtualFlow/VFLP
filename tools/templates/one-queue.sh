@@ -705,10 +705,10 @@ molconvert_generate_conformation() {
     ng_server_check
 
     # Variables
-    if [ "${tranche_reassignments}" == "false" ]; then
+    if [ "${tranche_assignments}" == "false" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
-    elif [ "${tranche_reassignments}" == "true" ]; then
-        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
+    elif [ "${tranche_assignments}" == "true" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.pdb
     fi
     
     # Converting SMILES to 3D PDB
@@ -750,10 +750,10 @@ molconvert_generate_conformation() {
 obabel_generate_conformation(){
 
     # Variables
-    if [ "${tranche_reassignments}" == "false" ]; then
+    if [ "${tranche_assignments}" == "false" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
-    elif [ "${tranche_reassignments}" == "true" ]; then
-        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.pdb
+    elif [ "${tranche_assignments}" == "true" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.pdb
     fi
 
     # Converting SMILES to 3D PDB
@@ -829,10 +829,10 @@ obabel_generate_pdb() {
 obabel_generate_targetformat() {
 
     # Variables
-    if [ "${tranche_reassignments}" == "false" ]; then
+    if [ "${tranche_assignments}" == "false" ]; then
         targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
-    elif [ "${tranche_reassignments}" == "true" ]; then
-        targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${reassigned_tranche}_${next_ligand}.${targetformat}
+    elif [ "${tranche_assignments}" == "true" ]; then
+        targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.${targetformat}
     fi
 
     # Converting pdb to target the format
@@ -886,7 +886,7 @@ obabel_check_energy() {
 assign_tranches_to_ligand() {
 
     # Determining the tranche
-    reassigned_tranche=""
+    assigned_tranche=""
     tranche_letters=(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z)
 
     # Loop
@@ -921,17 +921,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_mw_partition[((interval_index-2))]} < $ligand_mw && $ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq "${interval_count}" ]]; then
                         if (( $(echo "$ligand_mw > ${tranche_mw_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -980,17 +980,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_logp_obabel <= ${tranche_logp_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_logp_obabel_partition[((interval_index-2))]} < $ligand_logp_obabel && $ligand_logp_obabel <= ${tranche_logp_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq "${interval_count}" ]]; then
                         if (( $(echo "$ligand_logp_obabel > ${tranche_logp_obabel_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1039,17 +1039,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_logp_jchem <= ${tranche_logp_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_logp_jchem_partition[((interval_index-2))]} < $ligand_logp_jchem && $ligand_logp_jchem <= ${tranche_logp_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_logp_jchem > ${tranche_logp_jchem_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1098,17 +1098,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_hba_jchem <= ${tranche_hba_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_hba_jchem_partition[((interval_index-2))]} < $ligand_hba_jchem && $ligand_hba_jchem <= ${tranche_hba_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_hba_jchem > ${tranche_hba_jchem_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1157,17 +1157,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_hba_obabel <= ${tranche_hba_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_hba_obabel_partition[((interval_index-2))]} < $ligand_hba_obabel && $ligand_hba_obabel <= ${tranche_hba_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_hba_obabel > ${tranche_hba_obabel_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1216,17 +1216,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_hbd_jchem <= ${tranche_hbd_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_hbd_jchem_partition[((interval_index-2))]} < $ligand_hbd_jchem && $ligand_hbd_jchem <= ${tranche_hbd_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_hbd_jchem > ${tranche_hbd_jchem_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1275,17 +1275,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_hbd_obabel <= ${tranche_hbd_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_hbd_obabel_partition[((interval_index-2))]} < $ligand_hbd_obabel && $ligand_hbd_obabel <= ${tranche_hbd_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_hbd_obabel > ${tranche_hbd_obabel_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1334,17 +1334,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_rotb <= ${tranche_rotb_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_rotb_partition[((interval_index-2))]} < $ligand_rotb && $ligand_rotb <= ${tranche_rotb_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_rotb > ${tranche_rotb_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1393,17 +1393,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_tpsa_jchem <= ${tranche_tpsa_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_tpsa_jchem_partition[((interval_index-2))]} < $ligand_tpsa_jchem && $ligand_tpsa_jchem <= ${tranche_tpsa_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_tpsa_jchem > ${tranche_tpsa_jchem_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1452,17 +1452,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_tpsa_obabel <= ${tranche_tpsa_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_tpsa_obabel_partition[((interval_index-2))]} < $ligand_tpsa_obabel && $ligand_tpsa_obabel <= ${tranche_tpsa_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_tpsa_obabel > ${tranche_tpsa_obabel_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1511,17 +1511,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_logd <= ${tranche_logd_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_logd_partition[((interval_index-2))]} < $ligand_logd && $ligand_logd <= ${tranche_logd_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_logd > ${tranche_logd_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1570,17 +1570,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_logs <= ${tranche_logs_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_logs_partition[((interval_index-2))]} < $ligand_logs && $ligand_logs <= ${tranche_logs_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_logs > ${tranche_logs_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1629,17 +1629,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_atomcount <= ${tranche_atomcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_atomcount_partition[((interval_index-2))]} < $ligand_atomcount && $ligand_atomcount <= ${tranche_atomcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_atomcount > ${tranche_atomcount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1688,17 +1688,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_bondcount <= ${tranche_bondcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_bondcount_partition[((interval_index-2))]} < $ligand_bondcount && $ligand_bondcount <= ${tranche_bondcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_bondcount > ${tranche_bondcount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1747,17 +1747,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_ringcount <= ${tranche_ringcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_ringcount_partition[((interval_index-2))]} < $ligand_ringcount && $ligand_ringcount <= ${tranche_ringcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_ringcount > ${tranche_ringcount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1806,17 +1806,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_aromaticringcount <= ${tranche_aromaticringcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_aromaticringcount_partition[((interval_index-2))]} < $ligand_aromaticringcount && $ligand_aromaticringcount <= ${tranche_aromaticringcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_aromaticringcount > ${tranche_aromaticringcount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1865,17 +1865,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_mr_obabel <= ${tranche_mr_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_mr_obabel_partition[((interval_index-2))]} < $ligand_mr_obabel && $ligand_mr_obabel <= ${tranche_mr_obabel_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_mr_obabel > ${tranche_mr_obabel_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1924,17 +1924,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_mr_jchem <= ${tranche_mr_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_mr_jchem_partition[((interval_index-2))]} < $ligand_mr_jchem && $ligand_mr_jchem <= ${tranche_mr_jchem_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_mr_jchem > ${tranche_mr_jchem_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -1983,17 +1983,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_formalcharge <= ${tranche_formalcharge_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_formalcharge_partition[((interval_index-2))]} < $ligand_formalcharge && $ligand_formalcharge <= ${tranche_formalcharge_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_formalcharge > ${tranche_formalcharge_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2042,17 +2042,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_positivechargecount <= ${tranche_positivechargecount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_positivechargecount_partition[((interval_index-2))]} < $ligand_positivechargecount && $ligand_positivechargecount <= ${tranche_positivechargecount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_positivechargecount > ${tranche_positivechargecount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2101,17 +2101,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_negativechargecount <= ${tranche_negativechargecount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_negativechargecount_partition[((interval_index-2))]} < $ligand_negativechargecount && $ligand_negativechargecount <= ${tranche_negativechargecount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_negativechargecount > ${tranche_negativechargecount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2160,17 +2160,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_fsp3 <= ${tranche_fsp3_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_fsp3_partition[((interval_index-2))]} < $ligand_fsp3 && $ligand_fsp3 <= ${tranche_fsp3_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_fsp3 > ${tranche_fsp3_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2219,17 +2219,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_chiralcentercount <= ${tranche_chiralcentercount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_chiralcentercount_partition[((interval_index-2))]} < $ligand_chiralcentercount && $ligand_chiralcentercount <= ${tranche_chiralcentercount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_chiralcentercount > ${tranche_chiralcentercount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2282,17 +2282,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_halogencount <= ${tranche_halogencount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_halogencount_partition[((interval_index-2))]} < $ligand_halogencount && $ligand_halogencount <= ${tranche_halogencount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_halogencount > ${tranche_halogencount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2341,17 +2341,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_sulfurcount <= ${tranche_sulfurcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_sulfurcount_partition[((interval_index-2))]} < $ligand_sulfurcount && $ligand_sulfurcount <= ${tranche_sulfurcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_sulfurcount > ${tranche_sulfurcount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2400,17 +2400,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_NOcount <= ${tranche_NOcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_NOcount_partition[((interval_index-2))]} < $ligand_NOcount && $ligand_NOcount <= ${tranche_NOcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_NOcount > ${tranche_NOcount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2459,17 +2459,17 @@ assign_tranches_to_ligand() {
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
                         if (( $(echo "$ligand_electronegativeatomcount <= ${tranche_electronegativeatomcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
                         if (( $(echo "${tranche_electronegativeatomcount_partition[((interval_index-2))]} < $ligand_electronegativeatomcount && $ligand_electronegativeatomcount <= ${tranche_electronegativeatomcount_partition[((interval_index-1))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
                         if (( $(echo "$ligand_electronegativeatomcount > ${tranche_electronegativeatomcount_partition[((interval_index-2))]}" | bc -l) )); then
-                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
@@ -2497,6 +2497,11 @@ assign_tranches_to_ligand() {
                 error_response_std $LINENO
                 ;;
         esac
+
+        if [[ "${#assigned_tranche}" -eq "${tranche_count}" ]]; then
+
+            trancheassignment_success="true"
+        fi
     done
 }
 
@@ -2666,12 +2671,13 @@ elif [[ "${energy_check}" != "false" ]]; then
 fi
 
 # Reassignment of tranches
-tranche_reassignments="$(grep -m 1 "^tranche_reassignments=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-if [ "${tranche_reassignments}" == "true" ]; then
+tranche_assignments="$(grep -m 1 "^tranche_assignments=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+if [ "${tranche_assignments}" == "true" ]; then
 
     # Variables
     tranche_types="$(grep -m 1 "^tranche_types=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     IFS=':' read -a tranche_types <<< "${tranche_types}"
+    tranche_count=$(echo "${tranche_types[@]}" | wc -w)
 
     # Loop for each tranche type
     for tranche_type in "${tranche_types[@]}"; do
@@ -2953,7 +2959,7 @@ while true; do
 
     fi
 
-     # TODO Determine reassigned_tranche
+     # TODO Determine assigned_tranche
      # function?
 
 
@@ -3190,8 +3196,32 @@ t 1.
         fi
 
         # Reassigning the tranches if needed
-        if [ "${tranche_reassignments}" == "true" ]; then
+        if [ "${tranche_assignments}" == "true" ]; then
+
+            # Variables
+            pdb_trancheassignments_remark=""
+            trancheassignment_success="false"
+
+            # Tranche assignments
             assign_tranches_to_ligand
+
+            # Checking if both of the 3D conformation generation attempts have failed
+            if [ "${trancheassignment_success}" == "false" ]; then
+
+                # Printing information
+                echo "    * Error: The tranche assignments have failed, ligand will be skipped."
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} tranche-assignments:failed"
+
+                # Skipping the ligand
+                continue
+
+            else
+
+                # Adjusting the ligand-list file
+                ligand_list_entry="${ligand_list_entry} tranche-assignment:success"
+            fi
         fi
 
         # 3D conformation generation
