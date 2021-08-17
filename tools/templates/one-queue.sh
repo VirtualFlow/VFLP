@@ -2514,7 +2514,7 @@ if [ "${tranche_reassignments}" == "true" ]; then
     # Loop for each tranche type
     for tranche_type in "${tranche_types[@]}"; do
 
-        if [[ "${tranche_type}" != @(mw|logp|hbd|hba|rotb|tpsa|atomcount|bondcount|ringcount|aromaticringcount|mr|formalcharge|positivechargecount|negativechargecount|fsp3|chiralcentercount|halogencount|sulfurcount|NOcount) ]]; then
+        if [[ "${tranche_type}" != @(mw|logp_jchem|logp_obabel|hba_jchem|hba_obabel|hbd_jchem|hbd_obabel|rotb|tpsa_jchem|tpsa_obabel|logd|logs|atomcount|bondcount|ringcount|aromaticringcount|formalcharge|mr_jchem|mr_obabel|positivechargecount|negativechargecount|fsp3|chiralcentercount|halogencount|sulfurcount|NOcount|electronegativeatomcount) ]]; then
             echo -e " Error: The value (${tranche_type}) was present in the variable tranche_types, but this value is invalid..."
             error_response_std $LINENO
         fi
