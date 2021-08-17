@@ -193,6 +193,7 @@ export VF_START_TIME_SECONDS="$(date +%s)"
 date
 echo $VF_START_TIME_SECONDS
 export LC_ALL=C
+export PATH="./bin:$PATH"           # to give bin priority of system commands, useful for obabel sometimes for example
 
 
 # Determining the VF_CONTROLFILE to use for this jobline

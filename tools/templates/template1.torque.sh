@@ -194,6 +194,7 @@ export VF_SLEEP_TIME_1="1"
 export VF_STARTINGTIME=`date`
 export VF_START_TIME_SECONDS="$(date +%s)"
 export LC_ALL=C
+export PATH="./bin:$PATH"           # to give bin priority of system commands, useful for obabel sometimes for example
 
 # Determining the VF_CONTROLFILE to use for this jobline
 VF_CONTROLFILE=""

@@ -198,6 +198,7 @@ export VF_START_TIME_SECONDS="$(date +%s)"
 export VF_NODES_PER_JOB=1
 export LC_ALL=C
 export LANG=C
+export PATH="./bin:$PATH"           # to give bin priority of system commands, useful for obabel sometimes for example
 
 
 # Determining the VF_CONTROLFILE to use for this jobline

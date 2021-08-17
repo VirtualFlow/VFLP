@@ -741,7 +741,7 @@ molconvert_generate_conformation() {
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction of the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
 }
@@ -783,7 +783,7 @@ obabel_generate_conformation(){
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
 }
@@ -820,7 +820,7 @@ obabel_generate_pdb() {
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_trancheassignment_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp /${pdb_intermediate_output_file}
     fi
 }
@@ -830,14 +830,16 @@ obabel_generate_targetformat() {
 
     # Variables
     if [ "${tranche_assignments}" = "false" ]; then
+        input_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
         targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
     elif [ "${tranche_assignments}" = "true" ]; then
+        input_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.pdb
         targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.${targetformat}
     fi
 
     # Converting pdb to target the format
     trap '' ERR
-    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ipdb ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb -o${targetformat} ${additional_obabel_options} -O ${targetformat_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
+    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ipdb ${input_file} -O ${targetformat_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
@@ -846,7 +848,7 @@ obabel_generate_targetformat() {
         echo "    * Warning: Target format generation with obabel failed. Open Babel was interrupted by the timeout command..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|not found'; then
         echo "    * Warning:  Target format generation with obabel failed. An error flag was detected in the log files..."
-    elif [ ! -f ${targetformat_output_file} ]; then
+    elif [ ! -s ${targetformat_output_file} ]; then
         echo "    * Warning: target format generation with obabel failed. No valid target format file was generated (empty or nonexistent)..."
     elif [[ "${targetformat}" == "pdb" ||"${targetformat}" == "pdbqt" ]] && ! check_pdb_coordinates ; then
         echo "    * Warning: The output PDB(QT) file exists but does not contain valid coordinates."
@@ -863,7 +865,7 @@ obabel_generate_targetformat() {
             pdb_targetformat_remark="REMARK    Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
 
             # Modifying the header of the targetformat file
-            sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
+            sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         fi
     fi
@@ -888,6 +890,7 @@ assign_tranches_to_ligand() {
     # Determining the tranche
     assigned_tranche=""
     tranche_letters=(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z)
+    pdb_trancheassignment_remark="REMARK    Ligand properties"
 
     # Loop
     for tranche_type in "${tranche_types[@]}"; do
@@ -951,6 +954,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MW: ${ligand_mw}"
+
                 ;;
 
             logp_obabel)
@@ -1010,12 +1017,19 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logP (Open Babel): ${ligand_logp_obabel}"
+
                 ;;
 
             logp_jchem)
                 # Variables
                 ligand_logp_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                echo "tranche_logp_jchem_partition: $tranche_logp_jchem_partition"
                 tranche_logp_jchem_partition=(${tranche_logp_jchem_partition//:/ })
+                echo "tranche_logp_jchem_partition: $tranche_logp_jchem_partition"
+                echo "tranche_logp_jchem_partition[@]: ${tranche_logp_jchem_partition[@]}"
                 separator_count=$(echo "${tranche_logp_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -1069,6 +1083,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logP (JChem): ${ligand_logp_jchem}"
+
                 ;;
 
             hba_jchem)
@@ -1128,6 +1146,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond acceptor count (JChem): ${ligand_hba_jchem}"
+
                 ;;
 
             hba_obabel)
@@ -1187,6 +1209,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    *  Hydrogen bond acceptor count (Open Babel): ${ligand_hba_obabel}"
+
                 ;;
 
             hbd_jchem)
@@ -1246,6 +1272,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond donor count (JChem): ${ligand_hbd_jchem}"
+
                 ;;
 
             hbd_obabel)
@@ -1305,6 +1335,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond donor count (Open Babel): ${ligand_hbd_obabel}"
+
                 ;;
 
             rotb)
@@ -1364,6 +1398,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Rotatable bonds: ${ligand_rotb}"
+
                 ;;
 
             tpsa_jchem)
@@ -1423,6 +1461,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * TPSA (JChem): ${ligand_tpsa_jchem}"
+
                 ;;
 
             tpsa_obabel)
@@ -1482,6 +1524,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * TPSA (Open Babel): ${ligand_tpsa_obabel}"
+
                 ;;
 
             logd)
@@ -1541,6 +1587,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logD (JChem): ${ligand_logd}"
+
                 ;;
 
             logs)
@@ -1600,6 +1650,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logS (JChem): ${ligand_logs}"
+
                 ;;
 
             atomcount)
@@ -1659,6 +1713,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Atom count: ${ligand_atomcount}"
+
                 ;;
 
             bondcount)
@@ -1718,6 +1776,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count): ${ligand_bondcount}"
+
                 ;;
 
             ringcount)
@@ -1777,6 +1839,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Ring count: ${ligand_ringcount}"
+
                 ;;
 
             aromaticringcount)
@@ -1836,6 +1902,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Aromatic ring count: ${ligand_aromaticringcount}"
+
                 ;;
 
             mr_obabel)
@@ -1895,6 +1965,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MR (Open Babel): ${ligand_mr_obabel}"
+
                 ;;
 
             mr_jchem)
@@ -1954,6 +2028,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MR (JChem): ${ligand_mr_jchem}"
+
                 ;;
 
             formalcharge)
@@ -2013,6 +2091,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Formal charge: ${ligand_formalcharge}"
+
                 ;;
 
             positivechargecount)
@@ -2072,6 +2154,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    *  Number of atoms with positive charges: ${ligand_positivechargecount}"
+
                 ;;
 
             negativechargecount)
@@ -2131,6 +2217,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Number of atoms with negative charges: ${ligand_negativechargecount}"
+
                 ;;
 
             fsp3)
@@ -2190,6 +2280,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Fsp3: ${ligand_fsp3}"
+
                 ;;
 
             chiralcentercount)
@@ -2249,6 +2343,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Chiral center count: ${ligand_chiralcentercount}"
+
                 ;;
 
             halogencount)
@@ -2312,6 +2410,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Halogen atom count: ${ligand_halogencount}"
+
                 ;;
 
             sulfurcount)
@@ -2371,6 +2473,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Sulfur atom count: ${ligand_sulfurcount}"
+
                 ;;
 
             NOcount)
@@ -2430,6 +2536,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * NO atom count: ${ligand_NOcount}"
+
                 ;;
 
             electronegativeatomcount)
@@ -2489,6 +2599,10 @@ assign_tranches_to_ligand() {
                     # Continuing to next interval
                     interval_index=$((interval_index+1))
                 done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ eatom count: ${ligand_electronegativeatomcount}"
+
                 ;;
 
             *)

@@ -178,6 +178,7 @@ export VF_START_TIME_SECONDS="$(date +%s)"
 job_line=$(grep -m 1 "nodes=" ../workflow/job-files/main/${VF_JOBLINE_NO}.job)
 export VF_NODES_PER_JOB=1
 export LC_ALL=C
+export PATH="./bin:$PATH"           # to give bin priority of system commands, useful for obabel sometimes for example
 
 # Determining the VF_CONTROLFILE to use for this jobline
 VF_CONTROLFILE=""
