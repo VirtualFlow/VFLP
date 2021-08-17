@@ -108,7 +108,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} tranche-assignment-timings:${assignment_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} tranche-assignment-timings:${component_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -489,6 +489,12 @@ check_pdb_coordinates() {
 # Desalting
 desalt() {
 
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+    component_timings="${component_timings}:hba_jchem=${temp_end_time_ms}"
+
     # Number of fragments in SMILES
     number_of_smiles_fragments="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tr "." "\n" | wc -l)"
 
@@ -543,6 +549,10 @@ desalt() {
 
 standardizer_neutralize() {
 
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+
     # Checking the NG Server
     ng_server_check
 
@@ -596,12 +606,18 @@ standardizer_neutralize() {
 
         # Copying the ligand from the desalting step
         cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
-
     fi
+    
+    # Timings
+    component_timings="${component_timings}:standardizer_neutralize=${temp_end_time_ms}"
 }
 
 # Protonation with cxcalc
 cxcalc_tautomerize() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Checking the NG Server
     ng_server_check
@@ -638,10 +654,17 @@ cxcalc_tautomerize() {
             next_ligand_tautomers="${next_ligand_tautomers} ${next_ligand}_T${tautomer_index}"
         done
     fi
+    
+    # Timings
+    component_timings="${component_timings}:cxcalc_tautomerize=${temp_end_time_ms}"
 }
 
 # Protonation with cxcalc
 cxcalc_protonate() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Checking the NG Server
     ng_server_check
@@ -672,10 +695,17 @@ cxcalc_protonate() {
         tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp | awk -F ' ' '{print $2}' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
         rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp
     fi
+    
+    # Timings
+    component_timings="${component_timings}:cxcalc_protonate=${temp_end_time_ms}"
 }
 
 # Protonation with obabel
 obabel_protonate() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Carrying out the protonation
     trap '' ERR
@@ -696,10 +726,17 @@ obabel_protonate() {
         pdb_protonation_remark="REMARK    The protonation state was generated at pH ${protonation_pH_value} by Open Babel version ${obabel_version}"
         protonation_program="obabel"
     fi
+    
+    # Timings
+    component_timings="${component_timings}:obabel_protonate=${temp_end_time_ms}"
 }
 
 # Conformation generation with molconvert
 molconvert_generate_conformation() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Checking the NG Server
     ng_server_check
@@ -744,10 +781,17 @@ molconvert_generate_conformation() {
         sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
+    
+    # Timings
+    component_timings="${component_timings}:molconvert_generate_conformation=${temp_end_time_ms}"
 }
 
 # Conformation generation with obabel
 obabel_generate_conformation(){
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Variables
     if [ "${tranche_assignments}" = "false" ]; then
@@ -786,10 +830,17 @@ obabel_generate_conformation(){
         sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
+    
+    # Timings
+    component_timings="${component_timings}:obabel_generate_conformation=${temp_end_time_ms}"
 }
 
 # PDB generation with obabel
 obabel_generate_pdb() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Variables
     if [ "${tranche_assignments}" = "false" ]; then
@@ -827,10 +878,17 @@ obabel_generate_pdb() {
         sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_trancheassignment_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp /${pdb_intermediate_output_file}
     fi
+    
+    # Timings
+    component_timings="${component_timings}:obabel_generate_pdb=${temp_end_time_ms}"
 }
 
 # Target format generation with obabel
 obabel_generate_targetformat() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Variables
     if [ "${tranche_assignments}" = "false" ]; then
@@ -873,10 +931,17 @@ obabel_generate_targetformat() {
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         fi
     fi
+    
+    # Timings
+    component_timings="${component_timings}:obabel_generate_targetformat=${temp_end_time_ms}"
 }
 
 # Determining and assigning the tranche
 obabel_check_energy() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Computing the energy
     ligand_energy=""
@@ -886,6 +951,9 @@ obabel_check_energy() {
     if (( $(echo "$ligand_energy <= ${energy_max}" | bc -l) )); then
         energy_check_success="true"
     fi
+    
+    # Timings
+    component_timings="${component_timings}:obabel_energy=${temp_end_time_ms}"
 }
 
 # Determining and assigning the tranche
@@ -895,7 +963,9 @@ assign_tranches_to_ligand() {
     assigned_tranche=""
     tranche_letters=(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z)
     pdb_trancheassignment_remark="REMARK    Ligand properties"
-    assignment_timings=""
+
+    # Timings
+    tranche_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
     # Loop
     for tranche_type in "${tranche_types[@]}"; do
@@ -965,7 +1035,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:mw=${temp_end_time_ms}"
+                component_timings="${component_timings}:mw=${temp_end_time_ms}"
 
                 ;;
 
@@ -1032,7 +1102,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:logp_obabel=${temp_end_time_ms}"
+                component_timings="${component_timings}:logp_obabel=${temp_end_time_ms}"
 
                 ;;
 
@@ -1099,7 +1169,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:logp_jchem=${temp_end_time_ms}"
+                component_timings="${component_timings}:logp_jchem=${temp_end_time_ms}"
 
                 ;;
 
@@ -1166,7 +1236,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:hba_jchem=${temp_end_time_ms}"
+                component_timings="${component_timings}:hba_jchem=${temp_end_time_ms}"
 
                 ;;
 
@@ -1233,7 +1303,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:hba_obabel=${temp_end_time_ms}"
+                component_timings="${component_timings}:hba_obabel=${temp_end_time_ms}"
 
                 ;;
 
@@ -1300,7 +1370,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:hbd_jchem=${temp_end_time_ms}"
+                component_timings="${component_timings}:hbd_jchem=${temp_end_time_ms}"
 
                 ;;
 
@@ -1367,7 +1437,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:hbd_obabel=${temp_end_time_ms}"
+                component_timings="${component_timings}:hbd_obabel=${temp_end_time_ms}"
 
                 ;;
 
@@ -1434,7 +1504,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:rotb=${temp_end_time_ms}"
+                component_timings="${component_timings}:rotb=${temp_end_time_ms}"
 
                 ;;
 
@@ -1501,7 +1571,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:tpsa_jchem=${temp_end_time_ms}"
+                component_timings="${component_timings}:tpsa_jchem=${temp_end_time_ms}"
 
                 ;;
 
@@ -1568,7 +1638,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:tpsa_obabel=${temp_end_time_ms}"
+                component_timings="${component_timings}:tpsa_obabel=${temp_end_time_ms}"
 
                 ;;
 
@@ -1635,7 +1705,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:logd=${temp_end_time_ms}"
+                component_timings="${component_timings}:logd=${temp_end_time_ms}"
 
                 ;;
 
@@ -1702,7 +1772,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:logs=${temp_end_time_ms}"
+                component_timings="${component_timings}:logs=${temp_end_time_ms}"
 
                 ;;
 
@@ -1769,7 +1839,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:atomcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:atomcount=${temp_end_time_ms}"
 
                 ;;
 
@@ -1836,7 +1906,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:bondcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:bondcount=${temp_end_time_ms}"
 
                 ;;
 
@@ -1903,7 +1973,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:ringcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:ringcount=${temp_end_time_ms}"
 
                 ;;
 
@@ -1970,7 +2040,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:aromaticringcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:aromaticringcount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2037,7 +2107,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:mr_obabel=${temp_end_time_ms}"
+                component_timings="${component_timings}:mr_obabel=${temp_end_time_ms}"
 
                 ;;
 
@@ -2104,7 +2174,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:mr_jchem=${temp_end_time_ms}"
+                component_timings="${component_timings}:mr_jchem=${temp_end_time_ms}"
 
                 ;;
 
@@ -2171,7 +2241,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:formalcharge=${temp_end_time_ms}"
+                component_timings="${component_timings}:formalcharge=${temp_end_time_ms}"
 
                 ;;
 
@@ -2238,7 +2308,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:positivechargecount=${temp_end_time_ms}"
+                component_timings="${component_timings}:positivechargecount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2305,7 +2375,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:negativechargecount=${temp_end_time_ms}"
+                component_timings="${component_timings}:negativechargecount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2372,7 +2442,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:fsp3=${temp_end_time_ms}"
+                component_timings="${component_timings}:fsp3=${temp_end_time_ms}"
 
                 ;;
 
@@ -2439,7 +2509,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:chiralcentercount=${temp_end_time_ms}"
+                component_timings="${component_timings}:chiralcentercount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2510,7 +2580,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:halogencount=${temp_end_time_ms}"
+                component_timings="${component_timings}:halogencount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2577,7 +2647,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:sulfurcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:sulfurcount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2644,7 +2714,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:NOcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:NOcount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2711,7 +2781,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                assignment_timings="${assignment_timings}:electronegativeatomcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:electronegativeatomcount=${temp_end_time_ms}"
 
                 ;;
 
@@ -2723,8 +2793,13 @@ assign_tranches_to_ligand() {
         esac
 
         if [[ "${#assigned_tranche}" -eq "${tranche_count}" ]]; then
-
+            
+            # Variables
             trancheassignment_success="true"
+            
+            # Timings
+            tranche_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${tranche_start_time_ms}))"
+            component_timings="${component_timings}:tranche-assignments-total=${tranche_end_time_ms}"
         fi
     done
 }

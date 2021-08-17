@@ -150,11 +150,11 @@ tempdir_fast=/dev/shm
 
 outputfiles_level=collection
 # Possible values:
-#   * collection  : The collection output files are stored in tar.gz format. They are stored in subfolders named by metatranch and tranch to reduce the number of files per folder.
+#   * collection  : The collection output files are stored in tar.gz format. They are stored in subfolders named by metatranche and tranche to reduce the number of files per folder.
 #                   Advantages:
-#                       * Less I/O on the shared cluster file system (as existing tranch archives don't have to be read during storage of completed collectionsds)
+#                       * Less I/O on the shared cluster file system (as existing tranche archives don't have to be read during storage of completed collectionsds)
 #                       * No risk of output-file clashes when two queues want to store completed collections on the shared filesystem
-#   * tranche     : For each tranch a tar archive is created, which contains the gzipped collection output files.
+#   * tranche     : For each tranche a tar archive is created, which contains the gzipped collection output files.
 #                   Advantages:
 #                       * Less output files (only for each tranch) for each of the output file types (e.g. results, summaries, logfiles, ...)
 
@@ -338,11 +338,10 @@ tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
-tranche_type_count=6
-# Total number of new tranche types
-# Minimum number: 3
-
 tranche_types=mw:logp_jchem:hba_jchem:hbd_jchem:rotb:tpsa_jchem:logp_obabel:hba_obabel:hbd_obabel:tpsa_obabel:logd:logs:atomcount:bondcount:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount
+# These variables are only needed if tranche_assignments=true
+# Multiple values are separated by colons
+# Possible values:
 #   * mw: molecular weight
 #   * logp_jchem: octanol water partition coefficient by JChem's cxcalc
 #   * logp_obabel: octanol water partition coefficient by Open Babel
@@ -371,20 +370,10 @@ tranche_types=mw:logp_jchem:hba_jchem:hbd_jchem:rotb:tpsa_jchem:logp_obabel:hba_
 #   * NOcount: number of oxygen and nitrogen atoms (N, O)
 #   * electronegativeatomcount: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
 
-# Each new tranche type is given an index <X>, starting at 1.
-# For each tranch type <X>, in this configuration file has to be set the following two variables:
-#       * tranche_<X>_partition
-#
-# Detailed description of the variables:
-#       * tranche_<X>_type: This sets the type of tranche <X>, which is one of the following properties:
-
-# For each tranch_type, of which there a total of tranche_type_count, two variables have to be set:
-#       * tranche_<X>_partition: This variable has to be a set of N values (at least one), separated by colons, which partitions the value range of the molecular property of tranche <X> into N+1 intervals.
-#         For example, the partitions '-0:1:2' would result in the 4 intervals: (-∞,0], (0,1], (1,2], (2,∞). The maximum number of allowed intervals is 26 (corresponding to 25 values). Each value has to be an integer or float, and the values have to be in ascending order.
-
-metatranche_count=3
-# has to be strictly less than tranche_type_count
-
+# For each tranche_type X in the variable tranche_types, one additional variable "tranche_<X>_partition" has to be specified.
+# This variable has to be a set of N >= 1 values (at least one), separated by colons, which partitions the value range of the molecular property of tranche <X> into N+1 intervals.
+# For example, the partitions '-0:1:2' would result in the 4 intervals: (-∞,0], (0,1], (1,2], (2,∞). The maximum number of allowed intervals is 27 (corresponding to 26 values of the alphabet). Each value has to be an integer or float, and the values have to be in ascending order.
+# These variables are only needed if tranche_assignments=true
 tranche_mw_partition=200:250:300:325:350:375:400:425:450:500
 tranche_logp_jchem_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
 tranche_logp_obabel_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
