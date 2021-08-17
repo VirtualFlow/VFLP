@@ -493,7 +493,6 @@ desalt() {
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:hba_jchem=${temp_end_time_ms}"
 
     # Number of fragments in SMILES
     number_of_smiles_fragments="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tr "." "\n" | wc -l)"
@@ -545,6 +544,9 @@ desalt() {
         # Printing some information
         echo "    * Warning: Could not determine the number of fragments. Desalting failed..."
     fi
+
+    # Timings
+    component_timings="${component_timings}:desalt=${temp_end_time_ms}"
 }
 
 standardizer_neutralize() {
@@ -3019,6 +3021,7 @@ while true; do
     new_collection="false"
     collection_complete="false"
     ligand_index=$((ligand_index+1))
+    component_timings=""
 
     # Preparing the next ligand
     # Checking the conditions for using a new collection
