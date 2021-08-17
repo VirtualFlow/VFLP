@@ -108,7 +108,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} tranche-assignment-timings:${assignment_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -895,6 +895,7 @@ assign_tranches_to_ligand() {
     assigned_tranche=""
     tranche_letters=(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z)
     pdb_trancheassignment_remark="REMARK    Ligand properties"
+    assignment_timings=""
 
     # Loop
     for tranche_type in "${tranche_types[@]}"; do
@@ -907,6 +908,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_mw_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_mw has a valid value
                 if ! [[ "$ligand_mw" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -961,6 +963,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MW: ${ligand_mw}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:mw=${temp_end_time_ms}"
+
                 ;;
 
             logp_obabel)
@@ -969,6 +975,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_logp_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logp_obabel has a valid value
                 if ! [[ "$ligand_logp_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1023,6 +1030,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logP (Open Babel): ${ligand_logp_obabel}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:logp_obabel=${temp_end_time_ms}"
+
                 ;;
 
             logp_jchem)
@@ -1031,6 +1042,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_logp_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logp_jchem has a valid value
                 if ! [[ "$ligand_logp_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1085,6 +1097,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logP (JChem): ${ligand_logp_jchem}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:logp_jchem=${temp_end_time_ms}"
+
                 ;;
 
             hba_jchem)
@@ -1093,6 +1109,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_hba_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hba_jchem has a valid value
                 if ! [[ "$ligand_hba_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1147,6 +1164,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond acceptor count (JChem): ${ligand_hba_jchem}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:hba_jchem=${temp_end_time_ms}"
+
                 ;;
 
             hba_obabel)
@@ -1155,6 +1176,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_hba_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hba_obabel has a valid value
                 if ! [[ "$ligand_hba_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1209,6 +1231,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond acceptor count (Open Babel): ${ligand_hba_obabel}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:hba_obabel=${temp_end_time_ms}"
+
                 ;;
 
             hbd_jchem)
@@ -1217,6 +1243,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_hbd_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hbd_jchem has a valid value
                 if ! [[ "$ligand_hbd_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1271,6 +1298,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond donor count (JChem): ${ligand_hbd_jchem}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:hbd_jchem=${temp_end_time_ms}"
+
                 ;;
 
             hbd_obabel)
@@ -1279,6 +1310,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_hbd_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hbd_obabel has a valid value
                 if ! [[ "$ligand_hbd_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1333,6 +1365,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond donor count (Open Babel): ${ligand_hbd_obabel}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:hbd_obabel=${temp_end_time_ms}"
+
                 ;;
 
             rotb)
@@ -1341,6 +1377,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_rotb_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_rotb has a valid value
                 if ! [[ "$ligand_rotb" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1395,6 +1432,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Rotatable bonds: ${ligand_rotb}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:rotb=${temp_end_time_ms}"
+
                 ;;
 
             tpsa_jchem)
@@ -1403,6 +1444,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_tpsa_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_tpsa_jchem has a valid value
                 if ! [[ "$ligand_tpsa_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1457,6 +1499,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * TPSA (JChem): ${ligand_tpsa_jchem}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:tpsa_jchem=${temp_end_time_ms}"
+
                 ;;
 
             tpsa_obabel)
@@ -1465,6 +1511,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_tpsa_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_tpsa_obabel has a valid value
                 if ! [[ "$ligand_tpsa_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1519,6 +1566,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * TPSA (Open Babel): ${ligand_tpsa_obabel}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:tpsa_obabel=${temp_end_time_ms}"
+
                 ;;
 
             logd)
@@ -1527,6 +1578,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_logd_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logd has a valid value
                 if ! [[ "$ligand_logd" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1581,6 +1633,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logD (JChem): ${ligand_logd}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:logd=${temp_end_time_ms}"
+
                 ;;
 
             logs)
@@ -1589,6 +1645,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_logs_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logs has a valid value
                 if ! [[ "$ligand_logs" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1643,6 +1700,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logS (JChem): ${ligand_logs}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:logs=${temp_end_time_ms}"
+
                 ;;
 
             atomcount)
@@ -1651,6 +1712,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_atomcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_atomcount has a valid value
                 if ! [[ "$ligand_atomcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1705,6 +1767,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Atom count: ${ligand_atomcount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:atomcount=${temp_end_time_ms}"
+
                 ;;
 
             bondcount)
@@ -1713,6 +1779,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_bondcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_bondcount has a valid value
                 if ! [[ "$ligand_bondcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1767,6 +1834,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count): ${ligand_bondcount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:bondcount=${temp_end_time_ms}"
+
                 ;;
 
             ringcount)
@@ -1775,6 +1846,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_ringcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_ringcount has a valid value
                 if ! [[ "$ligand_ringcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1829,6 +1901,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Ring count: ${ligand_ringcount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:ringcount=${temp_end_time_ms}"
+
                 ;;
 
             aromaticringcount)
@@ -1837,6 +1913,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_aromaticringcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_aromaticringcount has a valid value
                 if ! [[ "$ligand_aromaticringcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1891,6 +1968,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Aromatic ring count: ${ligand_aromaticringcount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:aromaticringcount=${temp_end_time_ms}"
+
                 ;;
 
             mr_obabel)
@@ -1899,6 +1980,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_mr_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_mr_obabel has a valid value
                 if ! [[ "$ligand_mr_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1953,6 +2035,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MR (Open Babel): ${ligand_mr_obabel}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:mr_obabel=${temp_end_time_ms}"
+
                 ;;
 
             mr_jchem)
@@ -1961,6 +2047,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_mr_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_mr_jchem has a valid value
                 if ! [[ "$ligand_mr_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2015,6 +2102,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MR (JChem): ${ligand_mr_jchem}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:mr_jchem=${temp_end_time_ms}"
+
                 ;;
 
             formalcharge)
@@ -2023,6 +2114,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_formalcharge_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_formalcharge has a valid value
                 if ! [[ "$ligand_formalcharge" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2077,6 +2169,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Formal charge: ${ligand_formalcharge}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:formalcharge=${temp_end_time_ms}"
+
                 ;;
 
             positivechargecount)
@@ -2085,6 +2181,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_positivechargecount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_positivechargecount has a valid value
                 if ! [[ "$ligand_positivechargecount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2139,6 +2236,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Number of atoms with positive charges: ${ligand_positivechargecount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:positivechargecount=${temp_end_time_ms}"
+
                 ;;
 
             negativechargecount)
@@ -2147,6 +2248,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_negativechargecount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_negativechargecount has a valid value
                 if ! [[ "$ligand_negativechargecount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2201,6 +2303,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Number of atoms with negative charges: ${ligand_negativechargecount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:negativechargecount=${temp_end_time_ms}"
+
                 ;;
 
             fsp3)
@@ -2209,6 +2315,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_fsp3_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_fsp3 has a valid value
                 if ! [[ "$ligand_fsp3" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2263,6 +2370,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Fsp3: ${ligand_fsp3}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:fsp3=${temp_end_time_ms}"
+
                 ;;
 
             chiralcentercount)
@@ -2271,6 +2382,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_chiralcentercount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_chiralcentercount has a valid value
                 if ! [[ "$ligand_chiralcentercount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2325,6 +2437,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Chiral center count: ${ligand_chiralcentercount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:chiralcentercount=${temp_end_time_ms}"
+
                 ;;
 
             halogencount)
@@ -2337,6 +2453,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_halogencount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_halogencount has a valid value
                 if ! [[ "$ligand_halogencount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2391,6 +2508,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Halogen atom count: ${ligand_halogencount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:halogencount=${temp_end_time_ms}"
+
                 ;;
 
             sulfurcount)
@@ -2399,6 +2520,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_sulfurcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_sulfurcount has a valid value
                 if ! [[ "$ligand_sulfurcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2453,6 +2575,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Sulfur atom count: ${ligand_sulfurcount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:sulfurcount=${temp_end_time_ms}"
+
                 ;;
 
             NOcount)
@@ -2461,6 +2587,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_NOcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_NOcount has a valid value
                 if ! [[ "$ligand_NOcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2515,6 +2642,10 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * NO atom count: ${ligand_NOcount}"
 
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:NOcount=${temp_end_time_ms}"
+
                 ;;
 
             electronegativeatomcount)
@@ -2523,6 +2654,7 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_electronegativeatomcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_electronegativeatomcount has a valid value
                 if ! [[ "$ligand_electronegativeatomcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2576,6 +2708,10 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ atom count: ${ligand_electronegativeatomcount}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                assignment_timings="${assignment_timings}:electronegativeatomcount=${temp_end_time_ms}"
 
                 ;;
 
