@@ -300,7 +300,7 @@ conformation_obligatory=true
 
 *****************************************************************    Target Format Generation    ****************************************************************
 
-targetformats=smi:pdb:pdbqt
+targetformats=pdb:pdbqt:sdf:mol2:smi
 # Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
 # A complete list can be obtained by running the command "obabel -L formats"
 # Multiple target formats can be specified by separating them with colons, e.g. pdb:sdf:pdbqt
