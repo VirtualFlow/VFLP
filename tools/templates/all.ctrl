@@ -411,7 +411,7 @@ tranche_chiralcentercount_partition=0:1:2:3:4:5
 tranche_halogencount_partition=0:1:2:3:4:5
 tranche_sulfurcount_partition=0:1:2:3:4:5
 tranche_NOcount_partition=0:1:2:3:4:5:6:7:8:9:10
-tranche electronegativeatomcount_partition=0:1:2:3:4:5:6:7:8:9:10
+tranche_electronegativeatomcount_partition=0:1:2:3:4:5:6:7:8:9:10
 
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
