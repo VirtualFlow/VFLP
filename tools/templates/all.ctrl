@@ -14,7 +14,7 @@ batchsystem=SLURM
 # Possible values: SLURM, TOQRUE, PBS, LSF, SGE
 # Settable via range control files: No
 
-partition=shared
+partition=debug
 # Partitions are also called queues in some batchsystems
 # Settable via range control files: Yes
 
@@ -31,14 +31,14 @@ steps_per_job=1
 # Should not be changed during runtime, and be the same for all joblines
 # Settable via range control files: Yes
 
-cpus_per_step=4
+cpus_per_step=32
 # Sets the slurm cpus-per-task variable (task = step) in SLURM
 # In LSF this corresponds to the number of slots per node
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
 # Settable via range control files: Yes
 
-queues_per_step=8
+queues_per_step=64
 # Sets the number of queues/processes per step
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
@@ -57,12 +57,12 @@ central_todo_list_splitting_size=10000
 # For many types of clusters it is recommended if the total number of splitted todo lists stays below 10000.
 # Settable via range control files: Yes
 
-ligands_todo_per_queue=500000
+ligands_todo_per_queue=1000
 # Used as a limit of ligands for the to-do lists
 # This value should be divisible by the next setting "ligands_todo_per_refilling_step"
 # Settable via range control files: Yes
 
-ligands_per_refilling_step=10000
+ligands_per_refilling_step=1000
 # The to-do files of the queues are filled with <ligands_per_refilling_step> ligands per refill step
 # A number roughly equal to the average of number of ligands per collection is recommended
 # Settable via range control files: Yes
@@ -93,14 +93,14 @@ verbosity_commands=standard
 # This option mainly effects the screen output and the logfiles
 # Settable via range control files: No
 
-verbosity_logfiles=standard
+verbosity_logfiles=debug
 # Possible values:
 #   * standard
 #   * debug : activates the set -x option. Increases size of log-files in average by nearly a factor of 10
 # This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
 # Settable via range control files: Yes
 
-store_queue_log_files=all_compressed_error_uncompressed
+store_queue_log_files=all_uncompressed
 # Supported values (experimental)
 #   * all_uncompressed: requires most memory any and storage, but is recommending for test runs and debugging purposes
 #   * all_compressed: requires less memory and storage than uncompressed, but during the last part of the log files might get lost (in particular during crashes) due to the on-the-fly compression
@@ -332,7 +332,7 @@ energy_max=10000
 # Maximum allowed energy value. Recommended: 10000
 # Possible values: Positive integer
 
-********************************************************************    Tranche Aassignments    ****************************************************************
+********************************************************************    Tranche Assignments    ****************************************************************
 
 tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
@@ -342,7 +342,7 @@ tranche_type_count=6
 # Total number of new tranche types
 # Minimum number: 3
 
-tranche_types=mw:logp_jchem:logp_obabel:hba_jchem:hba_obabel:hbd_jchem:hbd_obabel:rotb:tpsa_jchem:tpsa_obabel:logd:logs:atomcount:bondcount:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount
+tranche_types=mw:logp_jchem:hba_jchem:hbd_jchem:rotb:tpsa_jchem:logp_obabel:hba_obabel:hbd_obabel:tpsa_obabel:logd:logs:atomcount:bondcount:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount
 #   * mw: molecular weight
 #   * logp_jchem: octanol water partition coefficient by JChem's cxcalc
 #   * logp_obabel: octanol water partition coefficient by Open Babel
