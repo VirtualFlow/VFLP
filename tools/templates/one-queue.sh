@@ -947,21 +947,21 @@ assign_tranches_to_ligand() {
                 done
                 ;;
 
-            logp)
+            logp_obabel)
                 # Variables
-                ligand_logp="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^logP " | awk '{print $2}')"
-                tranche_logp_partition=(${tranche_logp_partition//:/ })
-                separator_count=$(echo "${tranche_logp_partition[@]}" | wc -l)
+                ligand_logp_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^logP " | awk '{print $2}')"
+                tranche_logp_obabel_partition=(${tranche_logp_obabel_partition//:/ })
+                separator_count=$(echo "${tranche_logp_obabel_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_logp has a valid value
-                if ! [[ "$ligand_logp" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_logp_obabel has a valid value
+                if ! [[ "$ligand_logp_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The logP $(${ligand_logp}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The logP by Open Babel $(${ligand_logp_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (logP)"
+                    update_ligand_list_end false "during tranche assignment (logP Open Babel)"
 
                     # Skipping the ligand
                     continue 2
@@ -970,26 +970,26 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_logp_obabel <= ${tranche_logp_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_logp_partition[((interval_index-2))]} < $ligand_logp && $ligand_logp <= ${tranche_logp_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_logp_obabel_partition[((interval_index-2))]} < $ligand_logp_obabel && $ligand_logp_obabel <= ${tranche_logp_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq "${interval_count}" ]]; then
-                        if (( $(echo "$ligand_logp > ${tranche_logp_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_logp_obabel > ${tranche_logp_obabel_partition[((interval_index-2))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The logP $(${ligand_logp}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The logP by Open Babel $(${ligand_logp_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (LogP)"
+                        update_ligand_list_end false "during tranche assignment (LogP Open Babel)"
 
                         # Skipping the ligand
                         continue 2
@@ -1000,21 +1000,21 @@ assign_tranches_to_ligand() {
                 done
                 ;;
 
-            hba)
+            logp_jchem)
                 # Variables
-                ligand_hba="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator acceptorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
-                tranche_hba_partition=(${tranche_hba_partition//:/ })
-                separator_count=$(echo "${tranche_hba_partition[@]}" | wc -l)
+                ligand_logp_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logp_jchem_partition=(${tranche_logp_jchem_partition//:/ })
+                separator_count=$(echo "${tranche_logp_jchem_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_hba has a valid value
-                if ! [[ "$ligand_hba" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_logp_jchem has a valid value
+                if ! [[ "$ligand_logp_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The HBA count $(${ligand_hba}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The logP values by JChem $(${ligand_logp_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (HBA)"
+                    update_ligand_list_end false "during tranche assignment (logP JChem)"
 
                     # Skipping the ligand
                     continue 2
@@ -1023,26 +1023,26 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_hba <= ${tranche_hba_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_logp_jchem <= ${tranche_logp_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_hba_partition[((interval_index-2))]} < $ligand_hba && $ligand_hba <= ${tranche_hba_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_logp_jchem_partition[((interval_index-2))]} < $ligand_logp_jchem && $ligand_logp_jchem <= ${tranche_logp_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_hba > ${tranche_hba_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_logp_jchem > ${tranche_logp_jchem_partition[((interval_index-2))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The HBA count $(${ligand_hba}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The logP value by JChem $(${ligand_logp_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (HBA)"
+                        update_ligand_list_end false "during tranche assignment (logP JChem)"
 
                         # Skipping the ligand
                         continue 2
@@ -1053,21 +1053,21 @@ assign_tranches_to_ligand() {
                 done
                 ;;
 
-            hbd)
+            hba_jchem)
                 # Variables
-                ligand_hbd="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator donorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
-                tranche_hbd_partition=(${tranche_hbd_partition//:/ })
-                separator_count=$(echo "${tranche_hbd_partition[@]}" | wc -l)
+                ligand_hba_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator acceptorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_hba_jchem_partition=(${tranche_hba_jchem_partition//:/ })
+                separator_count=$(echo "${tranche_hba_jchem_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_hbd has a valid value
-                if ! [[ "$ligand_hbd" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_hba_jchem has a valid value
+                if ! [[ "$ligand_hba_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The HBD count $(${ligand_hbd}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The HBA count by JChem $(${ligand_hba_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (HBD)"
+                    update_ligand_list_end false "during tranche assignment (HBA JChem)"
 
                     # Skipping the ligand
                     continue 2
@@ -1076,26 +1076,185 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_hbd <= ${tranche_hbd_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_hba_jchem <= ${tranche_hba_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_hbd_partition[((interval_index-2))]} < $ligand_hbd && $ligand_hbd <= ${tranche_hbd_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_hba_jchem_partition[((interval_index-2))]} < $ligand_hba_jchem && $ligand_hba_jchem <= ${tranche_hba_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_hbd > ${tranche_hbd_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_hba_jchem > ${tranche_hba_jchem_partition[((interval_index-2))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The HBD count $(${ligand_hbd}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The HBA count $(${ligand_hba_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (HBD)"
+                        update_ligand_list_end false "during tranche assignment (HBA JChem)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            hba_obabel)
+                # Variables
+                ligand_hba_obabel="$(obabel -smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -osmi --append HBA1 | head -n 1)"
+                tranche_hba_obabel_partition=(${tranche_hba_obabel_partition//:/ })
+                separator_count=$(echo "${tranche_hba_obabel_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_hba_obabel has a valid value
+                if ! [[ "$ligand_hba_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The HBA count by Open Babel $(${ligand_hba_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (HBA count Open Babel)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_hba_obabel <= ${tranche_hba_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_hba_obabel_partition[((interval_index-2))]} < $ligand_hba_obabel && $ligand_hba_obabel <= ${tranche_hba_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_hba_obabel > ${tranche_hba_obabel_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The HBA count by Open Babel $(${ligand_hba_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (HBA count Open Babel)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            hbd_jchem)
+                # Variables
+                ligand_hbd_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator donorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_hbd_jchem_partition=(${tranche_hbd_jchem_partition//:/ })
+                separator_count=$(echo "${tranche_hbd_jchem_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_hbd_jchem has a valid value
+                if ! [[ "$ligand_hbd_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The HBD count by JChem $(${ligand_hbd_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (HBD JChem)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_hbd_jchem <= ${tranche_hbd_jchem_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_hbd_jchem_partition[((interval_index-2))]} < $ligand_hbd_jchem && $ligand_hbd_jchem <= ${tranche_hbd_jchem_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_hbd_jchem > ${tranche_hbd_jchem_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The HBD count by JChem $(${ligand_hbd_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (JChem)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            hbd_obabel)
+                # Variables
+                ligand_hbd_obabel="$(obabel -smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -osmi --append HBD | head -n 1)"
+                tranche_hbd_obabel_partition=(${tranche_hbd_obabel_partition//:/ })
+                separator_count=$(echo "${tranche_hbd_obabel_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_hbd_obabel has a valid value
+                if ! [[ "$ligand_hbd_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The HBD count by Open Babel $(${ligand_hbd_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (HBD count Open Babel)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_hbd_obabel <= ${tranche_hbd_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_hbd_obabel_partition[((interval_index-2))]} < $ligand_hbd_obabel && $ligand_hbd_obabel <= ${tranche_hbd_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_hbd_obabel > ${tranche_hbd_obabel_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The HBD count by Open Babel $(${ligand_hbd_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (HBD count Open Babel)"
 
                         # Skipping the ligand
                         continue 2
@@ -1159,21 +1318,21 @@ assign_tranches_to_ligand() {
                 done
                 ;;
 
-            tpsa)
+            tpsa_jchem)
                 # Variables
-                ligand_tpsa="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator polarsurfacearea ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
-                tranche_tpsa_partition=(${tranche_tpsa_partition//:/ })
-                separator_count=$(echo "${tranche_tpsa_partition[@]}" | wc -l)
+                ligand_tpsa_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator polarsurfacearea ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_tpsa_jchem_partition=(${tranche_tpsa_jchem_partition//:/ })
+                separator_count=$(echo "${tranche_tpsa_jchem_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_tpsa has a valid value
-                if ! [[ "$ligand_tpsa" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_tpsa_jchem has a valid value
+                if ! [[ "$ligand_tpsa_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The TPSA $(${ligand_tpsa}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The TPSA by JChem $(${ligand_tpsa_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (TPSA)"
+                    update_ligand_list_end false "during tranche assignment (TPSA JChem)"
 
                     # Skipping the ligand
                     continue 2
@@ -1182,26 +1341,185 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_tpsa <= ${tranche_tpsa_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_tpsa_jchem <= ${tranche_tpsa_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_tpsa_partition[((interval_index-2))]} < $ligand_tpsa && $ligand_tpsa <= ${tranche_tpsa_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_tpsa_jchem_partition[((interval_index-2))]} < $ligand_tpsa_jchem && $ligand_tpsa_jchem <= ${tranche_tpsa_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_tpsa > ${tranche_tpsa_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_tpsa_jchem > ${tranche_tpsa_jchem_partition[((interval_index-2))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The TPSA $(${ligand_tpsa}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The TPSA by JChem $(${ligand_tpsa_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (TPSA)"
+                        update_ligand_list_end false "during tranche assignment (TPSA JChem)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            tpsa_obabel)
+                # Variables
+                ligand_tpsa_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^PSA " | awk '{print $2}')"
+                tranche_tpsa_obabel_partition=(${tranche_tpsa_obabel_partition//:/ })
+                separator_count=$(echo "${tranche_tpsa_obabel_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_tpsa_obabel has a valid value
+                if ! [[ "$ligand_tpsa_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The TPSA by Open Babel $(${ligand_tpsa_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (TPSA Open Babel)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_tpsa_obabel <= ${tranche_tpsa_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_tpsa_obabel_partition[((interval_index-2))]} < $ligand_tpsa_obabel && $ligand_tpsa_obabel <= ${tranche_tpsa_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_tpsa_obabel > ${tranche_tpsa_obabel_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The TPSA by Open Babel $(${ligand_tpsa_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (TPSA Open Babel)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            logd)
+                # Variables
+                ligand_logd="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logd ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logd_partition=(${tranche_logd_partition//:/ })
+                separator_count=$(echo "${tranche_logd_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_logd has a valid value
+                if ! [[ "$ligand_logd" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The logD value $(${ligand_logd}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (logD)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_logd <= ${tranche_logd_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_logd_partition[((interval_index-2))]} < $ligand_logd && $ligand_logd <= ${tranche_logd_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_logd > ${tranche_logd_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The logD value $(${ligand_logd}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (logD)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            logs)
+                # Variables
+                ligand_logs="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logs ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_logs_partition=(${tranche_logs_partition//:/ })
+                separator_count=$(echo "${tranche_logs_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_logs has a valid value
+                if ! [[ "$ligand_logs" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The logS $(${ligand_logs}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (logS)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_logs <= ${tranche_logs_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_logs_partition[((interval_index-2))]} < $ligand_logs && $ligand_logs <= ${tranche_logs_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_logs > ${tranche_logs_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The logS $(${ligand_logs}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (logS)"
 
                         # Skipping the ligand
                         continue 2
@@ -1424,21 +1742,21 @@ assign_tranches_to_ligand() {
                 done
                 ;;
 
-            mr)
+            mr_obabel)
                 # Variables
-                ligand_mr="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^MR " | awk '{print $2}')"
-                tranche_mr_partition=(${tranche_mr_partition//:/ })
-                separator_count=$(echo "${tranche_mr_partition[@]}" | wc -l)
+                ligand_mr_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^MR " | awk '{print $2}')"
+                tranche_mr_obabel_partition=(${tranche_mr_obabel_partition//:/ })
+                separator_count=$(echo "${tranche_mr_obabel_partition[@]}" | wc -l)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_mr has a valid value
-                if ! [[ "$ligand_mr" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_mr_obabel has a valid value
+                if ! [[ "$ligand_mr_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The MR $(${ligand_mr}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The MR by Open Babel $(${ligand_mr_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (MR)"
+                    update_ligand_list_end false "during tranche assignment (MR Open Babel)"
 
                     # Skipping the ligand
                     continue 2
@@ -1447,26 +1765,79 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_mr <= ${tranche_mr_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_mr_obabel <= ${tranche_mr_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_mr_partition[((interval_index-2))]} < $ligand_mr && $ligand_mr <= ${tranche_mr_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_mr_obabel_partition[((interval_index-2))]} < $ligand_mr_obabel && $ligand_mr_obabel <= ${tranche_mr_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_mr > ${tranche_mr_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_mr_obabel > ${tranche_mr_obabel_partition[((interval_index-2))]}" | bc -l) )); then
                             reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The MR $(${ligand_mr}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The MR by Open Babel $(${ligand_mr_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (MR)"
+                        update_ligand_list_end false "during tranche assignment (MR Open Babel)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            mr_jchem)
+                # Variables
+                ligand_mr_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator refractivity ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                tranche_mr_jchem_partition=(${tranche_mr_jchem_partition//:/ })
+                separator_count=$(echo "${tranche_mr_jchem_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_mr_jchem has a valid value
+                if ! [[ "$ligand_mr_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The MR by JChem $(${ligand_mr_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (MR JChem)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_mr_jchem <= ${tranche_mr_jchem_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_mr_jchem_partition[((interval_index-2))]} < $ligand_mr_jchem && $ligand_mr_jchem <= ${tranche_mr_jchem_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_mr_jchem > ${tranche_mr_jchem_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The MR by JChem $(${ligand_mr_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (MR JChem)"
 
                         # Skipping the ligand
                         continue 2
@@ -1757,7 +2128,7 @@ assign_tranches_to_ligand() {
                 # Checking if ligand_halogencount has a valid value
                 if ! [[ "$ligand_halogencount" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The chiral halogen count $(${ligand_halogencount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The halogen atom count $(${ligand_halogencount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
                     update_ligand_list_end false "during tranche assignment (halogen count)"
@@ -1785,7 +2156,7 @@ assign_tranches_to_ligand() {
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The halogen count value $(${ligand_halogencount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The halogen atom count value $(${ligand_halogencount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand list
                         update_ligand_list_end false "during tranche assignment (halogen count)"
@@ -1810,7 +2181,7 @@ assign_tranches_to_ligand() {
                 # Checking if ligand_sulfurcount has a valid value
                 if ! [[ "$ligand_sulfurcount" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The chiral sulfur count $(${ligand_sulfurcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The sulfur atom count $(${ligand_sulfurcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
                     update_ligand_list_end false "during tranche assignment (sulfur count)"
@@ -1838,7 +2209,7 @@ assign_tranches_to_ligand() {
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The sulfur count value $(${ligand_sulfurcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The sulfur atom count value $(${ligand_sulfurcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand list
                         update_ligand_list_end false "during tranche assignment (sulfur count)"
@@ -1863,7 +2234,7 @@ assign_tranches_to_ligand() {
                 # Checking if ligand_NOcount has a valid value
                 if ! [[ "$ligand_NOcount" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The chiral NO count $(${ligand_NOcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The NO atom count $(${ligand_NOcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand list
                     update_ligand_list_end false "during tranche assignment (NO count)"
@@ -1895,6 +2266,59 @@ assign_tranches_to_ligand() {
 
                         # Updating the ligand list
                         update_ligand_list_end false "during tranche assignment (NO count)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+                ;;
+
+            electronegativeatomcount)
+                # Variables
+                ligand_electronegativeatomcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X//" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
+                tranche_electronegativeatomcount_partition=(${tranche_electronegativeatomcount_partition//:/ })
+                separator_count=$(echo "${tranche_electronegativeatomcount_partition[@]}" | wc -l)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_electronegativeatomcount has a valid value
+                if ! [[ "$ligand_electronegativeatomcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The elctronegative atom count $(${ligand_electronegativeatomcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (elctronegative atom count)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_electronegativeatomcount <= ${tranche_electronegativeatomcount_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_electronegativeatomcount_partition[((interval_index-2))]} < $ligand_electronegativeatomcount && $ligand_electronegativeatomcount <= ${tranche_electronegativeatomcount_partition[((interval_index-1))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_electronegativeatomcount > ${tranche_electronegativeatomcount_partition[((interval_index-2))]}" | bc -l) )); then
+                            reassigned_tranche=${reassigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The elctronegative atom count $(${ligand_electronegativeatomcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (elctronegative atom count)"
 
                         # Skipping the ligand
                         continue 2
