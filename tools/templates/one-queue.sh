@@ -792,7 +792,11 @@ obabel_generate_conformation(){
 obabel_generate_pdb() {
 
     # Variables
-    pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    if [ "${tranche_assignments}" = "false" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
+    elif [ "${tranche_assignments}" = "true" ]; then
+        pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.pdb
+    fi
 
     # Converting SMILES to PDB
     # Trying conversion with obabel
@@ -1211,7 +1215,7 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    *  Hydrogen bond acceptor count (Open Babel): ${ligand_hba_obabel}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Hydrogen bond acceptor count (Open Babel): ${ligand_hba_obabel}"
 
                 ;;
 
@@ -2156,7 +2160,7 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    *  Number of atoms with positive charges: ${ligand_positivechargecount}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Number of atoms with positive charges: ${ligand_positivechargecount}"
 
                 ;;
 
@@ -2544,7 +2548,7 @@ assign_tranches_to_ligand() {
 
             electronegativeatomcount)
                 # Variables
-                ligand_electronegativeatomcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X//" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
+                ligand_electronegativeatomcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X/" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
                 tranche_electronegativeatomcount_partition=(${tranche_electronegativeatomcount_partition//:/ })
                 separator_count=$(echo "${tranche_electronegativeatomcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
@@ -2601,7 +2605,7 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ eatom count: ${ligand_electronegativeatomcount}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ atom count: ${ligand_electronegativeatomcount}"
 
                 ;;
 
