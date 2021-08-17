@@ -705,9 +705,9 @@ molconvert_generate_conformation() {
     ng_server_check
 
     # Variables
-    if [ "${tranche_assignments}" == "false" ]; then
+    if [ "${tranche_assignments}" = "false" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
-    elif [ "${tranche_assignments}" == "true" ]; then
+    elif [ "${tranche_assignments}" = "true" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.pdb
     fi
     
@@ -750,9 +750,9 @@ molconvert_generate_conformation() {
 obabel_generate_conformation(){
 
     # Variables
-    if [ "${tranche_assignments}" == "false" ]; then
+    if [ "${tranche_assignments}" = "false" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
-    elif [ "${tranche_assignments}" == "true" ]; then
+    elif [ "${tranche_assignments}" = "true" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.pdb
     fi
 
@@ -829,9 +829,9 @@ obabel_generate_pdb() {
 obabel_generate_targetformat() {
 
     # Variables
-    if [ "${tranche_assignments}" == "false" ]; then
+    if [ "${tranche_assignments}" = "false" ]; then
         targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.${targetformat}
-    elif [ "${tranche_assignments}" == "true" ]; then
+    elif [ "${tranche_assignments}" = "true" ]; then
         targetformat_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.${targetformat}
     fi
 
@@ -2672,7 +2672,7 @@ fi
 
 # Reassignment of tranches
 tranche_assignments="$(grep -m 1 "^tranche_assignments=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-if [ "${tranche_assignments}" == "true" ]; then
+if [ "${tranche_assignments}" = "true" ]; then
 
     # Variables
     tranche_types="$(grep -m 1 "^tranche_types=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
@@ -3196,7 +3196,7 @@ t 1.
         fi
 
         # Reassigning the tranches if needed
-        if [ "${tranche_assignments}" == "true" ]; then
+        if [ "${tranche_assignments}" = "true" ]; then
 
             # Variables
             pdb_trancheassignments_remark=""
