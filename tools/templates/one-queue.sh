@@ -941,7 +941,7 @@ obabel_generate_targetformat() {
         fi
 
         # Removing any local file path information which obabel often adds
-        sed "s#^/.*#${next_ligand}#"  ${targetformat_output_file}.tmp > ${targetformat_output_file}
+        sed -i "s#^/.*#${next_ligand}#" ${targetformat_output_file}
 
     fi
     
