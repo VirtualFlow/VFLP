@@ -888,10 +888,6 @@ obabel_generate_pdb() {
 # Target format generation with obabel
 obabel_generate_targetformat() {
 
-    # Timings
-    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-
     # Variables
     if [ "${tranche_assignments}" = "false" ]; then
         input_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.pdb
@@ -903,7 +899,7 @@ obabel_generate_targetformat() {
 
     # Converting pdb to target the format
     trap '' ERR
-    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ipdb ${input_file} -O ${targetformat_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
+    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ipdb ${input_file} ${additional_obabel_options} -O ${targetformat_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | sed "/1 molecule converted/d" 1>&2) ; } 2>&1 )
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
@@ -936,17 +932,14 @@ obabel_generate_targetformat() {
             mol2_targetformat_remark="# Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
 
             # Modifying the header of the targetformat file
-            sed "1i# Small molecule (ligand)\n# Compound: ${next_ligand}\n# SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\n# Created on $(date)" ${targetformat_output_file} | sed "s/REMARK    /n# /"  > ${targetformat_output_file}.tmp
+            sed "1i# Small molecule (ligand)\n# Compound: ${next_ligand}\n# SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\n# Created on $(date)" ${targetformat_output_file} | sed "s/REMARK    /# /"  > ${targetformat_output_file}.tmp
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         fi
 
         # Removing any local file path information which obabel often adds
-        sed -i "s#^/.*#${next_ligand}#" ${targetformat_output_file}
+        sed -i "s# /.*# ${next_ligand}#" ${targetformat_output_file}
 
     fi
-    
-    # Timings
-    component_timings="${component_timings}:obabel_generate_targetformat=${temp_end_time_ms}"
 }
 
 # Determining the potential energy
@@ -3703,6 +3696,11 @@ t 1.
             targetformat_generation_success="false"
             additional_obabel_options=""
 
+
+            # Timings
+            temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+            temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+
             if [ ${targetformat} == "smi" ]; then
                 additional_obabel_options="-xn"
             fi
@@ -3723,7 +3721,11 @@ t 1.
 
                 # Adjusting the ligand-list file
                 ligand_list_entry="${ligand_list_entry} targetformat-generation(${targetformat}):success"
-            fi
+          fi
+
+          # Timings
+          component_timings="${component_timings}:obabel_generate_targetformat=${temp_end_time_ms}"
+
         done
 
         # Updating the ligand list
