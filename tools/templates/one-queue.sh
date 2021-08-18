@@ -931,14 +931,25 @@ obabel_generate_targetformat() {
             # Modifying the header of the targetformat file
             sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
+        elif [[ "${targetformat}" == "mol2" ]]; then
+            # Variables
+            mol2_targetformat_remark="# Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
+
+            # Modifying the header of the targetformat file
+            sed "1i# Small molecule (ligand)\n# Compound: ${next_ligand}\n# SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\n# Created on $(date)" ${targetformat_output_file} | sed "s/REMARK    /n# /"  > ${targetformat_output_file}.tmp
+            mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         fi
+
+        # Removing any local file path information which obabel often adds
+        sed "s#^/.*#${next_ligand}#"  ${targetformat_output_file}.tmp > ${targetformat_output_file}
+
     fi
     
     # Timings
     component_timings="${component_timings}:obabel_generate_targetformat=${temp_end_time_ms}"
 }
 
-# Determining and assigning the tranche
+# Determining the potential energy
 obabel_check_energy() {
 
     # Timings
@@ -2802,7 +2813,11 @@ assign_tranches_to_ligand() {
             # Timings
             tranche_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${tranche_start_time_ms}))"
             component_timings="${component_timings}:tranche-assignments-total=${tranche_end_time_ms}"
+
+            # PDB Remark
+            pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    Tranche: ${assigned_tranche}"
         fi
+
     done
 }
 
