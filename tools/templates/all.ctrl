@@ -279,7 +279,7 @@ conformation_program_2=obabel
 #   * none (only possible for conformation_program_2)
 # Settable via range control files: Yes
 
-molconvert_3D_options=-3:{fast}
+molconvert_3D_options=-3:{fine}
 # Setting only required if conformation_generation=true and one of the programs used is molconvert
 # 3D conformation generation options for molconvert.
 # See also the help text printed by molconvert for additional information

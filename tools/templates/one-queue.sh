@@ -492,7 +492,6 @@ desalt() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Number of fragments in SMILES
     number_of_smiles_fragments="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tr "." "\n" | wc -l)"
@@ -546,6 +545,7 @@ desalt() {
     fi
 
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:desalt=${temp_end_time_ms}"
 }
 
@@ -553,7 +553,6 @@ standardizer_neutralize() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Checking the NG Server
     ng_server_check
@@ -611,6 +610,7 @@ standardizer_neutralize() {
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:standardizer_neutralize=${temp_end_time_ms}"
 }
 
@@ -619,7 +619,6 @@ cxcalc_tautomerize() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Checking the NG Server
     ng_server_check
@@ -658,6 +657,7 @@ cxcalc_tautomerize() {
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:cxcalc_tautomerize=${temp_end_time_ms}"
 }
 
@@ -666,7 +666,6 @@ cxcalc_protonate() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Checking the NG Server
     ng_server_check
@@ -699,6 +698,7 @@ cxcalc_protonate() {
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:cxcalc_protonate=${temp_end_time_ms}"
 }
 
@@ -707,7 +707,6 @@ obabel_protonate() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Carrying out the protonation
     trap '' ERR
@@ -730,6 +729,7 @@ obabel_protonate() {
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_protonate=${temp_end_time_ms}"
 }
 
@@ -738,7 +738,6 @@ molconvert_generate_conformation() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Checking the NG Server
     ng_server_check
@@ -753,7 +752,7 @@ molconvert_generate_conformation() {
     # Converting SMILES to 3D PDB
     # Trying conversion with molconvert
     trap '' ERR
-    { timeout 300 time_bin -f "    * Timings of molconvert (user real system): %U %e %S" ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.formats.MolConverter pdb:+H -3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -o ${pdb_intermediate_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2) ; } 2>&1
+    { timeout 300 time_bin -f "    * Timings of molconvert (user real system): %U %e %S" ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.formats.MolConverter pdb:+H ${molconvert_3D_options} ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -o ${pdb_intermediate_output_file} 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2) ; } 2>&1
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
@@ -785,6 +784,7 @@ molconvert_generate_conformation() {
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:molconvert_generate_conformation=${temp_end_time_ms}"
 }
 
@@ -793,7 +793,6 @@ obabel_generate_conformation(){
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Variables
     if [ "${tranche_assignments}" = "false" ]; then
@@ -834,6 +833,7 @@ obabel_generate_conformation(){
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_generate_conformation=${temp_end_time_ms}"
 }
 
@@ -842,7 +842,6 @@ obabel_generate_pdb() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Variables
     if [ "${tranche_assignments}" = "false" ]; then
@@ -882,6 +881,7 @@ obabel_generate_pdb() {
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_generate_pdb=${temp_end_time_ms}"
 }
 
@@ -947,7 +947,6 @@ obabel_check_energy() {
 
     # Timings
     temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
     # Computing the energy
     ligand_energy=""
@@ -959,6 +958,7 @@ obabel_check_energy() {
     fi
     
     # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_energy=${temp_end_time_ms}"
 }
 
