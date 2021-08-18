@@ -937,7 +937,8 @@ obabel_generate_targetformat() {
         fi
 
         # Removing any local file path information which obabel often adds
-        sed -i "s# /.*# ${next_ligand}#" ${targetformat_output_file}
+        sed "s#^/.*# ${next_ligand}#" ${targetformat_output_file} | sed "s# /.*# ${next_ligand}#" > ${targetformat_output_file}.tmp
+        mv ${targetformat_output_file}.tmp ${targetformat_output_file}
 
     fi
 }
@@ -3689,17 +3690,16 @@ t 1.
         # Generating the target formats
         # Printing information
         echo -e "\n * Starting the target format generation with obabel"
+
+        # Timings
+        temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+
         # Loop for each target format
         for targetformat in ${targetformats//:/ }; do
 
             # Variables
             targetformat_generation_success="false"
             additional_obabel_options=""
-
-
-            # Timings
-            temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-            temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
             if [ ${targetformat} == "smi" ]; then
                 additional_obabel_options="-xn"
@@ -3717,14 +3717,15 @@ t 1.
                 # Adjusting the ligand-list file
                 ligand_list_entry="${ligand_list_entry} targetformat-generation(${targetformat}):failed"
 
-           else
+            else
 
                 # Adjusting the ligand-list file
                 ligand_list_entry="${ligand_list_entry} targetformat-generation(${targetformat}):success"
-          fi
+            fi
 
-          # Timings
-          component_timings="${component_timings}:obabel_generate_targetformat=${temp_end_time_ms}"
+            # Timings
+            component_timings="${component_timings}:obabel_generate_targetformat=${temp_end_time_ms}"
+            temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
         done
 
