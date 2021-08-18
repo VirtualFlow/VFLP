@@ -269,6 +269,12 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     # Java 10/11 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:OnOutOfMemoryError="echo %p" -XX:OnError="echo %p" -Xlog:gc*:file=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -Xlog:all=warning:file=${PWD}/java.warning.${VF_QUEUE_NO_12}.log
     # Java 8 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -XX:-PrintConcurrentLocks -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${PWD}/java.gc.${VF_QUEUE_NO_12}.log
     start_ng_server
+
+    # Preparing the other binary files
+    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin
+    cp bin/* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin/
+    chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin/*
+    export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin/:$PATH"
 fi
 
 # Starting the individual queues
