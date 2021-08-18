@@ -108,7 +108,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} tranche-assignment-timings:${component_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} timings:${component_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -976,11 +976,11 @@ assign_tranches_to_ligand() {
 
             mw)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_mw="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^mol_weight " | awk '{print $2}')"
                 separator_count=$(echo "${tranche_mw_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_mw has a valid value
                 if ! [[ "$ligand_mw" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1043,11 +1043,11 @@ assign_tranches_to_ligand() {
 
             logp_obabel)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_logp_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^logP " | awk '{print $2}')"
                 separator_count=$(echo "${tranche_logp_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logp_obabel has a valid value
                 if ! [[ "$ligand_logp_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1110,11 +1110,11 @@ assign_tranches_to_ligand() {
 
             logp_jchem)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_logp_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_logp_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logp_jchem has a valid value
                 if ! [[ "$ligand_logp_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1177,11 +1177,11 @@ assign_tranches_to_ligand() {
 
             hba_jchem)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_hba_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator acceptorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_hba_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hba_jchem has a valid value
                 if ! [[ "$ligand_hba_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1244,11 +1244,11 @@ assign_tranches_to_ligand() {
 
             hba_obabel)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_hba_obabel="$(obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -osmi --append HBA1 | head -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_hba_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hba_obabel has a valid value
                 if ! [[ "$ligand_hba_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1311,11 +1311,11 @@ assign_tranches_to_ligand() {
 
             hbd_jchem)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_hbd_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator donorcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_hbd_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hbd_jchem has a valid value
                 if ! [[ "$ligand_hbd_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1378,11 +1378,11 @@ assign_tranches_to_ligand() {
 
             hbd_obabel)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_hbd_obabel="$(obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi -osmi --append HBD |  head -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_hbd_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_hbd_obabel has a valid value
                 if ! [[ "$ligand_hbd_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1445,11 +1445,11 @@ assign_tranches_to_ligand() {
 
             rotb)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_rotb="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator rotatablebondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_rotb_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_rotb has a valid value
                 if ! [[ "$ligand_rotb" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1512,11 +1512,11 @@ assign_tranches_to_ligand() {
 
             tpsa_jchem)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_tpsa_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator polarsurfacearea ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_tpsa_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_tpsa_jchem has a valid value
                 if ! [[ "$ligand_tpsa_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1579,11 +1579,11 @@ assign_tranches_to_ligand() {
 
             tpsa_obabel)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_tpsa_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^PSA " | awk '{print $2}')"
                 separator_count=$(echo "${tranche_tpsa_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_tpsa_obabel has a valid value
                 if ! [[ "$ligand_tpsa_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1645,12 +1645,12 @@ assign_tranches_to_ligand() {
                 ;;
 
             logd)
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 # Variables
                 ligand_logd="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logd ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_logd_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logd has a valid value
                 if ! [[ "$ligand_logd" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1713,11 +1713,11 @@ assign_tranches_to_ligand() {
 
             logs)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_logs="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logs ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_logs_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_logs has a valid value
                 if ! [[ "$ligand_logs" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1780,11 +1780,11 @@ assign_tranches_to_ligand() {
 
             atomcount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_atomcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_atoms " | awk '{print $2}')"
                 separator_count=$(echo "${tranche_atomcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_atomcount has a valid value
                 if ! [[ "$ligand_atomcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1847,11 +1847,11 @@ assign_tranches_to_ligand() {
 
             bondcount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_bondcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_bonds " | awk '{print $2}')"
                 separator_count=$(echo "${tranche_bondcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_bondcount has a valid value
                 if ! [[ "$ligand_bondcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1914,11 +1914,11 @@ assign_tranches_to_ligand() {
 
             ringcount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_ringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator ringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_ringcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_ringcount has a valid value
                 if ! [[ "$ligand_ringcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1981,11 +1981,11 @@ assign_tranches_to_ligand() {
 
             aromaticringcount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_aromaticringcount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator aromaticringcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_aromaticringcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_aromaticringcount has a valid value
                 if ! [[ "$ligand_aromaticringcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2048,11 +2048,11 @@ assign_tranches_to_ligand() {
 
             mr_obabel)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_mr_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^MR " | awk '{print $2}')"
                 separator_count=$(echo "${tranche_mr_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_mr_obabel has a valid value
                 if ! [[ "$ligand_mr_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2115,11 +2115,11 @@ assign_tranches_to_ligand() {
 
             mr_jchem)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_mr_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator refractivity ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_mr_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_mr_jchem has a valid value
                 if ! [[ "$ligand_mr_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2182,11 +2182,11 @@ assign_tranches_to_ligand() {
 
             formalcharge)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_formalcharge="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/-2/--/" | sed "s/+2/++/" | grep -o "[+-]" | wc -l)"
                 separator_count=$(echo "${tranche_formalcharge_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_formalcharge has a valid value
                 if ! [[ "$ligand_formalcharge" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2249,11 +2249,11 @@ assign_tranches_to_ligand() {
 
             positivechargecount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_positivechargecount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/+2/++/" | grep -o "+" | wc -l)"
                 separator_count=$(echo "${tranche_positivechargecount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_positivechargecount has a valid value
                 if ! [[ "$ligand_positivechargecount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2316,11 +2316,11 @@ assign_tranches_to_ligand() {
 
             negativechargecount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_negativechargecount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/-2/--/" | grep -o "-" | wc -l)"
                 separator_count=$(echo "${tranche_negativechargecount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_negativechargecount has a valid value
                 if ! [[ "$ligand_negativechargecount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2383,11 +2383,11 @@ assign_tranches_to_ligand() {
 
             fsp3)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_fsp3="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator fsp3 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_fsp3_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_fsp3 has a valid value
                 if ! [[ "$ligand_fsp3" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2450,11 +2450,11 @@ assign_tranches_to_ligand() {
 
             chiralcentercount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_chiralcentercount="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator chiralcentercount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
                 separator_count=$(echo "${tranche_chiralcentercount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_chiralcentercount has a valid value
                 if ! [[ "$ligand_chiralcentercount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2517,6 +2517,7 @@ assign_tranches_to_ligand() {
 
             halogencount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_fluorine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "F" | wc -l)"
                 ligand_chlorine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "Cl" | wc -l)"
                 ligand_bromine_count="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep -o "Br" | wc -l)"
@@ -2525,7 +2526,6 @@ assign_tranches_to_ligand() {
                 separator_count=$(echo "${tranche_halogencount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_halogencount has a valid value
                 if ! [[ "$ligand_halogencount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2588,11 +2588,11 @@ assign_tranches_to_ligand() {
 
             sulfurcount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_sulfurcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Si//" | grep -io "S" | wc -l)"
                 separator_count=$(echo "${tranche_sulfurcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_sulfurcount has a valid value
                 if ! [[ "$ligand_sulfurcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2655,11 +2655,11 @@ assign_tranches_to_ligand() {
 
             NOcount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_NOcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | grep -io "[NO]" | wc -l)"
                 separator_count=$(echo "${tranche_NOcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_NOcount has a valid value
                 if ! [[ "$ligand_NOcount" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -2722,11 +2722,11 @@ assign_tranches_to_ligand() {
 
             electronegativeatomcount)
                 # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
                 ligand_electronegativeatomcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X/" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
                 separator_count=$(echo "${tranche_electronegativeatomcount_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
-                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
                 # Checking if ligand_electronegativeatomcount has a valid value
                 if ! [[ "$ligand_electronegativeatomcount" =~ ^[[:digit:].e+-]+$ ]]; then
