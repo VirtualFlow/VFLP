@@ -24,7 +24,7 @@
 #SBATCH --mail-user=
 #SBATCH --mail-type=fail
 #SBATCH --time=00-12:00:00
-#SBATCH --mem-per-cpu=1G
+#SBATCH --mem-per-cpu=800M
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=main

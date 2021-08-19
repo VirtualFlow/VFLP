@@ -4594,7 +4594,7 @@ if [ "${tranche_assignments}" = "true" ]; then
         IFS=':' read -a tranche_${tranche_type}_partition < <(grep -m 1 "^tranche_${tranche_type}_partition=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')
 
         # Reading the input column if values are read from a file
-        if [[ "$tranche_type" == *"$_file" ]]; then
+        if [[ "$tranche_type" == *"_file" ]]; then
             IFS=':'  read -a ${tranche_type}_column < <(grep -m 1 "^${tranche_type}_column=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')
         fi
     done
