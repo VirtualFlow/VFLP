@@ -1870,7 +1870,7 @@ assign_tranches_to_ligand() {
             logs)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_logs="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logs ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}' | sed "s/0\.00E0/0.0")"
+                ligand_logs="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logs ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}' | sed "s/0\.00E0/0.0/")"
                 separator_count=$(echo "${tranche_logs_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
