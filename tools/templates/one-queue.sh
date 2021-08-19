@@ -3121,10 +3121,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MW: ${ligand_mw_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
-
                 ;;
 
               logp_file)
@@ -3186,10 +3182,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logP: ${ligand_logp_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:logp_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -3253,10 +3245,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * HBA count (file): ${ligand_hba_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:hba_file=${temp_end_time_ms}"
-
                 ;;
 
               hbd_file)
@@ -3318,10 +3306,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * HBD count: ${ligand_hbd_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:hbd_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -3386,10 +3370,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Rotatable bonds: ${ligand_rotb_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:rotb_file=${temp_end_time_ms}"
-
                 ;;
 
 
@@ -3452,10 +3432,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * TPSA: ${ligand_tpsa_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:tpsa_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -3520,10 +3496,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logD: ${ligand_logd_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:logd_file=${temp_end_time_ms}"
-
                 ;;
 
 
@@ -3586,10 +3558,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logS: ${ligand_logs_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:logs_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -3654,10 +3622,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Atom count: ${ligand_atomcount_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:atomcount_file=${temp_end_time_ms}"
-
                 ;;
 
 
@@ -3720,10 +3684,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Ring count: ${ligand_ringcount_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:ringcount_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -3788,10 +3748,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Aromatic ring count: ${ligand_aromaticringcount_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:aromaticringcount_file=${temp_end_time_ms}"
-
                 ;;
 
 
@@ -3854,10 +3810,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MR (file): ${ligand_mr_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -3922,10 +3874,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Formal charge: ${ligand_formalcharge_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:formalcharge_file=${temp_end_time_ms}"
-
                 ;;
 
 
@@ -3988,10 +3936,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Positive charge count: ${ligand_mw_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -4056,10 +4000,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Negative charge count: ${ligand_mw_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
-
                 ;;
 
               fsp3_file)
@@ -4121,10 +4061,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Fsp3: ${ligand_fsp3_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:fsp3_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -4189,10 +4125,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Chiral center count (file): ${ligand_chiralcentercount_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:chiralcentercount_file=${temp_end_time_ms}"
-
                 ;;
 
 
@@ -4255,10 +4187,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Halogen atom count: ${ligand_halogencount_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:halogencount_file=${temp_end_time_ms}"
 
                 ;;
 
@@ -4323,10 +4251,6 @@ assign_tranches_to_ligand() {
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Sulfur atom count: ${ligand_sulfurcount_file}"
 
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:sulfurcount_file=${temp_end_time_ms}"
-
                 ;;
 
 
@@ -4389,10 +4313,6 @@ assign_tranches_to_ligand() {
 
                 # PDB Remark
                 pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * NO atom count: ${ligand_halogencount_file}"
-
-                # Timings
-                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:halogencount_file=${temp_end_time_ms}"
 
                 ;;
 
