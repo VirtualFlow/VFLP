@@ -776,10 +776,10 @@ molconvert_generate_conformation() {
         conformation_success="true"
         pdb_conformation_remark="REMARK    Generation of the 3D conformation was carried out by molconvert version ${molconvert_version} of ChemAxons JChem Suite."
         conformation_program="molconvert"
-        smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
+        IFS="\t" read -a smiles < <(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction of the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
     
@@ -828,7 +828,7 @@ obabel_generate_conformation(){
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
     
@@ -876,7 +876,7 @@ obabel_generate_pdb() {
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
-        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_trancheassignment_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
+        sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_trancheassignment_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp /${pdb_intermediate_output_file}
     fi
     
@@ -925,14 +925,14 @@ obabel_generate_targetformat() {
             pdb_targetformat_remark="REMARK    Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
 
             # Modifying the header of the targetformat file
-            sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
+            sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         elif [[ "${targetformat}" == "mol2" ]]; then
             # Variables
             mol2_targetformat_remark="# Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
 
             # Modifying the header of the targetformat file
-            sed "1i# Small molecule (ligand)\n# Compound: ${next_ligand}\n# SMILES: ${smiles}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\n# Created on $(date)" ${targetformat_output_file} | sed "s/REMARK    /# /"  > ${targetformat_output_file}.tmp
+            sed "1i# Small molecule (ligand)\n# Compound: ${next_ligand}\n# SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\n# Created on $(date)" ${targetformat_output_file} | sed "s/REMARK    /# /"  > ${targetformat_output_file}.tmp
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         fi
 
@@ -3061,11 +3061,1415 @@ assign_tranches_to_ligand() {
 
                 ;;
 
+              mw_file)
+                # Variables
+                ligand_mw_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_mw_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_mw_file has a valid value
+                if ! [[ "$ligand_mw_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The MW from the input file (${ligand_mw_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (MW file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_mw_file <= ${tranche_mw_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_mw_file_partition[((interval_index-2))]} < $ligand_mw_file && $ligand_mw_file <= ${tranche_mw_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_mw_file > ${tranche_mw_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The MW from the input file (${ligand_mw_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (MW file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MW: ${ligand_mw_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
+
+                ;;
+
+              logp_file)
+                # Variables
+                ligand_logp_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_logp_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_logp_file has a valid value
+                if ! [[ "$ligand_logp_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The logP from the input file (${ligand_logp_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(logp_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (logP file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_logp_file <= ${tranche_logp_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_logp_file_partition[((interval_index-2))]} < $ligand_logp_file && $ligand_logp_file <= ${tranche_logp_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_logp_file > ${tranche_logp_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The logP from the input file (${ligand_logp_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(logp_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (logP file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logP: ${ligand_logp_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:logp_file=${temp_end_time_ms}"
+
+                ;;
+
+              hba_file)
+                # Variables
+                ligand_hba_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_hba_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_hba_file has a valid value
+                if ! [[ "$ligand_hba_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The HBA count from the input file (${ligand_hba_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(hba_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (HBA count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_hba_file <= ${tranche_hba_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_hba_file_partition[((interval_index-2))]} < $ligand_hba_file && $ligand_hba_file <= ${tranche_hba_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_hba_file > ${tranche_hba_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The HBA count from the input file (${ligand_hba_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(hba_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (HBA count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * HBA count (file): ${ligand_hba_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:hba_file=${temp_end_time_ms}"
+
+                ;;
+
+              hbd_file)
+                # Variables
+                ligand_hbd_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_hbd_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_hbd_file has a valid value
+                if ! [[ "$ligand_hbd_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The HBD count from the input file (${ligand_hbd_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(hbd_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (HBD count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_hbd_file <= ${tranche_hbd_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_hbd_file_partition[((interval_index-2))]} < $ligand_hbd_file && $ligand_hbd_file <= ${tranche_hbd_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_hbd_file > ${tranche_hbd_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The HBD count from the input file (${ligand_hbd_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(hbd_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (HBD count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * HBD count: ${ligand_hbd_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:hbd_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              rotb_file)
+                # Variables
+                ligand_rotb_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_rotb_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_rotb_file has a valid value
+                if ! [[ "$ligand_rotb_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The RotB cound from the input file (${ligand_rotb_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (RotB count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_rotb_file <= ${tranche_rotb_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_rotb_file_partition[((interval_index-2))]} < $ligand_rotb_file && $ligand_rotb_file <= ${tranche_rotb_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_rotb_file > ${tranche_rotb_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The RotB count from the input file (${ligand_rotb_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (RotB count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Rotatable bonds: ${ligand_rotb_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:rotb_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              tpsa_file)
+                # Variables
+                ligand_tpsa_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_tpsa_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_tpsa_file has a valid value
+                if ! [[ "$ligand_tpsa_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The TPSA from the input file (${ligand_tpsa_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(tpsa_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (TPSA file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_tpsa_file <= ${tranche_tpsa_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_tpsa_file_partition[((interval_index-2))]} < $ligand_tpsa_file && $ligand_tpsa_file <= ${tranche_tpsa_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_tpsa_file > ${tranche_tpsa_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The TPSA from the input file (${ligand_tpsa_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(tpsa_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (TPSA file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * TPSA: ${ligand_tpsa_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:tpsa_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              logd_file)
+                # Variables
+                ligand_logd_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_logd_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_logd_file has a valid value
+                if ! [[ "$ligand_logd_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The logD from the input file (${ligand_logd_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(logd_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (logD file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_logd_file <= ${tranche_logd_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_logd_file_partition[((interval_index-2))]} < $ligand_logd_file && $ligand_logd_file <= ${tranche_logd_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_logd_file > ${tranche_logd_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The logD from the input file (${ligand_logd_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(logd_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (logD file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logD: ${ligand_logd_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:logd_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              logs_file)
+                # Variables
+                ligand_logs_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_logs_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_logs_file has a valid value
+                if ! [[ "$ligand_logs_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The logS from the input file (${ligand_logs_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(logs_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (logS file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_logs_file <= ${tranche_logs_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_logs_file_partition[((interval_index-2))]} < $ligand_logs_file && $ligand_logs_file <= ${tranche_logs_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_logs_file > ${tranche_logs_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The logS from the input file (${ligand_logs_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(logs_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (logS file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * logS: ${ligand_logs_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:logs_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              atomcount_file)
+                # Variables
+                ligand_atomcount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_atomcount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_atomcount_file has a valid value
+                if ! [[ "$ligand_atomcount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The atom count from the input file (${ligand_atomcount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (atom count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_atomcount_file <= ${tranche_atomcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_atomcount_file_partition[((interval_index-2))]} < $ligand_atomcount_file && $ligand_atomcount_file <= ${tranche_atomcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_atomcount_file > ${tranche_atomcount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The atom count from the input file (${ligand_atomcount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (atom count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Atom count: ${ligand_atomcount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:atomcount_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              ringcount_file)
+                # Variables
+                ligand_ringcount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_ringcount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_ringcount_file has a valid value
+                if ! [[ "$ligand_ringcount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The ring count from the input file (${ligand_ringcount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(ringcount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (ring count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_ringcount_file <= ${tranche_ringcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_ringcount_file_partition[((interval_index-2))]} < $ligand_ringcount_file && $ligand_ringcount_file <= ${tranche_ringcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_ringcount_file > ${tranche_ringcount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The ring count from the input file (${ligand_ringcount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(ringcount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (ring count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Ring count: ${ligand_ringcount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:ringcount_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              aromaticringcount_file)
+                # Variables
+                ligand_aromaticringcount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_aromaticringcount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_aromaticringcount_file has a valid value
+                if ! [[ "$ligand_aromaticringcount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The aromatic ring count from the input file (${ligand_aromaticringcount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(aromaticringcount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (aromatic ring count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_aromaticringcount_file <= ${tranche_aromaticringcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_aromaticringcount_file_partition[((interval_index-2))]} < $ligand_aromaticringcount_file && $ligand_aromaticringcount_file <= ${tranche_aromaticringcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_aromaticringcount_file > ${tranche_aromaticringcount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The aromatic ring count from the input file (${ligand_aromaticringcount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(aromaticringcount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (aromatic ring count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Aromatic ring count: ${ligand_aromaticringcount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:aromaticringcount_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              mr_file)
+                # Variables
+                ligand_mr_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_mr_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_mr_file has a valid value
+                if ! [[ "$ligand_mr_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The MR from the input file (${ligand_mr_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mr_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (MR file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_mr_file <= ${tranche_mr_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_mr_file_partition[((interval_index-2))]} < $ligand_mr_file && $ligand_mr_file <= ${tranche_mr_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_mr_file > ${tranche_mr_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The MR from the input file (${ligand_mr_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mr_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (MR file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MR (file): ${ligand_mr_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              formalcharge_file)
+                # Variables
+                ligand_formalcharge_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_formalcharge_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_formalcharge_file has a valid value
+                if ! [[ "$ligand_formalcharge_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The formal charge from the input file (${ligand_formalcharge_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(formalcharge_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (formal charge file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_formalcharge_file <= ${tranche_formalcharge_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_formalcharge_file_partition[((interval_index-2))]} < $ligand_formalcharge_file && $ligand_formalcharge_file <= ${tranche_formalcharge_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_formalcharge_file > ${tranche_formalcharge_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The formal charge from the input file (${ligand_formalcharge_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(formalcharge_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (formal charge file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Formal charge: ${ligand_formalcharge_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:formalcharge_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              positivechargecount_file)
+                  # Variables
+                  ligand_positivechargecount_file=${smiles[${ligand_mw_column}]}
+                  separator_count=$(echo "${tranche_positivechargecount_file_partition[@]}" | wc -w)
+                  interval_count=$((separator_count+1))
+                  interval_index=1
+
+                # Checking if ligand_positivechargecount_file has a valid value
+                if ! [[ "$ligand_positivechargecount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The positive charge count from the input file (${ligand_positivechargecount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(positivechargecount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (positive charge count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_positivechargecount_file <= ${tranche_positivechargecount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_positivechargecount_file_partition[((interval_index-2))]} < $ligand_positivechargecount_file && $ligand_positivechargecount_file <= ${tranche_positivechargecount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_positivechargecount_file > ${tranche_positivechargecount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The positive charge count from the input file (${ligand_positivechargecount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(positivechargecount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (positive charge count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Positive charge count: ${ligand_mw_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
+
+                ;;
+
+              negativechargecount_file)
+
+                  # Variables
+                  ligand_negativechargecount_file=${smiles[${ligand_mw_column}]}
+                  separator_count=$(echo "${tranche_negativechargecount_file_partition[@]}" | wc -w)
+                  interval_count=$((separator_count+1))
+                  interval_index=1
+
+                # Checking if ligand_negativechargecount_file has a valid value
+                if ! [[ "$ligand_negativechargecount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The negative charge count from the input file (${ligand_negativechargecount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(negativechargecount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (negative charge count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_negativechargecount_file <= ${tranche_negativechargecount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_negativechargecount_file_partition[((interval_index-2))]} < $ligand_negativechargecount_file && $ligand_negativechargecount_file <= ${tranche_negativechargecount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_negativechargecount_file > ${tranche_negativechargecount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The negative charge count from the input file (${ligand_negativechargecount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(negativechargecount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (negative charge count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Negative charge count: ${ligand_mw_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:mw_file=${temp_end_time_ms}"
+
+                ;;
+
+              fsp3_file)
+                # Variables
+                ligand_fsp3_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_fsp3_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_fsp3_file has a valid value
+                if ! [[ "$ligand_fsp3_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The Fsp3 from the input file (${ligand_fsp3_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(fsp3_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (Fsp3 file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_fsp3_file <= ${tranche_fsp3_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_fsp3_file_partition[((interval_index-2))]} < $ligand_fsp3_file && $ligand_fsp3_file <= ${tranche_fsp3_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_fsp3_file > ${tranche_fsp3_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The Fsp3 from the input file (${ligand_fsp3_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(fsp3_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (Fsp3 file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Fsp3: ${ligand_fsp3_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:fsp3_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              chiralcentercount_file)
+                # Variables
+                ligand_chiralcentercount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_chiralcentercount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_chiralcentercount_file has a valid value
+                if ! [[ "$ligand_chiralcentercount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The chiral center count from the input file (${ligand_chiralcentercount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(chiralcentercount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (chiral center count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_chiralcentercount_file <= ${tranche_chiralcentercount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_chiralcentercount_file_partition[((interval_index-2))]} < $ligand_chiralcentercount_file && $ligand_chiralcentercount_file <= ${tranche_chiralcentercount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_chiralcentercount_file > ${tranche_chiralcentercount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The chiral center count from the input file (${ligand_chiralcentercount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(chiralcentercount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (chiral center count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Chiral center count (file): ${ligand_chiralcentercount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:chiralcentercount_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              halogencount_file)
+                # Variables
+                ligand_halogencount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_halogencount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_halogencount_file has a valid value
+                if ! [[ "$ligand_halogencount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The halogen atom count from the input file (${ligand_halogencount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(halogencount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (halogen atom count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_halogencount_file <= ${tranche_halogencount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_halogencount_file_partition[((interval_index-2))]} < $ligand_halogencount_file && $ligand_halogencount_file <= ${tranche_halogencount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_halogencount_file > ${tranche_halogencount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The halogen atom count from the input file (${ligand_halogencount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(halogencount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (halogen atom count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Halogen atom count: ${ligand_halogencount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:halogencount_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              sulfurcount_file)
+                # Variables
+                ligand_sulfurcount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_sulfurcount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_sulfurcount_file has a valid value
+                if ! [[ "$ligand_sulfurcount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The sulfur atom count from the input file (${ligand_sulfurcount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(sulfurcount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (sulfur atom count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_sulfurcount_file <= ${tranche_sulfurcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_sulfurcount_file_partition[((interval_index-2))]} < $ligand_sulfurcount_file && $ligand_sulfurcount_file <= ${tranche_sulfurcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_sulfurcount_file > ${tranche_sulfurcount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The sulfur atom count from the input file (${ligand_sulfurcount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(sulfurcount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (sulfur atom count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Sulfur atom count: ${ligand_sulfurcount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:sulfurcount_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              NOcount_file)
+                # Variables
+                ligand_halogencount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_halogencount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_halogencount_file has a valid value
+                if ! [[ "$ligand_halogencount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The NO atom count from the input file (${ligand_halogencount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(halogencount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (NO atom count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_halogencount_file <= ${tranche_halogencount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_halogencount_file_partition[((interval_index-2))]} < $ligand_halogencount_file && $ligand_halogencount_file <= ${tranche_halogencount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_halogencount_file > ${tranche_halogencount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The NO atom count from the input file (${ligand_halogencount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(halogencount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (NO atom count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * NO atom count: ${ligand_halogencount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:halogencount_file=${temp_end_time_ms}"
+
+                ;;
+
+
+              electronegativeatomcount_file)
+                # Variables
+                ligand_electronegativeatomcount_file=${smiles[${ligand_mw_column}]}
+                separator_count=$(echo "${tranche_electronegativeatomcount_file_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_electronegativeatomcount_file has a valid value
+                if ! [[ "$ligand_electronegativeatomcount_file" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The electronegative atom count from the input file (${ligand_electronegativeatomcount_file}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount_file)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (halogen atom count file)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_electronegativeatomcount_file <= ${tranche_electronegativeatomcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_electronegativeatomcount_file_partition[((interval_index-2))]} < $ligand_electronegativeatomcount_file && $ligand_electronegativeatomcount_file <= ${tranche_electronegativeatomcount_file_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_electronegativeatomcount_file > ${tranche_electronegativeatomcount_file_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The electronegative atom count from the input file (${ligand_electronegativeatomcount_file}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount_file)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (halogen atom count file)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegative atom count: ${ligand_electronegativeatomcount_file}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:electronegativeatomcount_file=${temp_end_time_ms}"
+
+                ;;
+
             *)
                 # Printing some information
                 echo -e " Error: The value ("${tranche_type}") of the variable tranche_types is not supported."
                 error_response_std $LINENO
+
                 ;;
+
         esac
 
         if [[ "${#assigned_tranche}" -eq "${tranche_count}" ]]; then
@@ -3261,13 +4665,18 @@ if [ "${tranche_assignments}" = "true" ]; then
     # Loop for each tranche type
     for tranche_type in "${tranche_types[@]}"; do
 
-        if [[ "${tranche_type}" != @(mw_jchem|mw_obabel|logp_jchem|logp_obabel|hba_jchem|hba_obabel|hbd_jchem|hbd_obabel|rotb_jchem|rotb_obabel|tpsa_jchem|tpsa_obabel|logd|logs|atomcount_jchem|atomcount_obabel|bondcount_jchem|bondcount_obabel|ringcount|aromaticringcount|formalcharge|mr_jchem|mr_obabel|positivechargecount|negativechargecount|fsp3|chiralcentercount|halogencount|sulfurcount|NOcount|electronegativeatomcount_obabel) ]]; then
+        if [[ "${tranche_type}" != @(mw_jchem|mw_obabel|logp_jchem|logp_obabel|hba_jchem|hba_obabel|hbd_jchem|hbd_obabel|rotb_jchem|rotb_obabel|tpsa_jchem|tpsa_obabel|logd|logs|atomcount_jchem|atomcount_obabel|bondcount_jchem|bondcount_obabel|ringcount|aromaticringcount|formalcharge|mr_jchem|mr_obabel|positivechargecount|negativechargecount|fsp3|chiralcentercount|halogencount|sulfurcount|NOcount|electronegativeatomcount_obabel|mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:logd_file:logs_file:atomcount_file:bondcount_file:ringcount_file:aromaticringcount_file:mr_file:formalcharge_file:positivechargecount_file:negativechargecount_file:fsp3_file:chiralcentercount_file:halogencount_file:sulfurcount_file:NOcount_file:electronegativeatomcount_file) ]]; then
             echo -e " Error: The value (${tranche_type}) was present in the variable tranche_types, but this value is invalid..."
             error_response_std $LINENO
         fi
 
-        # Variables
+        # Reading in the values
         IFS=':' read -a tranche_${tranche_type}_partition < <(grep -m 1 "^tranche_${tranche_type}_partition=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')
+
+        # Reading the input column if values are read from a file
+        if [[ "$tranche_type" == *"$_file" ]]; then
+            IFS=':'  read -a ${tranche_type}_column < <(grep -m 1 "^${tranche_type}_column=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')
+        fi
     done
 fi
 

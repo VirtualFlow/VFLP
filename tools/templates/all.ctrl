@@ -339,6 +339,7 @@ tranche_assignments=true
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
 tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount
+mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount
 # These variables are only needed if tranche_assignments=true
 # Multiple values are separated by colons
 # Possible values:
@@ -350,7 +351,7 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * hba_obabel: hydrogen bond acceptor count
 #   * hbd_jchem: hydrogen bond donor count
 #   * hbd_obabel: hydrogen bond donor count
-#   * rotb: rotatable bond count
+#   * rotb_jchem: rotatable bond count
 #   * rotb_obabel: rotatable bond count
 #   * tpsa_jchem: topological polar surface area by JChem's cxcalc
 #   * tpsa_obabel: topological polar surface area by Open Babel
@@ -360,7 +361,7 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * atomcount_obabel: number of atoms (including hydrogen)
 #   * bondcount_jchem: numner of bonds (including hydrogen-heavy atom bonds)
 #   * bondcount_obabel: numner of bonds (including hydrogen-heavy atom bonds)
-#   * ringcount rings: number of non-aromatic rings
+#   * ringcount: number of non-aromatic rings
 #   * aromaticringcount: number of aromatic rings
 #   * mr_jchem: molecular refractivity by JChem's cxcalc
 #   * mr_obabel: molecular refractivity by Open Babel
@@ -373,6 +374,52 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * sulfurcount: number of sulfur atoms (S)
 #   * NOcount: number of oxygen and nitrogen atoms (N, O)
 #   * electronegativeatomcount: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
+#   * mw_file: molecular weight
+#   * logp_file: octanol water partition coefficient by JChem's cxcalc
+#   * hba_file: hydrogen bond acceptor count
+#   * hbd_file: hydrogen bond donor count
+#   * rotb_file: rotatable bond count
+#   * tpsa_file: topological polar surface area by JChem's cxcalc
+#   * logd_file: octanol water partition coefficient
+#   * logs_file: aqueous solubility in mol/L
+#   * atomcount_file: number of atoms (including hydrogen)
+#   * bondcount_file: numner of bonds (including hydrogen-heavy atom bonds)
+#   * ringcount_file: number of non-aromatic rings
+#   * aromaticringcount_file: number of aromatic rings
+#   * mr_file: molecular refractivity by Open Babel
+#   * formalcharge_file: total (formal) charge of the molecule
+#   * positivechargecount_file: number of positive charged functional groups/atoms
+#   * negativechargecount_file: number of negatively charged functional groups/atoms
+#   * fsp3_file: fraction of sp3 hybridized carbon atoms
+#   * chiralcentercount_file: number of chiral centers
+#   * halogencount_file: number of halogen atoms (F, Br, Cl, I)
+#   * sulfurcount_file: number of sulfur atoms (S)
+#   * NOcount_file: number of oxygen and nitrogen atoms (N, O)
+#   * electronegativeatomcount_file: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
+
+# For each tranche type which reads the value from a file, the column ID (starting at 0) containing the value needs to be specified
+mw_file_column
+logp_file_column
+hba_file_column
+hbd_file_column
+rotb_file_column
+tpsa_file_column
+logd_file_column
+logs_file_column
+atomcount_file_column
+bondcount_file_column
+ringcount_file_column
+aromaticringcount_fil_columne
+mr_file_column
+formalcharge_file_column
+positivechargecount_file_column
+negativechargecount_file_column
+fsp3_file_column
+chiralcentercount_file_column
+halogencount_file_column
+sulfurcount_file_column
+NOcount_file_column
+electronegativeatomcount_file_column
 
 # For each tranche_type X in the variable tranche_types, one additional variable "tranche_<X>_partition" has to be specified.
 # This variable has to be a set of N >= 1 values (at least one), separated by colons, which partitions the value range of the molecular property of tranche <X> into N+1 intervals.
@@ -409,7 +456,28 @@ tranche_halogencount_partition=0:1:2:3:4:5
 tranche_sulfurcount_partition=0:1:2:3:4:5
 tranche_NOcount_partition=0:1:2:3:4:5:6:7:8:9:10
 tranche_electronegativeatomcount_partition=0:1:2:3:4:5:6:7:8:9:10
-
+tranche_mw_file_partition=200:250:300:325:350:375:400:425:450:500
+tranche_logp_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_hba_file_partition=1:3:5:7:9:10
+tranche_hbd_file_partition=0:1:2:3:4:5
+tranche_rotb_file_partition=1:3:5:7:9:10
+tranche_tpsa_file_partition=20:40:60:80:100:120:140
+tranche_logd_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_logs_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_atomcount_file_partition=10:20:30:40:50
+tranche_bondcount_file_partition=10:20:30:40:50
+tranche_ringcount_file_partition=0:1:2:3:4:5
+tranche_aromaticringcount_file_partition=0:1:2:3:4:5
+tranche_mr_file_partition=20:40:60:80:100:120:140
+tranche_formalcharge_file_partition=-2:-1:0:1:2
+tranche_positivechargecount_file_partition=-2:-1:0:1:2
+tranche_negativechargecount_file_partition=-2:-1:0:1:2
+tranche_fsp3_file_partition=0.2:0.4:0.6:0.8
+tranche_chiralcentercount_file_partition=0:1:2:3:4:5
+tranche_halogencount_file_partition=0:1:2:3:4:5
+tranche_sulfurcount_file_partition=0:1:2:3:4:5
+tranche_NOcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
+tranche_electronegativeatomcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
