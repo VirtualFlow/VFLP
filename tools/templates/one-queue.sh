@@ -979,24 +979,25 @@ assign_tranches_to_ligand() {
 
         case ${tranche_type} in
 
-            mw)
+
+            mw_jchem)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_mw="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^mol_weight " | awk '{print $2}')"
-                separator_count=$(echo "${tranche_mw_partition[@]}" | wc -w)
+                ligand_mw_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator mass ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo "${tranche_mw_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_mw has a valid value
-                if ! [[ "$ligand_mw" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_mw_jchem has a valid value
+                if ! [[ "$ligand_mw_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The MW (${ligand_mw}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The MW by JChem (${ligand_mw_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand-list entry
-                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw)"
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw_jchem)"
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (MW)"
+                    update_ligand_list_end false "during tranche assignment (MW JChem)"
 
                     # Skipping the ligand
                     continue 2
@@ -1005,29 +1006,29 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_mw_jchem <= ${tranche_mw_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_mw_partition[((interval_index-2))]} < $ligand_mw && $ligand_mw <= ${tranche_mw_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_mw_jchem_partition[((interval_index-2))]} < $ligand_mw_jchem && $ligand_mw_jchem <= ${tranche_mw_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq "${interval_count}" ]]; then
-                        if (( $(echo "$ligand_mw > ${tranche_mw_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_mw_jchem > ${tranche_mw_jchem_partition[((interval_index-2))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The MW (${ligand_mw}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The MW by JChem (${ligand_mw_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand-list entry
-                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw)"
-                    
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw_jchem)"
+
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (MW)"
+                        update_ligand_list_end false "during tranche assignment (MW JChem)"
 
                         # Skipping the ligand
                         continue 2
@@ -1038,11 +1039,78 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MW: ${ligand_mw}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MW: ${ligand_mw_jchem}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:mw=${temp_end_time_ms}"
+                component_timings="${component_timings}:mw_jchem=${temp_end_time_ms}"
+
+                ;;
+
+            mw_obabel)
+                # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+                ligand_mw_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^mol_weight " | awk '{print $2}')"
+                separator_count=$(echo "${tranche_mw_obabel_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_mw_obabel has a valid value
+                if ! [[ "$ligand_mw_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The MW by Open Babel (${ligand_mw_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw_obabel)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (MW Open Babel)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_mw_obabel <= ${tranche_mw_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_mw_obabel_partition[((interval_index-2))]} < $ligand_mw_obabel && $ligand_mw_obabel <= ${tranche_mw_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq "${interval_count}" ]]; then
+                        if (( $(echo "$ligand_mw_obabel > ${tranche_mw_obabel_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The MW by Open Babel (${ligand_mw_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(mw_obabel)"
+                    
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (MW Open Babel)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * MW: ${ligand_mw_obabel}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:mw_obabel=${temp_end_time_ms}"
 
                 ;;
 
@@ -1448,24 +1516,24 @@ assign_tranches_to_ligand() {
 
                 ;;
 
-            rotb)
+            rotb_jchem)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_rotb="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator rotatablebondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
-                separator_count=$(echo "${tranche_rotb_partition[@]}" | wc -w)
+                ligand_rotb_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator rotatablebondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo "${tranche_rotb_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_rotb has a valid value
-                if ! [[ "$ligand_rotb" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_rotb_jchem has a valid value
+                if ! [[ "$ligand_rotb_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The RotB count (${ligand_rotb}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The RotB count by JChem (${ligand_rotb_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand-list entry
-                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb)"
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb_jchem)"
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (RotB)"
+                    update_ligand_list_end false "during tranche assignment (RotB JChem)"
 
                     # Skipping the ligand
                     continue 2
@@ -1474,29 +1542,29 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_rotb <= ${tranche_rotb_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_rotb_jchem <= ${tranche_rotb_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_rotb_partition[((interval_index-2))]} < $ligand_rotb && $ligand_rotb <= ${tranche_rotb_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_rotb_jchem_partition[((interval_index-2))]} < $ligand_rotb_jchem && $ligand_rotb_jchem <= ${tranche_rotb_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_rotb > ${tranche_rotb_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_rotb_jchem > ${tranche_rotb_jchem_partition[((interval_index-2))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The RotB count (${ligand_rotb}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The RotB count by JChem (${ligand_rotb_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand-list entry
-                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb)"
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb_jchem)"
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (RotB)"
+                        update_ligand_list_end false "during tranche assignment (RotB JChem)"
 
                         # Skipping the ligand
                         continue 2
@@ -1507,14 +1575,81 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Rotatable bonds: ${ligand_rotb}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Rotatable bonds: ${ligand_rotb_jchem}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:rotb=${temp_end_time_ms}"
+                component_timings="${component_timings}:rotb_jchem=${temp_end_time_ms}"
 
                 ;;
 
+            rotb_obabel)
+                # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+                ligand_rotb_obabel="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator rotatablebondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo "${tranche_rotb_obabel_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_rotb_obabel has a valid value
+                if ! [[ "$ligand_rotb_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The RotB count by Open Babel (${ligand_rotb_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb_obabel)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (RotB Open Babel)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_rotb_obabel <= ${tranche_rotb_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_rotb_obabel_partition[((interval_index-2))]} < $ligand_rotb_obabel && $ligand_rotb_obabel <= ${tranche_rotb_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_rotb_obabel > ${tranche_rotb_obabel_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The RotB count by Open Babel (${ligand_rotb_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(rotb_obabel)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (RotB Open Babel)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Rotatable bonds: ${ligand_rotb_obabel}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:rotb_obabel=${temp_end_time_ms}"
+
+                ;;
+              
             tpsa_jchem)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
@@ -1783,24 +1918,24 @@ assign_tranches_to_ligand() {
 
                 ;;
 
-            atomcount)
+            atomcount_jchem)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_atomcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_atoms " | awk '{print $2}')"
-                separator_count=$(echo "${tranche_atomcount_partition[@]}" | wc -w)
+                ligand_atomcount_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator atomcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo "${tranche_atomcount_jchem_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_atomcount has a valid value
-                if ! [[ "$ligand_atomcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_atomcount_jchem has a valid value
+                if ! [[ "$ligand_atomcount_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The atom count (${ligand_atomcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The atom count by JChem (${ligand_atomcount_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand-list entry
-                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount)"
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount_jchem)"
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (atom count)"
+                    update_ligand_list_end false "during tranche assignment (atom count JChem)"
 
                     # Skipping the ligand
                     continue 2
@@ -1809,29 +1944,29 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_atomcount <= ${tranche_atomcount_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_atomcount_jchem <= ${tranche_atomcount_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_atomcount_partition[((interval_index-2))]} < $ligand_atomcount && $ligand_atomcount <= ${tranche_atomcount_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_atomcount_jchem_partition[((interval_index-2))]} < $ligand_atomcount_jchem && $ligand_atomcount_jchem <= ${tranche_atomcount_jchem_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_atomcount > ${tranche_atomcount_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_atomcount_jchem > ${tranche_atomcount_jchem_partition[((interval_index-2))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The atom count (${ligand_atomcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The atom count JChem (${ligand_atomcount_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand-list entry
-                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount)"
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount_jchem)"
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (atom count)"
+                        update_ligand_list_end false "during tranche assignment (atom count JChem)"
 
                         # Skipping the ligand
                         continue 2
@@ -1842,32 +1977,32 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Atom count: ${ligand_atomcount}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Atom count: ${ligand_atomcount_jchem}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:atomcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:atomcount_jchem=${temp_end_time_ms}"
 
                 ;;
 
-            bondcount)
+            atomcount_obabel)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_bondcount="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_bonds " | awk '{print $2}')"
-                separator_count=$(echo "${tranche_bondcount_partition[@]}" | wc -w)
+                ligand_atomcount_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_atoms " | awk '{print $2}')"
+                separator_count=$(echo "${tranche_atomcount_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_bondcount has a valid value
-                if ! [[ "$ligand_bondcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_atomcount_obabel has a valid value
+                if ! [[ "$ligand_atomcount_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The bond count (${ligand_bondcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The atom count by Open Babel (${ligand_atomcount_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand-list entry
-                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(bondcount)"
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount_obabel)"
 
                     # Updating the ligand list
-                    update_ligand_list_end false "during tranche assignment (bond count)"
+                    update_ligand_list_end false "during tranche assignment (atom count Open Babel)"
 
                     # Skipping the ligand
                     continue 2
@@ -1876,29 +2011,29 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_bondcount <= ${tranche_bondcount_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_atomcount_obabel <= ${tranche_atomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_bondcount_partition[((interval_index-2))]} < $ligand_bondcount && $ligand_bondcount <= ${tranche_bondcount_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_atomcount_obabel_partition[((interval_index-2))]} < $ligand_atomcount_obabel && $ligand_atomcount_obabel <= ${tranche_atomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_bondcount > ${tranche_bondcount_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_atomcount_obabel > ${tranche_atomcount_obabel_partition[((interval_index-2))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The bond count (${ligand_bondcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The atom count Open Babel (${ligand_atomcount_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand-list entry
-                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(bondcount)"
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(atomcount_obabel)"
 
                         # Updating the ligand list
-                        update_ligand_list_end false "during tranche assignment (bond count)"
+                        update_ligand_list_end false "during tranche assignment (atom count Open Babel)"
 
                         # Skipping the ligand
                         continue 2
@@ -1909,11 +2044,145 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count): ${ligand_bondcount}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Atom count: ${ligand_atomcount_obabel}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:bondcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:atomcount_obabel=${temp_end_time_ms}"
+
+                ;;
+
+            bondcount_obabel)
+                # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+                ligand_bondcount_obabel="$(obprop ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | grep "^num_bonds " | awk '{print $2}')"
+                separator_count=$(echo "${tranche_bondcount_obabel_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_bondcount_obabel has a valid value
+                if ! [[ "$ligand_bondcount_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The bond count by Open Babel (${ligand_bondcount_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(bondcount_obabel)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (bond count Open Babel)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_bondcount_obabel <= ${tranche_bondcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_bondcount_obabel_partition[((interval_index-2))]} < $ligand_bondcount_obabel && $ligand_bondcount_obabel <= ${tranche_bondcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_bondcount_obabel > ${tranche_bondcount_obabel_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The bond count by Open Babel (${ligand_bondcount_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(bondcount_obabel)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (bond count Open Babel)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count): ${ligand_bondcount_obabel}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:bondcount_obabel=${temp_end_time_ms}"
+
+                ;;
+
+            bondcount_jchem)
+                # Variables
+                temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+                ligand_bondcount_jchem="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator bondcount ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                separator_count=$(echo "${tranche_bondcount_jchem_partition[@]}" | wc -w)
+                interval_count=$((separator_count+1))
+                interval_index=1
+
+                # Checking if ligand_bondcount_jchem has a valid value
+                if ! [[ "$ligand_bondcount_jchem" =~ ^[[:digit:].e+-]+$ ]]; then
+                    # Printing some information
+                    echo "    * Warning: The bond count by JChem (${ligand_bondcount_jchem}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+
+                    # Updating the ligand-list entry
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(bondcount_jchem)"
+
+                    # Updating the ligand list
+                    update_ligand_list_end false "during tranche assignment (bond count JChem)"
+
+                    # Skipping the ligand
+                    continue 2
+                fi
+
+                # Loop for each interval
+                for interval_index in $(seq 1 ${interval_count}); do
+                    if [[ $interval_index -eq 1 ]]; then
+                        if (( $(echo "$ligand_bondcount_jchem <= ${tranche_bondcount_jchem_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -lt ${interval_count} ]]; then
+                        if (( $(echo "${tranche_bondcount_jchem_partition[((interval_index-2))]} < $ligand_bondcount_jchem && $ligand_bondcount_jchem <= ${tranche_bondcount_jchem_partition[((interval_index-1))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    elif [[ $interval_index -eq ${interval_count} ]]; then
+                        if (( $(echo "$ligand_bondcount_jchem > ${tranche_bondcount_jchem_partition[((interval_index-2))]}" | bc -l) )); then
+                            assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
+                            break
+                        fi
+                    else
+                        # Printing some information
+                        echo "    * Warning: The bond count by JChem (${ligand_bondcount_jchem}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+
+                        # Updating the ligand-list entry
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(bondcount_jchem)"
+
+                        # Updating the ligand list
+                        update_ligand_list_end false "during tranche assignment (bond count JChem)"
+
+                        # Skipping the ligand
+                        continue 2
+                    fi
+
+                    # Continuing to next interval
+                    interval_index=$((interval_index+1))
+                done
+
+                # PDB Remark
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count): ${ligand_bondcount_jchem}"
+
+                # Timings
+                temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+                component_timings="${component_timings}:bondcount_jchem=${temp_end_time_ms}"
 
                 ;;
 
@@ -2725,21 +2994,21 @@ assign_tranches_to_ligand() {
 
                 ;;
 
-            electronegativeatomcount)
+            electronegativeatomcount_obabel)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_electronegativeatomcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X/" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
-                separator_count=$(echo "${tranche_electronegativeatomcount_partition[@]}" | wc -w)
+                ligand_electronegativeatomcount_obabel="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X/" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
+                separator_count=$(echo "${tranche_electronegativeatomcount_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_electronegativeatomcount has a valid value
-                if ! [[ "$ligand_electronegativeatomcount" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if ligand_electronegativeatomcount_obabel has a valid value
+                if ! [[ "$ligand_electronegativeatomcount_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The electronegative atom count (${ligand_electronegativeatomcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The electronegative atom count (${ligand_electronegativeatomcount_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand-list entry
-                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount)"
+                    ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount_obabel)"
 
                     # Updating the ligand list
                     update_ligand_list_end false "during tranche assignment (electronegative atom count)"
@@ -2751,26 +3020,26 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_electronegativeatomcount <= ${tranche_electronegativeatomcount_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_electronegativeatomcount_obabel <= ${tranche_electronegativeatomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_electronegativeatomcount_partition[((interval_index-2))]} < $ligand_electronegativeatomcount && $ligand_electronegativeatomcount <= ${tranche_electronegativeatomcount_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_electronegativeatomcount_obabel_partition[((interval_index-2))]} < $ligand_electronegativeatomcount_obabel && $ligand_electronegativeatomcount_obabel <= ${tranche_electronegativeatomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_electronegativeatomcount > ${tranche_electronegativeatomcount_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$ligand_electronegativeatomcount_obabel > ${tranche_electronegativeatomcount_obabel_partition[((interval_index-2))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The electronegative atom count (${ligand_electronegativeatomcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The electronegative atom count (${ligand_electronegativeatomcount_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand-list entry
-                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount)"
+                        ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount_obabel)"
 
                         # Updating the ligand list
                         update_ligand_list_end false "during tranche assignment (electronegative atom count)"
@@ -2784,11 +3053,11 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ atom count: ${ligand_electronegativeatomcount}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ atom count: ${ligand_electronegativeatomcount_obabel}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:electronegativeatomcount=${temp_end_time_ms}"
+                component_timings="${component_timings}:electronegativeatomcount_obabel=${temp_end_time_ms}"
 
                 ;;
 
@@ -2992,7 +3261,7 @@ if [ "${tranche_assignments}" = "true" ]; then
     # Loop for each tranche type
     for tranche_type in "${tranche_types[@]}"; do
 
-        if [[ "${tranche_type}" != @(mw|logp_jchem|logp_obabel|hba_jchem|hba_obabel|hbd_jchem|hbd_obabel|rotb|tpsa_jchem|tpsa_obabel|logd|logs|atomcount|bondcount|ringcount|aromaticringcount|formalcharge|mr_jchem|mr_obabel|positivechargecount|negativechargecount|fsp3|chiralcentercount|halogencount|sulfurcount|NOcount|electronegativeatomcount) ]]; then
+        if [[ "${tranche_type}" != @(mw_jchem|mw_obabel|logp_jchem|logp_obabel|hba_jchem|hba_obabel|hbd_jchem|hbd_obabel|rotb_jchem|rotb_obabel|tpsa_jchem|tpsa_obabel|logd|logs|atomcount_jchem|atomcount_obabel|bondcount_jchem|bondcount_obabel|ringcount|aromaticringcount|formalcharge|mr_jchem|mr_obabel|positivechargecount|negativechargecount|fsp3|chiralcentercount|halogencount|sulfurcount|NOcount|electronegativeatomcount_obabel) ]]; then
             echo -e " Error: The value (${tranche_type}) was present in the variable tranche_types, but this value is invalid..."
             error_response_std $LINENO
         fi
