@@ -1870,7 +1870,7 @@ assign_tranches_to_ligand() {
             logs)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_logs="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logs ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}')"
+                ligand_logs="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator logs ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | tail -n 1 | awk '{print $2}' | sed "s/0\.00E0/0.0")"
                 separator_count=$(echo "${tranche_logs_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3013,15 +3013,15 @@ assign_tranches_to_ligand() {
             electronegativeatomcount)
                 # Variables
                 temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-                ligand_electronegativeatomcount_obabel="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X/" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
+                electronegativeatomcount="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi | sed "s/Na//" | sed "s/Cl/X/" | sed "s/Si//" | grep -io "[NOSPFXBI]" | wc -l)"
                 separator_count=$(echo "${tranche_electronegativeatomcount_obabel_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
 
-                # Checking if ligand_electronegativeatomcount_obabel has a valid value
-                if ! [[ "$ligand_electronegativeatomcount_obabel" =~ ^[[:digit:].e+-]+$ ]]; then
+                # Checking if electronegativeatomcount has a valid value
+                if ! [[ "$electronegativeatomcount" =~ ^[[:digit:].e+-]+$ ]]; then
                     # Printing some information
-                    echo "    * Warning: The electronegative atom count (${ligand_electronegativeatomcount_obabel}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
+                    echo "    * Warning: The electronegative atom count (${electronegativeatomcount}) of ligand (${next_ligand}) is not a number. The ligand will be skipped since a successful tranche assignment is required."
 
                     # Updating the ligand-list entry
                     ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount_obabel)"
@@ -3036,23 +3036,23 @@ assign_tranches_to_ligand() {
                 # Loop for each interval
                 for interval_index in $(seq 1 ${interval_count}); do
                     if [[ $interval_index -eq 1 ]]; then
-                        if (( $(echo "$ligand_electronegativeatomcount_obabel <= ${tranche_electronegativeatomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "$electronegativeatomcount <= ${tranche_electronegativeatomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -lt ${interval_count} ]]; then
-                        if (( $(echo "${tranche_electronegativeatomcount_obabel_partition[((interval_index-2))]} < $ligand_electronegativeatomcount_obabel && $ligand_electronegativeatomcount_obabel <= ${tranche_electronegativeatomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
+                        if (( $(echo "${tranche_electronegativeatomcount_obabel_partition[((interval_index-2))]} < $electronegativeatomcount && $electronegativeatomcount <= ${tranche_electronegativeatomcount_obabel_partition[((interval_index-1))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     elif [[ $interval_index -eq ${interval_count} ]]; then
-                        if (( $(echo "$ligand_electronegativeatomcount_obabel > ${tranche_electronegativeatomcount_obabel_partition[((interval_index-2))]}" | bc -l) )); then
+                        if (( $(echo "$electronegativeatomcount > ${tranche_electronegativeatomcount_obabel_partition[((interval_index-2))]}" | bc -l) )); then
                             assigned_tranche=${assigned_tranche}${tranche_letters[((interval_index-1))]}
                             break
                         fi
                     else
                         # Printing some information
-                        echo "    * Warning: The electronegative atom count (${ligand_electronegativeatomcount_obabel}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
+                        echo "    * Warning: The electronegative atom count (${electronegativeatomcount}) of ligand (${next_ligand}) could not be assigned due to an unknown problem. The ligand will be skipped since a successful tranche assignment is required."
 
                         # Updating the ligand-list entry
                         ligand_list_entry="${ligand_list_entry} tranche-assignment:failed(electronegativeatomcount_obabel)"
@@ -3069,7 +3069,7 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ atom count: ${ligand_electronegativeatomcount_obabel}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Electronegativ atom count: ${electronegativeatomcount}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
