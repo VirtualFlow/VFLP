@@ -165,9 +165,26 @@ next_ligand_collection() {
 
         # Setting some variables
         next_ligand_collection=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/${VF_QUEUE_NO} | awk '{print $1}')
+
         next_ligand_collection_ID="${next_ligand_collection/*_}"
         next_ligand_collection_tranche="${next_ligand_collection/_*}"
         next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
+
+        # Determining the collection notation format
+        number_of_dashes=$(echo "${next_ligand_collection}" | awk -F "_" '{print NF-1}')
+        if [[ ${number_of_dashes} == "1" ]]; then
+            next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+            next_ligand_collection_tranche="${next_ligand_collection/_*}"
+            next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
+        elif [[ ${number_of_dashes} == "2" ]]; then
+            next_ligand_collection_metatranche="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $1}')"
+            next_ligand_collection_tranche="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $2}')"
+            next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+        else
+            echo -e " Error: The format of the ligand collection names is not supported."
+            error_response_std $LINENO
+        fi
+
         next_ligand_collection_length=$(head -n 1 ../workflow/ligand-collections/todo/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/${VF_QUEUE_NO} | awk '{print $2}')
 
 #        for folder1 in $(find ../workflow/ligand-collections/done/ -mindepth 1 -maxdepth 1 -type d -printf "%f\n"); do
