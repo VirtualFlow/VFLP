@@ -4702,7 +4702,7 @@ while true; do
             fi
 
             # Extracting the last ligand collection
-            if [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
+            if [[ "${input_library_format}" == "metatranche_tranche_collection_individual_tar_gz" ]]; then
                 mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}
                 cp ${collection_folder}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}
                 tar -xf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/ ${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz
