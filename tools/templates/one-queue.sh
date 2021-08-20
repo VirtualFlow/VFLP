@@ -2127,7 +2127,7 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count): ${ligand_bondcount_obabel}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count: ${ligand_bondcount_obabel}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
@@ -2194,7 +2194,7 @@ assign_tranches_to_ligand() {
                 done
 
                 # PDB Remark
-                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count): ${ligand_bondcount_jchem}"
+                pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    * Bond count: ${ligand_bondcount_jchem}"
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
@@ -4668,9 +4668,21 @@ while true; do
         else
             # Getting the name of the current ligand collection
             next_ligand_collection=$(awk '{print $1}' ../workflow/ligand-collections/current/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/${VF_QUEUE_NO})
-            next_ligand_collection_ID="${next_ligand_collection/*_}"
-            next_ligand_collection_tranche="${next_ligand_collection/_*}"
-            next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
+
+            # Determining the collection notation format
+            number_of_dashes=$(echo "${next_ligand_collection}" | awk -F "_" '{print NF-1}')
+            if [[ ${number_of_dashes} == "1" ]]; then
+                next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+                next_ligand_collection_tranche="${next_ligand_collection/_*}"
+                next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
+            elif [[ ${number_of_dashes} == "2" ]]; then
+                next_ligand_collection_metatranche="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $1}')"
+                next_ligand_collection_tranche="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $2}')"
+                next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+            else
+                echo -e " Error: The format of the ligand collection names is not supported."
+                error_response_std $LINENO
+            fi
 
             # Extracting the last ligand collection
             mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}

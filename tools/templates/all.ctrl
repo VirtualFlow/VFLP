@@ -72,8 +72,10 @@ collection_folder=../../../collections/Enamine-REAL-2018q12_isomers.smi.splitted
 # Relative pathname is required w.r.t. the folder tools/
 # Settable via range control files: Yes
 
-input_library_format=metatranche_tranche_collection_individual_tar_gz
-# metatranche_tranche_collection_individual
+input_library_format=metatranche_tranche_collection_gz
+# Supported values:
+# * metatranche_tranche_collection_gz
+# * metatranche_tranche_collection_individual_tar_gz
 
 minimum_time_remaining=10
 # In minutes
@@ -341,7 +343,7 @@ tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
-tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount
+tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:atomcount_file:fsp3_file
 #mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:logd_file:logs_file:atomcount_file:bondcount_file:ringcount_file:aromaticringcount_file:mr_file:formalcharge_file:positivechargecount_file:negativechargecount_file:fsp3_file:chiralcentercount_file:halogencount_file:sulfurcount_file:NOcount_file:electronegativeatomcount_file
 # These variables are only needed if tranche_assignments=true
 # Multiple values are separated by colons
@@ -400,16 +402,17 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * NOcount_file: number of oxygen and nitrogen atoms (N, O)
 #   * electronegativeatomcount_file: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
 
-# For each tranche type which reads the value from a file, the column ID (starting at 0) containing the value needs to be specified
-mw_file_column=1
-logp_file_column=2
-hba_file_column=3
-hbd_file_column=
-rotb_file_column=
-tpsa_file_column=
+
+# For each tranche type which reads the value from a file, the column ID (starting at 1) containing the value needs to be specified
+mw_file_column=8
+logp_file_column=10
+hba_file_column=11
+hbd_file_column=12
+rotb_file_column=13
+tpsa_file_column=15
 logd_file_column=
 logs_file_column=
-atomcount_file_column=
+atomcount_file_column=9
 bondcount_file_column=
 ringcount_file_column=
 aromaticringcount_fil_columne=
@@ -417,7 +420,7 @@ mr_file_column=
 formalcharge_file_column=
 positivechargecount_file_column=
 negativechargecount_file_column=
-fsp3_file_column=
+fsp3_file_column=14
 chiralcentercount_file_column=
 halogencount_file_column=
 sulfurcount_file_column=
