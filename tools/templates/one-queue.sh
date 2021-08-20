@@ -792,8 +792,8 @@ molconvert_generate_conformation() {
         conformation_success="true"
         pdb_conformation_remark="REMARK    Generation of the 3D conformation was carried out by molconvert version ${molconvert_version} of ChemAxons JChem Suite."
         conformation_program="molconvert"
-        IFS=$'\t' read -a smiles < <(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
-
+        smiles_line="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)"
+        smiles=$(echo $smiles_line | awk -F '\t' '{print $1}')
         # Modifying the header of the pdb file and correction of the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
         sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
@@ -3079,7 +3079,7 @@ assign_tranches_to_ligand() {
 
               mw_file)
                 # Variables
-                ligand_mw_file=${smiles[${ligand_mw_column}]}
+                ligand_mw_file=$(echo $smiles_line | awk -v column_id=${ligand_mw_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_mw_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3141,7 +3141,7 @@ assign_tranches_to_ligand() {
 
               logp_file)
                 # Variables
-                ligand_logp_file=${smiles[${ligand_mw_column}]}
+                ligand_logp_file=$(echo $smiles_line | awk -v column_id=${ligand_logp_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_logp_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3203,7 +3203,7 @@ assign_tranches_to_ligand() {
 
               hba_file)
                 # Variables
-                ligand_hba_file=${smiles[${ligand_mw_column}]}
+                ligand_hba_file=$(echo $smiles_line | awk -v column_id=${ligand_hba_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_hba_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3265,7 +3265,7 @@ assign_tranches_to_ligand() {
 
               hbd_file)
                 # Variables
-                ligand_hbd_file=${smiles[${ligand_mw_column}]}
+                ligand_hbd_file=$(echo $smiles_line | awk -v column_id=${ligand_hbd_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_hbd_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3328,7 +3328,7 @@ assign_tranches_to_ligand() {
 
               rotb_file)
                 # Variables
-                ligand_rotb_file=${smiles[${ligand_mw_column}]}
+                ligand_rotb_file=$(echo $smiles_line | awk -v column_id=${ligand_rotb_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_rotb_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3391,7 +3391,7 @@ assign_tranches_to_ligand() {
 
               tpsa_file)
                 # Variables
-                ligand_tpsa_file=${smiles[${ligand_mw_column}]}
+                ligand_tpsa_file=$(echo $smiles_line | awk -v column_id=${ligand_tpsa_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_tpsa_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3454,7 +3454,7 @@ assign_tranches_to_ligand() {
 
               logd_file)
                 # Variables
-                ligand_logd_file=${smiles[${ligand_mw_column}]}
+                ligand_logd_file=$(echo $smiles_line | awk -v column_id=${ligand_logd_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_logd_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3517,7 +3517,7 @@ assign_tranches_to_ligand() {
 
               logs_file)
                 # Variables
-                ligand_logs_file=${smiles[${ligand_mw_column}]}
+                ligand_logs_file=$(echo $smiles_line | awk -v column_id=${ligand_logs_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_logs_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3580,7 +3580,7 @@ assign_tranches_to_ligand() {
 
               atomcount_file)
                 # Variables
-                ligand_atomcount_file=${smiles[${ligand_mw_column}]}
+                ligand_atomcount_file=$(echo $smiles_line | awk -v column_id=${ligand_atomcount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_atomcount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3643,7 +3643,7 @@ assign_tranches_to_ligand() {
 
               ringcount_file)
                 # Variables
-                ligand_ringcount_file=${smiles[${ligand_mw_column}]}
+                ligand_ringcount_file=$(echo $smiles_line | awk -v column_id=${ligand_ringcount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_ringcount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3706,7 +3706,7 @@ assign_tranches_to_ligand() {
 
               aromaticringcount_file)
                 # Variables
-                ligand_aromaticringcount_file=${smiles[${ligand_mw_column}]}
+                ligand_aromaticringcount_file=$(echo $smiles_line | awk -v column_id=${ligand_aromaticringcount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_aromaticringcount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3769,7 +3769,7 @@ assign_tranches_to_ligand() {
 
               mr_file)
                 # Variables
-                ligand_mr_file=${smiles[${ligand_mw_column}]}
+                ligand_mr_file=$(echo $smiles_line | awk -v column_id=${ligand_mr_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_mr_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3832,7 +3832,7 @@ assign_tranches_to_ligand() {
 
               formalcharge_file)
                 # Variables
-                ligand_formalcharge_file=${smiles[${ligand_mw_column}]}
+                ligand_formalcharge_file=$(echo $smiles_line | awk -v column_id=${ligand_formalcharge_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_formalcharge_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -3895,7 +3895,7 @@ assign_tranches_to_ligand() {
 
               positivechargecount_file)
                   # Variables
-                  ligand_positivechargecount_file=${smiles[${ligand_mw_column}]}
+                  ligand_positivechargecount_file=$(echo $smiles_line | awk -v column_id=${ligand_positivechargecount_file_column} -F '\t' '{print $column_id}')
                   separator_count=$(echo "${tranche_positivechargecount_file_partition[@]}" | wc -w)
                   interval_count=$((separator_count+1))
                   interval_index=1
@@ -3958,7 +3958,7 @@ assign_tranches_to_ligand() {
               negativechargecount_file)
 
                   # Variables
-                  ligand_negativechargecount_file=${smiles[${ligand_mw_column}]}
+                  ligand_negativechargecount_file=$(echo $smiles_line | awk -v column_id=${ligand_negativechargecount_file_column} -F '\t' '{print $column_id}')
                   separator_count=$(echo "${tranche_negativechargecount_file_partition[@]}" | wc -w)
                   interval_count=$((separator_count+1))
                   interval_index=1
@@ -4020,7 +4020,7 @@ assign_tranches_to_ligand() {
 
               fsp3_file)
                 # Variables
-                ligand_fsp3_file=${smiles[${ligand_mw_column}]}
+                ligand_fsp3_file=$(echo $smiles_line | awk -v column_id=${ligand_fsp3_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_fsp3_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -4083,7 +4083,7 @@ assign_tranches_to_ligand() {
 
               chiralcentercount_file)
                 # Variables
-                ligand_chiralcentercount_file=${smiles[${ligand_mw_column}]}
+                ligand_chiralcentercount_file=$(echo $smiles_line | awk -v column_id=${ligand_chiralcentercount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_chiralcentercount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -4146,7 +4146,7 @@ assign_tranches_to_ligand() {
 
               halogencount_file)
                 # Variables
-                ligand_halogencount_file=${smiles[${ligand_mw_column}]}
+                ligand_halogencount_file=$(echo $smiles_line | awk -v column_id=${ligand_halogencount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_halogencount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -4209,7 +4209,7 @@ assign_tranches_to_ligand() {
 
               sulfurcount_file)
                 # Variables
-                ligand_sulfurcount_file=${smiles[${ligand_mw_column}]}
+                ligand_sulfurcount_file=$(echo $smiles_line | awk -v column_id=${ligand_sulfurcount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_sulfurcount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -4272,7 +4272,7 @@ assign_tranches_to_ligand() {
 
               NOcount_file)
                 # Variables
-                ligand_halogencount_file=${smiles[${ligand_mw_column}]}
+                ligand_halogencount_file=$(echo $smiles_line | awk -v column_id=${ligand_NOcount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_halogencount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
@@ -4335,7 +4335,7 @@ assign_tranches_to_ligand() {
 
               electronegativeatomcount_file)
                 # Variables
-                ligand_electronegativeatomcount_file=${smiles[${ligand_mw_column}]}
+                ligand_electronegativeatomcount_file=$(echo $smiles_line | awk -v column_id=${ligand_electronegativeatomcount_file_column} -F '\t' '{print $column_id}')
                 separator_count=$(echo "${tranche_electronegativeatomcount_file_partition[@]}" | wc -w)
                 interval_count=$((separator_count+1))
                 interval_index=1
