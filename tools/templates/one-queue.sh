@@ -108,7 +108,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} timings:${component_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} timings${component_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -5306,15 +5306,15 @@ t 1.
         # Printing information
         echo -e "\n * Starting the target format generation with obabel"
 
-        # Timings
-        temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
-
         # Loop for each target format
         for targetformat in ${targetformats//:/ }; do
 
             # Variables
             targetformat_generation_success="false"
             additional_obabel_options=""
+
+            # Timings
+            temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
 
             if [ ${targetformat} == "smi" ]; then
                 additional_obabel_options="-xn"
@@ -5339,7 +5339,7 @@ t 1.
             fi
 
             # Timings
-            component_timings="${component_timings}:obabel_generate_targetformat=${temp_end_time_ms}"
+            component_timings="${component_timings}:obabel_generate_targetformat(${targetformat})=${temp_end_time_ms}"
             temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
         done
