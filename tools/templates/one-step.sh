@@ -140,12 +140,24 @@ ng_server_check() {
         # Checking the exit status
         if [[ ${exit_code} != 0 && ${exit_code} != 130  ]]; then
 
-            # Printing warning message
-            echo " * Error: Restarting of the NG Server has failed... "
-            error_response_std $LINENO
-        else
+            # Testing if it is running again already - e.g. because another queue already restarted it
+            sleep 3
+            ng --dun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
+            exit_code=$?
 
-            # Printing warning message
+            # Checking the exit status
+            if [[ ${exit_code} != 0 && ${exit_code} != 130  ]]; then
+
+                # Printing warning message
+                echo " * Error: Restarting of the NG Server has failed... "
+                error_response_std $LINENO
+            else
+
+                # Printing message
+                echo " * The NG Server is already running again... "
+            fi
+
+            # Printing message
             echo " * The NG Server was successfully restarted... "
         fi
     fi

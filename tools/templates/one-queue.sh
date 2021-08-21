@@ -378,58 +378,54 @@ clean_collection_files_tmp() {
 
     # Checking if cleaning is needed at all
     if [ "${needs_cleaning}" = "true" ]; then
-        local_ligand_collection=${1}
-        local_ligand_collection_tranche="${local_ligand_collection/_*}"
-        local_ligand_collection_metatranche="${local_ligand_collection_tranche:0:2}"
-        local_ligand_collection_ID="${local_ligand_collection/*_}"
 
         # Checking if all the folders required are there
         if [ "${collection_complete}" = "true" ]; then
 
             # Printing some information
-            echo -e "\n * The collection ${local_ligand_collection} has been completed."
+            echo -e "\n * The collection ${next_ligand_collection} has been completed."
             echo "    * Storing and cleaning corresponding files..."
 
             # Loop for each target format
             for targetformat in ${targetformats//:/ }; do
 
                 # Compressing the collection and saving in the complete folder
-                mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/
-                tar -czf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/ ${local_ligand_collection_ID} || true
-                local_ligand_collection_length="$(ls ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} | wc -l)"
+                mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
+                tar -czf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/ ${next_ligand_collection_ID} || true
+                next_ligand_collection_length="$(ls ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} | wc -l)"
 
                 # Adding the completed collection archive to the tranche archive
                 if [ "${outputfiles_level}" == "tranche" ]; then
-                    mkdir -p ../output-files/complete/${targetformat}/${local_ligand_collection_metatranche}
-                    if [ -f ../output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar ]; then
-                        cp ../output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar
+                    mkdir -p ../output-files/complete/${targetformat}/${next_ligand_collection_metatranche}
+                    if [ -f ../output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ]; then
+                        cp ../output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar
                     fi
-                    tar -rf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche} ${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar.gz || true
-                    mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar ../output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar
+                    tar -rf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche} ${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz || true
+                    mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ../output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar
                 elif [ "${outputfiles_level}" == "collection" ]; then
-                    mkdir -p ../output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/
-                    cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar.gz ../output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/
+                    mkdir -p ../output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
+                    cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz ../output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
                 else
                     echo " * Error: The variable 'outputfiles_level' in the controlfile ${VF_CONTROLFILE_TEMP} has an invalid value (${outputfiles_level})"
                     exit 1
                 fi
 
                 # Adding the length entry
-                echo "${local_ligand_collection}" "${local_ligand_collection_length}" >> ../output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.length
+                echo "${next_ligand_collection}" "${next_ligand_collection_length}" >> ../output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.length
 
                 # Cleaning up
-                rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar.gz &> /dev/null || true
-                rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
+                rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/complete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz &> /dev/null || true
+                rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
 
             done
 
             # Updating the ligand collection files
             echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
-            ligands_succeeded_tautomerization="$(grep "tautomerization([0-9]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status | grep -c tautomerization)"
-            ligands_succeeded_targetformat="$(grep -c "targetformat-generation([A-Za-z]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status)"
-            ligands_failed="$(grep -c "failed total" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status)"
-            ligands_started="$(grep -c "initial" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status)"
-            echo "${local_ligand_collection} was completed by queue ${VF_QUEUE_NO} on $(date). Ligands started:${ligands_started} succeeded(tautomerization):${ligands_succeeded_tautomerization} succeeded(target-format):${ligands_succeeded_targetformat} failed:${ligands_failed}" >> ../workflow/ligand-collections/done/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/${VF_QUEUE_NO}
+            ligands_succeeded_tautomerization="$(grep "tautomerization([0-9]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status | grep -c tautomerization)"
+            ligands_succeeded_targetformat="$(grep -c "targetformat-generation([A-Za-z]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status)"
+            ligands_failed="$(grep -c "failed total" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status)"
+            ligands_started="$(grep -c "initial" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status)"
+            echo "${next_ligand_collection} was completed by queue ${VF_QUEUE_NO} on $(date). Ligands started:${ligands_started} succeeded(tautomerization):${ligands_succeeded_tautomerization} succeeded(target-format):${ligands_succeeded_targetformat} failed:${ligands_failed}" >> ../workflow/ligand-collections/done/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/${VF_QUEUE_NO}
 
 
             # Checking if we should keep the ligand log summary files
@@ -437,22 +433,22 @@ clean_collection_files_tmp() {
 
 
                 # Compressing and archiving the status file
-                gzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status
+                gzip ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
 
                 # TODO Checking output file level
                 if [ "${outputfiles_level}" == "tranche" ]; then
 
                     # Directory preparation
-                    mkdir  -p ../output-files/complete/${docking_scenario_name}//ligand-lists/${local_ligand_collection_metatranche}
+                    mkdir  -p ../output-files/complete/${docking_scenario_name}//ligand-lists/${next_ligand_collection_metatranche}
 
-                    if [ -f ../output-files/complete/${docking_scenario_name}//ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar ]; then
-                        cp ../output-files/complete/${docking_scenario_name}//ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar
+                    if [ -f ../output-files/complete/${docking_scenario_name}//ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ]; then
+                        cp ../output-files/complete/${docking_scenario_name}//ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar
                     fi
-                    tar -rf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/ ${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status.gz || true
-                    mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar ../output-files/complete/${docking_scenario_name}//ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}.tar
+                    tar -rf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/ ${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status.gz || true
+                    mv ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar ../output-files/complete/${docking_scenario_name}//ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}.tar
                 elif [ "${outputfiles_level}" == "collection" ]; then
-                    mkdir -p ../output-files/complete/${docking_scenario_name}/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/
-                    cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status.gz ../output-files/complete/${docking_scenario_name}/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/
+                    mkdir -p ../output-files/complete/${docking_scenario_name}/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
+                    cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status.gz ../output-files/complete/${docking_scenario_name}/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
                 else
                     echo " * Error: The variable 'outputfiles_level' in the controlfile ${VF_CONTROLFILE_TEMP} has an invalid value (${outputfiles_level})"
                     exit 1
@@ -466,11 +462,11 @@ clean_collection_files_tmp() {
             # Loop for each target format
             for targetformat in ${targetformats//:/ }; do
                 # Compressing the collection
-                tar -czf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/ ${local_ligand_collection_ID} || true
+                tar -czf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/ ${next_ligand_collection_ID} || true
 
                 # Copying the files which should be kept in the permanent storage location
-                mkdir -p ../output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/
-                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar.gz ../output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/
+                mkdir -p ../output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
+                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar.gz ../output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
             done
 
             mkdir -p ../workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/
@@ -479,19 +475,19 @@ clean_collection_files_tmp() {
         fi
 
         # Cleaning up
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
-        rm  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.tar &> /dev/null || true
-        rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID}.status* &> /dev/null || true
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
-        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
+        rm  ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar &> /dev/null || true
+        rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status* &> /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
+        rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
 
         # Cleaning up
         for targetformat in ${targetformats//:/ }; do
-            rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${local_ligand_collection_metatranche}/${local_ligand_collection_tranche}/${local_ligand_collection_ID} &> /dev/null || true
+            rm -r ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/${targetformat}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID} &> /dev/null || true
         done
 
     fi
@@ -651,7 +647,7 @@ standardizer_neutralize() {
         # Copying the ligand from the desalting step
         cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:standardizer_neutralize=${temp_end_time_ms}"
@@ -698,7 +694,7 @@ cxcalc_tautomerize() {
             next_ligand_tautomers="${next_ligand_tautomers} ${next_ligand}_T${tautomer_index}"
         done
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:cxcalc_tautomerize=${temp_end_time_ms}"
@@ -739,7 +735,7 @@ cxcalc_protonate() {
         tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp | awk -F ' ' '{print $2}' > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
         rm ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:cxcalc_protonate=${temp_end_time_ms}"
@@ -770,7 +766,7 @@ obabel_protonate() {
         pdb_protonation_remark="REMARK    The protonation state was generated at pH ${protonation_pH_value} by Open Babel version ${obabel_version}"
         protonation_program="obabel"
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_protonate=${temp_end_time_ms}"
@@ -791,7 +787,7 @@ molconvert_generate_conformation() {
     elif [ "${tranche_assignments}" = "true" ]; then
         pdb_intermediate_output_file=${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/pdb_intermediate/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${assigned_tranche}_${next_ligand}.pdb
     fi
-    
+
     # Converting SMILES to 3D PDB
     # Trying conversion with molconvert
     trap '' ERR
@@ -824,7 +820,7 @@ molconvert_generate_conformation() {
         sed '/TITLE\|SOURCE\|KEYWDS\|EXPDTA/d' ${pdb_intermediate_output_file} | sed "s|PROTEIN.*|Small molecule (ligand)|g" | sed "s|AUTHOR.*|REMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "/REVDAT.*/d" | sed "s/NONE//g" | sed "s/ UN[LK] / LIG /g" | sed "s/COMPND.*/COMPND    Compound: ${next_ligand}/g" | sed 's/+0//' | sed 's/\([+-]\)\([0-9]\)$/\2\1/g' | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:molconvert_generate_conformation=${temp_end_time_ms}"
@@ -873,7 +869,7 @@ obabel_generate_conformation(){
         sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_conformation_remark}\n${pdb_trancheassignment_remark}|g" | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp ${pdb_intermediate_output_file}
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_generate_conformation=${temp_end_time_ms}"
@@ -921,7 +917,7 @@ obabel_generate_pdb() {
         sed '/COMPND/d' ${pdb_intermediate_output_file} | sed "s|AUTHOR.*|HEADER    Small molecule (ligand)\nCOMPND    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_trancheassignment_remark}|g" |  sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${pdb_intermediate_output_file}.tmp
         mv ${pdb_intermediate_output_file}.tmp /${pdb_intermediate_output_file}
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_generate_pdb=${temp_end_time_ms}"
@@ -999,7 +995,7 @@ obabel_check_energy() {
     if (( $(echo "$ligand_energy <= ${energy_max}" | bc -l) )); then
         energy_check_success="true"
     fi
-    
+
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     component_timings="${component_timings}:obabel_energy=${temp_end_time_ms}"
@@ -1310,7 +1306,7 @@ assign_tranches_to_ligand() {
                 component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
 
                 ;;
-              
+
             tpsa_jchem)
 
                 # Variables
@@ -2074,10 +2070,10 @@ assign_tranches_to_ligand() {
         esac
 
         if [[ "${#assigned_tranche}" -eq "${tranche_count}" ]]; then
-            
+
             # Variables
             trancheassignment_success="true"
-            
+
             # Timings
             tranche_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${tranche_start_time_ms}))"
             component_timings="${component_timings}:tranche-assignments-total=${tranche_end_time_ms}"
