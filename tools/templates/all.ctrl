@@ -67,7 +67,7 @@ ligands_per_refilling_step=1000
 # A number roughly equal to the average of number of ligands per collection is recommended
 # Settable via range control files: Yes
 
-collection_folder=../../../collections/Enamine-REAL-2018q12_isomers.smi.splitted1000_ind_tgz_tar
+collection_folder=../../../collections/Enamine_2021_test
 # Slash at the end is not required (optional)
 # Relative pathname is required w.r.t. the folder tools/
 # Settable via range control files: Yes
