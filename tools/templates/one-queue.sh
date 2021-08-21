@@ -1012,7 +1012,7 @@ assign_tranches_to_ligand() {
     assigned_tranche=""
     tranche_letters=(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z)
     pdb_trancheassignment_remark="REMARK    Ligand properties"
-    smiles_line="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)"
+    smiles_line="$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand/_T*}.smi)"
 
     # Timings
     tranche_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
