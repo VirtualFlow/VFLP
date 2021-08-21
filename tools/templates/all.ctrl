@@ -74,7 +74,7 @@ collection_folder=../../../collections/Enamine-REAL-2018q12_isomers.smi.splitted
 
 input_library_format=metatranche_tranche_collection_gz
 # Supported values:
-# * metatranche_tranche_collection_gz
+# * metatranche_tranche_collection_gz : Requires a tab separated input file. The first column the SMILES, in the second column the compound names, and additional columns with compound properties are optional.
 # * metatranche_tranche_collection_individual_tar_gz
 
 minimum_time_remaining=10
