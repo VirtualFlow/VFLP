@@ -485,6 +485,63 @@ tranche_sulfurcount_file_partition=0:1:2:3:4:5
 tranche_NOcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 tranche_electronegativeatomcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 
+# For each tranche_type in tranche_types it needs to be specified whether the successful calculation of the tranche property is mandatory or not.
+# These variables are only needed if tranche_assignments=true
+tranche_mw_jchem_mandatory=true
+tranche_mw_obabel_mandatory=true
+tranche_logp_jchem_mandatory=true
+tranche_logp_obabel_mandatory=true
+tranche_hba_jchem_mandatory=true
+tranche_hba_obabel_mandatory=true
+tranche_hbd_jchem_mandatory=true
+tranche_hbd_obabel_mandatory=true
+tranche_rotb_jchem_mandatory=true
+tranche_rotb_obabel_mandatory=true
+tranche_tpsa_jchem_mandatory=true
+tranche_tpsa_obabel_mandatory=true
+tranche_logd_mandatory=true
+tranche_logs_mandatory=false
+tranche_atomcount_jchem_mandatory=true
+tranche_atomcount_obabel_mandatory=true
+tranche_bondcount_jchem_mandatory=true
+tranche_bondcount_obabel_mandatory=true
+tranche_ringcount_mandatory=true
+tranche_aromaticringcount_mandatory=true
+tranche_formalcharge_mandatory=true
+tranche_mr_jchem_mandatory=true
+tranche_mr_obabel_mandatory=true
+tranche_positivechargecount_mandatory=true
+tranche_negativechargecount_mandatory=true
+tranche_fsp3_mandatory=true
+tranche_chiralcentercount_mandatory=true
+tranche_halogencount_mandatory=true
+tranche_sulfurcount_mandatory=true
+tranche_NOcount_mandatory=true
+tranche_electronegativeatomcount_mandatory=true
+tranche_mw_file_mandatory=true
+tranche_logp_file_mandatory=true
+tranche_hba_file_mandatory=true
+tranche_hbd_file_mandatory=true
+tranche_rotb_file_mandatory=true
+tranche_tpsa_file_mandatory=true
+tranche_logd_file_mandatory=true
+tranche_logs_file_mandatory=true
+tranche_atomcount_file_mandatory=true
+tranche_bondcount_file_mandatory=true
+tranche_ringcount_file_mandatory=true
+tranche_aromaticringcount_file_mandatory=true
+tranche_mr_file_mandatory=true
+tranche_formalcharge_file_mandatory=true
+tranche_positivechargecount_file_mandatory=true
+tranche_negativechargecount_file_mandatory=true
+tranche_fsp3_file_mandatory=true
+tranche_chiralcentercount_file_mandatory=true
+tranche_halogencount_file_mandatory=true
+tranche_sulfurcount_file_mandatory=true
+tranche_NOcount_file_mandatory=true
+tranche_electronegativeatomcount_file_mandatory=true
+
+
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
 jchem_package_filename=jchemsuite.tar.gz
