@@ -4679,7 +4679,11 @@ while true; do
             prepare_collection_files_tmp
 
             # Getting the name of the first ligand of the first collection
-            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+            if [[ "${input_library_format}" == "metatranche_tranche_collection_individual_tar_gz" ]]; then
+                next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+            elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
+                next_ligand=$(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}_${next_ligand_collection_ID}/${next_ligand_collection_ID}/${next_ligand_collection_ID}/ | head -n 1 | awk -F '[.]' '{print $1}')
+            fi
 
 
         # Using the old collection
@@ -4733,12 +4737,22 @@ while true; do
                     perl -ni -e "/${last_ligand}:processing/d" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status # Might not work for VFLP due to multiple replicas
                     next_ligand="${last_ligand/_T*}"
                 else
-                    next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | grep -w -A 1 "${last_ligand/_T*}" | grep -v ${last_ligand/_T*} | awk -F '[/.]' '{print $2}')
+                     # Getting the name of the first ligand of the first collection
+                    if [[ "${input_library_format}" == "metatranche_tranche_collection_individual_tar_gz" ]]; then
+                        next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+                    elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
+                        next_ligand=$(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}_${next_ligand_collection_ID}/${next_ligand_collection_ID}/${next_ligand_collection_ID}/ | head -n 1 | awk -F '[.]' '{print $1}')
+                    fi
                 fi
 
+            # Restarting the collection
             else
-                # Restarting the collection
-                next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+                # Getting the name of the first ligand of the first collection
+                if [[ "${input_library_format}" == "metatranche_tranche_collection_individual_tar_gz" ]]; then
+                    next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+                elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
+                    next_ligand=$(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}_${next_ligand_collection_ID}/${next_ligand_collection_ID}/${next_ligand_collection_ID}/ | head -n 1 | awk -F '[.]' '{print $1}')
+                fi
             fi
         fi
 
@@ -4747,7 +4761,11 @@ while true; do
 
         # Not first ligand of this queue
         last_ligand=$(tail -n 1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status 2>/dev/null | awk -F '[:. ]' '{print $1}' || true)
-        next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | grep -w -A 1 "${last_ligand/_T*}" | grep -v ${last_ligand/_T*} | awk -F '[/.]' '{print $2}')
+        if [[ "${input_library_format}" == "metatranche_tranche_collection_individual_tar_gz" ]]; then
+            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | grep -w -A 1 "${last_ligand/_T*}" | grep -v ${last_ligand/_T*} | awk -F '[/.]' '{print $2}')
+        elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
+            next_ligand=$(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}_${next_ligand_collection_ID}/${next_ligand_collection_ID}/${next_ligand_collection_ID}/ | grep -w -A 1 "${last_ligand/_T*}" | grep -v ${last_ligand/_T*} | awk -F '[/.]' '{print $2}')
+        fi
     fi
 
     # Checking if we can use the collection determined so far
@@ -4769,7 +4787,11 @@ while true; do
         next_ligand_collection
         prepare_collection_files_tmp
         # Getting the first ligand of the new collection
-        next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+        if [[ "${input_library_format}" == "metatranche_tranche_collection_individual_tar_gz" ]]; then
+            next_ligand=$(tar -tf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar | head -n 2 | tail -n 1 | awk -F '[/.]' '{print $2}')
+        elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
+            next_ligand=$(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}_${next_ligand_collection_ID}/${next_ligand_collection_ID}/${next_ligand_collection_ID}/ | head -n 1 | awk -F '[.]' '{print $1}')
+        fi
     fi
 
     # Displaying the heading for the new ligand
