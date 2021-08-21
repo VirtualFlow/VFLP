@@ -109,7 +109,7 @@ update_ligand_list_end() {
     ligand_total_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${ligand_start_time_ms}))"
 
     # Updating the ligand-list file
-    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} timings${component_timings}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
+    perl -pi -e "s/${next_ligand/_T*}.* processing.*/${next_ligand} ${ligand_list_entry} total-time:${ligand_total_time_ms} timings${timings_before_tautomers}${timings_after_tautomers}/g" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status
 
     # Printing some information
     echo
@@ -585,7 +585,7 @@ desalt() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:desalt=${temp_end_time_ms}"
+    timings_before_tautomers="${timings_before_tautomers}:desalt=${temp_end_time_ms}"
 }
 
 standardizer_neutralize() {
@@ -650,7 +650,7 @@ standardizer_neutralize() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:standardizer_neutralize=${temp_end_time_ms}"
+    timings_before_tautomers="${timings_before_tautomers}:standardizer_neutralize=${temp_end_time_ms}"
 }
 
 # Protonation with cxcalc
@@ -697,7 +697,7 @@ cxcalc_tautomerize() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:cxcalc_tautomerize=${temp_end_time_ms}"
+    timings_before_tautomers="${timings_before_tautomers}:cxcalc_tautomerize=${temp_end_time_ms}"
 }
 
 # Protonation with cxcalc
@@ -738,7 +738,7 @@ cxcalc_protonate() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:cxcalc_protonate=${temp_end_time_ms}"
+    timings_after_tautomers="${timings_after_tautomers}:cxcalc_protonate=${temp_end_time_ms}"
 }
 
 # Protonation with obabel
@@ -769,7 +769,7 @@ obabel_protonate() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:obabel_protonate=${temp_end_time_ms}"
+    timings_after_tautomers="${timings_after_tautomers}:obabel_protonate=${temp_end_time_ms}"
 }
 
 # Conformation generation with molconvert
@@ -823,7 +823,7 @@ molconvert_generate_conformation() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:molconvert_generate_conformation=${temp_end_time_ms}"
+    timings_after_tautomers="${timings_after_tautomers}:molconvert_generate_conformation=${temp_end_time_ms}"
 }
 
 # Conformation generation with obabel
@@ -872,7 +872,7 @@ obabel_generate_conformation(){
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:obabel_generate_conformation=${temp_end_time_ms}"
+    timings_after_tautomers="${timings_after_tautomers}:obabel_generate_conformation=${temp_end_time_ms}"
 }
 
 # PDB generation with obabel
@@ -920,7 +920,7 @@ obabel_generate_pdb() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:obabel_generate_pdb=${temp_end_time_ms}"
+    timings_after_tautomers="${timings_after_tautomers}:obabel_generate_pdb=${temp_end_time_ms}"
 }
 
 # Target format generation with obabel
@@ -998,7 +998,7 @@ obabel_check_energy() {
 
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-    component_timings="${component_timings}:obabel_energy=${temp_end_time_ms}"
+    timings_after_tautomers="${timings_after_tautomers}:obabel_energy=${temp_end_time_ms}"
 }
 
 determine_tranche() {
@@ -1007,6 +1007,11 @@ determine_tranche() {
     separator_count=$(echo "${tranche_partition[@]}" | wc -w)
     interval_count=$((separator_count + 1))
     interval_index=1
+
+    # Checking for scientific notation
+    if [[ ${property_value} == *"E"* ]]; then
+        property_value="$(printf '%.2f' ${property_value})"
+    fi
 
     # Checking if the variable property_value has a valid value
     if ! [[ "$property_value" =~ ^[[:digit:].e+-]+$ ]]; then
@@ -1090,7 +1095,7 @@ determine_tranche() {
     fi
 }
 
-}# Determining and assigning the tranche
+# Determining and assigning the tranche
 assign_tranches_to_ligand() {
 
     # Determining the tranche
@@ -1123,7 +1128,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1143,7 +1148,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1163,7 +1168,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1183,7 +1188,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1203,7 +1208,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1223,7 +1228,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1243,7 +1248,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1263,7 +1268,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1283,7 +1288,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1303,7 +1308,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1323,7 +1328,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1343,7 +1348,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1363,7 +1368,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1383,7 +1388,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1403,7 +1408,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1423,7 +1428,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1443,7 +1448,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1463,7 +1468,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1483,7 +1488,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1503,7 +1508,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1523,7 +1528,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1543,7 +1548,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1563,7 +1568,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1583,7 +1588,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1603,7 +1608,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1623,7 +1628,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1643,7 +1648,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1667,7 +1672,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1687,7 +1692,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1707,7 +1712,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -1727,7 +1732,7 @@ assign_tranches_to_ligand() {
 
                 # Timings
                 temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
-                component_timings="${component_timings}:${property_name}=${temp_end_time_ms}"
+                timings_after_tautomers="${timings_after_tautomers}:${property_name}=${temp_end_time_ms}"
 
                 ;;
 
@@ -2076,7 +2081,7 @@ assign_tranches_to_ligand() {
 
             # Timings
             tranche_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${tranche_start_time_ms}))"
-            component_timings="${component_timings}:tranche-assignments-total=${tranche_end_time_ms}"
+            timings_after_tautomers="${timings_after_tautomers}:tranche-assignments-total=${tranche_end_time_ms}"
 
             # PDB Remark
             pdb_trancheassignment_remark="${pdb_trancheassignment_remark}\nREMARK    Tranche: ${assigned_tranche}"
@@ -2309,7 +2314,7 @@ while true; do
     new_collection="false"
     collection_complete="false"
     ligand_index=$((ligand_index+1))
-    component_timings=""
+    timings_before_tautomers=""
 
     # Preparing the next ligand
     # Checking the conditions for using a new collection
@@ -2735,6 +2740,7 @@ t 1.
 
         # Variables
         next_ligand_tautomer_index=$((next_ligand_tautomer_index+1))
+        timings_after_tautomers=""
 
         # Starting a new entry for each tautomer in the ligand-list log files if we have more than one tautomer
         if [ "${next_ligand_tautomers_count}" -gt "1" ]; then
@@ -3042,7 +3048,6 @@ t 1.
 
                 # Adjusting the ligand-list file
                 ligand_list_entry="${ligand_list_entry} targetformat-generation(${targetformat}):failed"
-
             else
 
                 # Adjusting the ligand-list file
@@ -3050,7 +3055,7 @@ t 1.
             fi
 
             # Timings
-            component_timings="${component_timings}:obabel_generate_targetformat(${targetformat})=${temp_end_time_ms}"
+            timings_after_tautomers="${timings_after_tautomers}:obabel_generate_targetformat(${targetformat})=${temp_end_time_ms}"
             temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
 
         done
