@@ -1754,7 +1754,7 @@ assign_tranches_to_ligand() {
               logp_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${logp_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_logp_file_mandatory}
                 tranche_partition=("${tranche_logp_file_partition[@]}")
                 property_description_small="LogP"
@@ -1769,7 +1769,7 @@ assign_tranches_to_ligand() {
               hba_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${hba_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_hba_file_mandatory}
                 tranche_partition=("${tranche_hba_file_partition[@]}")
                 property_description_small="HBA count"
@@ -1784,7 +1784,7 @@ assign_tranches_to_ligand() {
               hbd_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${hbd_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_hbd_file_mandatory}
                 tranche_partition=("${tranche_hbd_file_partition[@]}")
                 property_description_small="HDB count"
@@ -1800,7 +1800,7 @@ assign_tranches_to_ligand() {
               rotb_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${rotb_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_rotb_file_mandatory}
                 tranche_partition=("${tranche_rotb_file_partition[@]}")
                 property_description_small="RotB"
@@ -1816,7 +1816,7 @@ assign_tranches_to_ligand() {
               tpsa_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${tpsa_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_tpsa_file_mandatory}
                 tranche_partition=("${tranche_tpsa_file_partition[@]}")
                 property_description_small="TPSA"
@@ -1832,7 +1832,7 @@ assign_tranches_to_ligand() {
               logd_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${logd_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_logd_file_mandatory}
                 tranche_partition=("${tranche_logd_file_partition[@]}")
                 property_description_small="LogD"
@@ -1848,7 +1848,7 @@ assign_tranches_to_ligand() {
               logs_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${logs_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_logs_file_mandatory}
                 tranche_partition=("${tranche_logs_file_partition[@]}")
                 property_description_small="LogS"
@@ -1864,7 +1864,7 @@ assign_tranches_to_ligand() {
               atomcount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${atomcount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_atomcount_file_mandatory}
                 tranche_partition=("${tranche_atomcount_file_partition[@]}")
                 property_description_small="atom count"
@@ -1880,7 +1880,7 @@ assign_tranches_to_ligand() {
               ringcount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${ringcount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_ringcount_file_mandatory}
                 tranche_partition=("${tranche_ringcount_file_partition[@]}")
                 property_description_small="ringcount"
@@ -1896,7 +1896,7 @@ assign_tranches_to_ligand() {
               aromaticringcount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${aromaticringcount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_aromaticringcount_file_mandatory}
                 tranche_partition=("${tranche_aromaticringcount_file_partition[@]}")
                 property_description_small="aromatic ring count"
@@ -1912,7 +1912,7 @@ assign_tranches_to_ligand() {
               mr_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${mr_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_mr_file_mandatory}
                 tranche_partition=("${tranche_mr_file_partition[@]}")
                 property_description_small="MR"
@@ -1928,7 +1928,7 @@ assign_tranches_to_ligand() {
               formalcharge_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${formalcharge_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_formalcharge_file_mandatory}
                 tranche_partition=("${tranche_formalcharge_file_partition[@]}")
                 property_description_small="formal charge"
@@ -1944,7 +1944,7 @@ assign_tranches_to_ligand() {
             positivechargecount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${positivechargecount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_positivechargecount_file_mandatory}
                 tranche_partition=("${tranche_positivechargecount_file_partition[@]}")
                 property_description_small="Number of atoms with positive charges"
@@ -1959,7 +1959,7 @@ assign_tranches_to_ligand() {
             negativechargecount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${negativechargecount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_negativechargecount_file_mandatory}
                 tranche_partition=("${tranche_negativechargecount_file_partition[@]}")
                 property_description_small="number of atoms with negative charges"
@@ -1974,7 +1974,7 @@ assign_tranches_to_ligand() {
             fsp3_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${fsp3_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_fsp3_file_mandatory}
                 tranche_partition=("${tranche_fsp3_file_partition[@]}")
                 property_description_small="Fsp3"
@@ -1990,7 +1990,7 @@ assign_tranches_to_ligand() {
             chiralcentercount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${chiralcentercount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_chiralcentercount_file_mandatory}
                 tranche_partition=("${tranche_chiralcentercount_file_partition[@]}")
                 property_description_small="chiral center count"
@@ -2006,7 +2006,7 @@ assign_tranches_to_ligand() {
             halogencount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${halogencount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_halogencount_file_mandatory}
                 tranche_partition=("${tranche_halogencount_file_partition[@]}")
                 property_description_small="halogen atom count"
@@ -2022,7 +2022,7 @@ assign_tranches_to_ligand() {
             sulfurcount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${sulfurcount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_sulfurcount_file_mandatory}
                 tranche_partition=("${tranche_sulfurcount_file_partition[@]}")
                 property_description_small="sulfur atom count"
@@ -2038,7 +2038,7 @@ assign_tranches_to_ligand() {
             NOcount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${NOcount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_NOcount_file_mandatory}
                 tranche_partition=("${tranche_NOcount_file_partition[@]}")
                 property_description_small="NO atom count"
@@ -2053,7 +2053,7 @@ assign_tranches_to_ligand() {
             electronegativeatomcount_file)
 
                 # Variables
-                property_value=$(echo "${smiles_line}" | awk -v column_id=${mw_file_column} -F '\t' '{print $column_id}')
+                property_value=$(echo "${smiles_line}" | awk -v column_id=${electronegativeatomcount_file_column} -F '\t' '{print $column_id}')
                 tranche_mandatory=${tranche_electronegativeatomcount_file_mandatory}
                 tranche_partition=("${tranche_electronegativeatomcount_file_partition[@]}")
                 property_description_small="electronegative atom count_file by JChem"
