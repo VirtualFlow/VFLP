@@ -47,6 +47,8 @@ The use of VirtualFlow or the VirtualFlow ligand libraries in any reports or pub
 
 
 
-### Contact
+### VirtualFlow Forum
 
-If you have any questions, or would to get in touch with us, please contact Christoph Gorgulla (cgorgulla@g.harvard.edu).
+If you need help or have any questions related to VirtualFlow, please use our forum: 
+
+* https://community.virtual-flow.org/
