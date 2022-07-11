@@ -29,7 +29,7 @@
 #PBS -A bec00123
 #PBS -q mpp2testq
 #PBS -m a
-#PBS -M silmaril@zedat.fu-berlin.de
+#PBS -M
 #PBS -l signal=10@300
 
 # Job Information
@@ -195,6 +195,7 @@ export VF_SLEEP_TIME_1="1"
 export VF_STARTINGTIME=`date`
 export VF_START_TIME_SECONDS="$(date +%s)"
 export LC_ALL=C
+export PATH="./bin:$PATH"           # to give bin priority of system commands, useful for obabel sometimes for example
 
 
 # Determining the VF_CONTROLFILE to use for this jobline
@@ -221,7 +222,14 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
 fi
 
 # VF_TMPDIR
-export VF_TMPDIR="$(grep -m 1 "^tempdir=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_TMPDIR="$(grep -m 1 "^tempdir_default=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+# Creating the ${VF_TMPDIR}/${USER} folder if not present
+if [ ! -d "${VF_TMPDIR}/${USER}" ]; then
+    mkdir -p ${VF_TMPDIR}/${USER}
+fi
+
+# VF_TMPDIR_FAST
+export VF_TMPDIR_FAST="$(grep -m 1 "^tempdir_fast=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 # Creating the ${VF_TMPDIR}/${USER} folder if not present
 if [ ! -d "${VF_TMPDIR}/${USER}" ]; then
     mkdir -p ${VF_TMPDIR}/${USER}

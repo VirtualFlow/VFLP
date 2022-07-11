@@ -56,7 +56,7 @@ job_template=$1
 delay_time=$2
 export VF_CONTROLFILE="../workflow/control/all.ctrl"
 export VF_JOBLETTER="$(grep -m 1 "^job_letter=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-vf_tempdir="$(grep -m 1 "^tempdir=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+vf_tempdir="$(grep -m 1 "^tempdir_default=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 no_of_jobfiles=$(ls ../workflow/job-files/main/ | wc -l)
 
 # Verbosity

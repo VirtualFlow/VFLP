@@ -1,3 +1,5 @@
+# Each line which starts with '#' is a comment/description of the variable above the comment
+
 *****************************************************************************************************************************************************************
 ***************************************************************    Job Resource Configuration    ****************************************************************
 *****************************************************************************************************************************************************************
@@ -12,7 +14,7 @@ batchsystem=SLURM
 # Possible values: SLURM, TOQRUE, PBS, LSF, SGE
 # Settable via range control files: No
 
-partition=shared
+partition=debug
 # Partitions are also called queues in some batchsystems
 # Settable via range control files: Yes
 
@@ -29,14 +31,14 @@ steps_per_job=1
 # Should not be changed during runtime, and be the same for all joblines
 # Settable via range control files: Yes
 
-cpus_per_step=4
+cpus_per_step=32
 # Sets the slurm cpus-per-task variable (task = step) in SLURM
 # In LSF this corresponds to the number of slots per node
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
 # Settable via range control files: Yes
 
-queues_per_step=8
+queues_per_step=64
 # Sets the number of queues/processes per step
 # Should not be changed during runtime, and be the same for all joblines
 # Not yet available for SGE (always set to 1)
@@ -55,20 +57,25 @@ central_todo_list_splitting_size=10000
 # For many types of clusters it is recommended if the total number of splitted todo lists stays below 10000.
 # Settable via range control files: Yes
 
-ligands_todo_per_queue=500000
+ligands_todo_per_queue=1000
 # Used as a limit of ligands for the to-do lists
 # This value should be divisible by the next setting "ligands_todo_per_refilling_step"
 # Settable via range control files: Yes
 
-ligands_per_refilling_step=10000
+ligands_per_refilling_step=1000
 # The to-do files of the queues are filled with <ligands_per_refilling_step> ligands per refill step
 # A number roughly equal to the average of number of ligands per collection is recommended
 # Settable via range control files: Yes
 
-collection_folder=../../../collections/Enamine-REAL-2018q12_isomers.smi.splitted1000_ind_tgz_tar
+collection_folder=../../../collections/Enamine_2021_test
 # Slash at the end is not required (optional)
 # Relative pathname is required w.r.t. the folder tools/
 # Settable via range control files: Yes
+
+input_library_format=metatranche_tranche_collection_gz
+# Supported values:
+# * metatranche_tranche_collection_gz : Requires a tab separated input file. The first column the SMILES, in the second column the compound names, and additional columns with compound properties are optional.
+# * metatranche_tranche_collection_individual_tar_gz
 
 minimum_time_remaining=10
 # In minutes
@@ -91,14 +98,14 @@ verbosity_commands=standard
 # This option mainly effects the screen output and the logfiles
 # Settable via range control files: No
 
-verbosity_logfiles=standard
+verbosity_logfiles=debug
 # Possible values:
 #   * standard
 #   * debug : activates the set -x option. Increases size of log-files in average by nearly a factor of 10
 # This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
 # Settable via range control files: Yes
 
-store_queue_log_files=all_compressed_error_uncompressed
+store_queue_log_files=all_uncompressed
 # Supported values (experimental)
 #   * all_uncompressed: requires most memory any and storage, but is recommending for test runs and debugging purposes
 #   * all_compressed: requires less memory and storage than uncompressed, but during the last part of the log files might get lost (in particular during crashes) due to the on-the-fly compression
@@ -113,7 +120,6 @@ keep_ligand_summary_logs=true
 # Summary log files which show for each ligand the success status of conversion and the conversion time.
 # If the conversion failed, a reason is stated.
 # If the transformation succeeded, the conversion programs which were used are stated.
-# After the screening of a ligand collection was completed, these summary log files will be stored in the output-files/complete/<docking-sceanrio>/ligands-lists folder.
 # Possible values:
 #   * false
 #   * true
@@ -133,20 +139,27 @@ error_response=fail
 #   * fail      : exit workflow with failure (exit code 1)
 # Settable via range control files: Yes
 
-tempdir=/dev/shm
-# The directory which is used for the temporary workflow files
-# Should be a very fast filesystem not part of the distributed cluster filesystem, e.g. a local ramfs (as normally provided by ${VF_TMPDIR})
+tempdir_default=/tmp
+# The directory which is used for the temporary workflow files which need a normal performance
+# Is normally a local SSD or HDD
+# The directory does only need to be available on the node on which the job step/queue is running
+# In the tempdir, a subfolder named ${USER} will automatically be created
+# Settable via range control files: Yes
+
+tempdir_fast=/dev/shm
+# The directory which is used for the temporary workflow files which need a fast perfomance
+# Should be a a local ram filesystem/ramdisk
 # The directory does only need to be available on the node on which the job step/queue is running
 # In the tempdir, a subfolder named ${USER} will automatically be created
 # Settable via range control files: Yes
 
 outputfiles_level=collection
 # Possible values:
-#   * collection  : The collection output files are stored in tar.gz format. They are stored in subfolders named by metatranch and tranch to reduce the number of files per folder.
+#   * collection  : The collection output files are stored in tar.gz format. They are stored in subfolders named by metatranche and tranche to reduce the number of files per folder.
 #                   Advantages:
-#                       * Less I/O on the shared cluster file system (as existing tranch archives don't have to be read during storage of completed collectionsds)
+#                       * Less I/O on the shared cluster file system (as existing tranche archives don't have to be read during storage of completed collectionsds)
 #                       * No risk of output-file clashes when two queues want to store completed collections on the shared filesystem
-#   * tranch      : For each tranch a tar archive is created, which contains the gzipped collection output files.
+#   * tranche     : For each tranche a tar archive is created, which contains the gzipped collection output files.
 #                   Advantages:
 #                       * Less output files (only for each tranch) for each of the output file types (e.g. results, summaries, logfiles, ...)
 
@@ -169,7 +182,7 @@ desalting=true
 #   * true
 # Settable via range control files: Yes
 
-desalting_obligatory=false
+    desalting_obligatory=false
 # Setting only required if desalting=true
 # Possible values:
 #   * true: Successful desalting of the ligand is mandatory (unsuccessful desalting leads to the omission of this ligand).
@@ -271,7 +284,7 @@ conformation_program_2=obabel
 #   * none (only possible for conformation_program_2)
 # Settable via range control files: Yes
 
-molconvert_3D_options=-3:{fast}
+molconvert_3D_options=-3:{fine}
 # Setting only required if conformation_generation=true and one of the programs used is molconvert
 # 3D conformation generation options for molconvert.
 # See also the help text printed by molconvert for additional information
@@ -292,7 +305,7 @@ conformation_obligatory=true
 
 *****************************************************************    Target Format Generation    ****************************************************************
 
-targetformats=smi:pdb:pdbqt
+targetformats=pdb:pdbqt:sdf:mol2:smi
 # Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
 # A complete list can be obtained by running the command "obabel -L formats"
 # Multiple target formats can be specified by separating them with colons, e.g. pdb:sdf:pdbqt
@@ -312,23 +325,227 @@ obabel_time_limit=50
 # Settable via range control files: Yes
 
 
-************************************************************************    Energy Check    *********************************************************************
+*************************************************************************    Energy Check    **********************************************************************
 
 energy_check=true
-# Checking of the potential energy of the final output molecule. Helpful to filter out broken molecules. If the energy of the molecule is above the set energy treshold (via max_obabel_energy), the molecule is filtered out and not contained in the output database.
+# Determines whether the potential energy is checked by obenergy (Open Babel Enegy). This can be useuful to filter out compounds with unrealistic predicted 3D geometry
 # Possible values:
-#   * false
 #   * true
+#   * false
 
-max_obabel_energy=10000
-# If the molecule is broken, which happens rarely, but is possible, usually the obabel_energy is above 10 000.
-# Possible values: Any integer
+energy_max=10000
+# Maximum allowed energy value. Recommended: 10000
+# Possible values: Positive integer
+
+********************************************************************    Tranche Assignments    ****************************************************************
+
+tranche_assignments=true
+# Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
+# This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
+
+tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:atomcount_file:fsp3_file
+#mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:logd_file:logs_file:atomcount_file:bondcount_file:ringcount_file:aromaticringcount_file:mr_file:formalcharge_file:positivechargecount_file:negativechargecount_file:fsp3_file:chiralcentercount_file:halogencount_file:sulfurcount_file:NOcount_file:electronegativeatomcount_file
+# These variables are only needed if tranche_assignments=true
+# Multiple values are separated by colons
+# Possible values:
+#   * mw_jchem: molecular weight
+#   * mw_obabel: molecular weight
+#   * logp_jchem: octanol water partition coefficient by JChem's cxcalc
+#   * logp_obabel: octanol water partition coefficient by Open Babel
+#   * hba_jchem: hydrogen bond acceptor count
+#   * hba_obabel: hydrogen bond acceptor count
+#   * hbd_jchem: hydrogen bond donor count
+#   * hbd_obabel: hydrogen bond donor count
+#   * rotb_jchem: rotatable bond count
+#   * rotb_obabel: rotatable bond count
+#   * tpsa_jchem: topological polar surface area by JChem's cxcalc
+#   * tpsa_obabel: topological polar surface area by Open Babel
+#   * logd: octanol water partition coefficient
+#   * logs: aqueous solubility in mol/L
+#   * atomcount_jchem: number of atoms (including hydrogen)
+#   * atomcount_obabel: number of atoms (including hydrogen)
+#   * bondcount_jchem: numner of bonds (including hydrogen-heavy atom bonds)
+#   * bondcount_obabel: numner of bonds (including hydrogen-heavy atom bonds)
+#   * ringcount: number of non-aromatic rings
+#   * aromaticringcount: number of aromatic rings
+#   * mr_jchem: molecular refractivity by JChem's cxcalc
+#   * mr_obabel: molecular refractivity by Open Babel
+#   * formalcharge: total (formal) charge of the molecule
+#   * positivechargecount: number of positive charged functional groups/atoms
+#   * negativechargecount: number of negatively charged functional groups/atoms
+#   * fsp3: fraction of sp3 hybridized carbon atoms
+#   * chiralcentercount: number of chiral centers
+#   * halogencount: number of halogen atoms (F, Br, Cl, I)
+#   * sulfurcount: number of sulfur atoms (S)
+#   * NOcount: number of oxygen and nitrogen atoms (N, O)
+#   * electronegativeatomcount: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
+#   * mw_file: molecular weight
+#   * logp_file: octanol water partition coefficient by JChem's cxcalc
+#   * hba_file: hydrogen bond acceptor count
+#   * hbd_file: hydrogen bond donor count
+#   * rotb_file: rotatable bond count
+#   * tpsa_file: topological polar surface area by JChem's cxcalc
+#   * logd_file: octanol water partition coefficient
+#   * logs_file: aqueous solubility in mol/L
+#   * atomcount_file: number of atoms (including hydrogen)
+#   * bondcount_file: numner of bonds (including hydrogen-heavy atom bonds)
+#   * ringcount_file: number of non-aromatic rings
+#   * aromaticringcount_file: number of aromatic rings
+#   * mr_file: molecular refractivity by Open Babel
+#   * formalcharge_file: total (formal) charge of the molecule
+#   * positivechargecount_file: number of positive charged functional groups/atoms
+#   * negativechargecount_file: number of negatively charged functional groups/atoms
+#   * fsp3_file: fraction of sp3 hybridized carbon atoms
+#   * chiralcentercount_file: number of chiral centers
+#   * halogencount_file: number of halogen atoms (F, Br, Cl, I)
+#   * sulfurcount_file: number of sulfur atoms (S)
+#   * NOcount_file: number of oxygen and nitrogen atoms (N, O)
+#   * electronegativeatomcount_file: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
+
+
+# For each tranche type which reads the value from a file, the column ID (starting at 1) containing the value needs to be specified
+mw_file_column=8
+logp_file_column=10
+hba_file_column=11
+hbd_file_column=12
+rotb_file_column=13
+tpsa_file_column=15
+logd_file_column=
+logs_file_column=
+atomcount_file_column=9
+bondcount_file_column=
+ringcount_file_column=
+aromaticringcount_fil_columne=
+mr_file_column=
+formalcharge_file_column=
+positivechargecount_file_column=
+negativechargecount_file_column=
+fsp3_file_column=14
+chiralcentercount_file_column=
+halogencount_file_column=
+sulfurcount_file_column=
+NOcount_file_column=
+electronegativeatomcount_file_column=
+
+# For each tranche_type X in the variable tranche_types, one additional variable "tranche_<X>_partition" has to be specified.
+# This variable has to be a set of N >= 1 values (at least one), separated by colons, which partitions the value range of the molecular property of tranche <X> into N+1 intervals.
+# For example, the partitions '-0:1:2' would result in the 4 intervals: (-∞,0], (0,1], (1,2], (2,∞). The maximum number of allowed intervals is 27 (corresponding to 26 values of the alphabet). Each value has to be an integer or float, and the values have to be in ascending order.
+# These variables are only needed if tranche_assignments=true
+tranche_mw_jchem_partition=200:250:300:325:350:375:400:425:450:500
+tranche_mw_obabel_partition=200:250:300:325:350:375:400:425:450:500
+tranche_logp_jchem_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_logp_obabel_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_hba_jchem_partition=1:3:5:7:9:10
+tranche_hba_obabel_partition=1:3:5:7:9:10
+tranche_hbd_jchem_partition=0:1:2:3:4:5
+tranche_hbd_obabel_partition=0:1:2:3:4:5
+tranche_rotb_jchem_partition=1:3:5:7:9:10
+tranche_rotb_obabel_partition=1:3:5:7:9:10
+tranche_tpsa_jchem_partition=20:40:60:80:100:120:140
+tranche_tpsa_obabel_partition=20:40:60:80:100:120:140
+tranche_logd_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_logs_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_atomcount_jchem_partition=10:20:30:40:50
+tranche_atomcount_obabel_partition=10:20:30:40:50
+tranche_bondcount_jchem_partition=10:20:30:40:50
+tranche_bondcount_obabel_partition=10:20:30:40:50
+tranche_ringcount_partition=0:1:2:3:4:5
+tranche_aromaticringcount_partition=0:1:2:3:4:5
+tranche_formalcharge_partition=-2:-1:0:1:2
+tranche_mr_jchem_partition=20:40:60:80:100:120:140
+tranche_mr_obabel_partition=20:40:60:80:100:120:140
+tranche_positivechargecount_partition=-2:-1:0:1:2
+tranche_negativechargecount_partition=-2:-1:0:1:2
+tranche_fsp3_partition=0.2:0.4:0.6:0.8
+tranche_chiralcentercount_partition=0:1:2:3:4:5
+tranche_halogencount_partition=0:1:2:3:4:5
+tranche_sulfurcount_partition=0:1:2:3:4:5
+tranche_NOcount_partition=0:1:2:3:4:5:6:7:8:9:10
+tranche_electronegativeatomcount_partition=0:1:2:3:4:5:6:7:8:9:10
+tranche_mw_file_partition=200:250:300:325:350:375:400:425:450:500
+tranche_logp_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_hba_file_partition=1:3:5:7:9:10
+tranche_hbd_file_partition=0:1:2:3:4:5
+tranche_rotb_file_partition=1:3:5:7:9:10
+tranche_tpsa_file_partition=20:40:60:80:100:120:140
+tranche_logd_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_logs_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
+tranche_atomcount_file_partition=10:20:30:40:50
+tranche_bondcount_file_partition=10:20:30:40:50
+tranche_ringcount_file_partition=0:1:2:3:4:5
+tranche_aromaticringcount_file_partition=0:1:2:3:4:5
+tranche_mr_file_partition=20:40:60:80:100:120:140
+tranche_formalcharge_file_partition=-2:-1:0:1:2
+tranche_positivechargecount_file_partition=-2:-1:0:1:2
+tranche_negativechargecount_file_partition=-2:-1:0:1:2
+tranche_fsp3_file_partition=0.2:0.4:0.6:0.8
+tranche_chiralcentercount_file_partition=0:1:2:3:4:5
+tranche_halogencount_file_partition=0:1:2:3:4:5
+tranche_sulfurcount_file_partition=0:1:2:3:4:5
+tranche_NOcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
+tranche_electronegativeatomcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
+
+# For each tranche_type in tranche_types it needs to be specified whether the successful calculation of the tranche property is mandatory or not.
+# These variables are only needed if tranche_assignments=true
+tranche_mw_jchem_mandatory=true
+tranche_mw_obabel_mandatory=true
+tranche_logp_jchem_mandatory=true
+tranche_logp_obabel_mandatory=true
+tranche_hba_jchem_mandatory=true
+tranche_hba_obabel_mandatory=true
+tranche_hbd_jchem_mandatory=true
+tranche_hbd_obabel_mandatory=true
+tranche_rotb_jchem_mandatory=true
+tranche_rotb_obabel_mandatory=true
+tranche_tpsa_jchem_mandatory=true
+tranche_tpsa_obabel_mandatory=true
+tranche_logd_mandatory=true
+tranche_logs_mandatory=false
+tranche_atomcount_jchem_mandatory=true
+tranche_atomcount_obabel_mandatory=true
+tranche_bondcount_jchem_mandatory=true
+tranche_bondcount_obabel_mandatory=true
+tranche_ringcount_mandatory=true
+tranche_aromaticringcount_mandatory=true
+tranche_formalcharge_mandatory=true
+tranche_mr_jchem_mandatory=true
+tranche_mr_obabel_mandatory=true
+tranche_positivechargecount_mandatory=true
+tranche_negativechargecount_mandatory=true
+tranche_fsp3_mandatory=true
+tranche_chiralcentercount_mandatory=true
+tranche_halogencount_mandatory=true
+tranche_sulfurcount_mandatory=true
+tranche_NOcount_mandatory=true
+tranche_electronegativeatomcount_mandatory=true
+tranche_mw_file_mandatory=true
+tranche_logp_file_mandatory=true
+tranche_hba_file_mandatory=true
+tranche_hbd_file_mandatory=true
+tranche_rotb_file_mandatory=true
+tranche_tpsa_file_mandatory=true
+tranche_logd_file_mandatory=true
+tranche_logs_file_mandatory=true
+tranche_atomcount_file_mandatory=true
+tranche_bondcount_file_mandatory=true
+tranche_ringcount_file_mandatory=true
+tranche_aromaticringcount_file_mandatory=true
+tranche_mr_file_mandatory=true
+tranche_formalcharge_file_mandatory=true
+tranche_positivechargecount_file_mandatory=true
+tranche_negativechargecount_file_mandatory=true
+tranche_fsp3_file_mandatory=true
+tranche_chiralcentercount_file_mandatory=true
+tranche_halogencount_file_mandatory=true
+tranche_sulfurcount_file_mandatory=true
+tranche_NOcount_file_mandatory=true
+tranche_electronegativeatomcount_file_mandatory=true
 
 
 *******************************************************************    JChem-Related Packages    ****************************************************************
 
 jchem_package_filename=jchemsuite.tar.gz
-# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
+# Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps, and if tranche_assignments=true
 # The filename of the JChem package located in the folder tools/packages/ in the tar.gz format (available on the ChemAxon homepage)
 # The root folder in the archive has to have the name jchemsuite (normally distributed by ChemAxon in this way)
 # Possible values:

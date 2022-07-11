@@ -26,9 +26,9 @@
 #$ -o ../workflow/output-files/jobs/job-1.1_$JOB_ID.out
 #$ -e ../workflow/output-files/jobs/job-1.1_$JOB_ID.out
 #$ -l h_rt=12:00:00
-#$ -q wagnerlab
+#$ -q <queue>
 #$ -m a
-#$ -M cgorgulla@crystal.harvard.edu
+#$ -M
 #$ -notify
 
 # Job Information
@@ -193,6 +193,7 @@ export VF_START_TIME_SECONDS="$(date +%s)"
 date
 echo $VF_START_TIME_SECONDS
 export LC_ALL=C
+export PATH="./bin:$PATH"           # to give bin priority of system commands, useful for obabel sometimes for example
 
 
 # Determining the VF_CONTROLFILE to use for this jobline
@@ -219,12 +220,18 @@ if [ "${VF_VERBOSITY_LOGFILES}" = "debug" ]; then
 fi
 
 # VF_TMPDIR
-export VF_TMPDIR="$(grep -m 1 "^tempdir=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+export VF_TMPDIR="$(grep -m 1 "^tempdir_default=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 # Creating the ${VF_TMPDIR}/${USER} folder if not present
 if [ ! -d "${VF_TMPDIR}/${USER}" ]; then
     mkdir -p ${VF_TMPDIR}/${USER}
 fi
 
+# VF_TMPDIR_FAST
+export VF_TMPDIR_FAST="$(grep -m 1 "^tempdir_fast=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+# Creating the ${VF_TMPDIR}/${USER} folder if not present
+if [ ! -d "${VF_TMPDIR}/${USER}" ]; then
+    mkdir -p ${VF_TMPDIR}/${USER}
+fi
 # Setting the job letter
 VF_JOBLETTER="$(grep -m 1 "^job_letter=" ${VF_CONTROLFILE} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
 export VF_JOBLETTER

@@ -90,7 +90,7 @@ clean_up() {
 trap 'clean_up' EXIT
 
 # Sourcing bashrc
-source ~/.bashrc
+source ~/.bashrc || true
 
 prepare_queue_files_tmp() {
 
@@ -102,7 +102,7 @@ prepare_queue_files_tmp() {
 
     # Copying the requires files
     if ls -1 ../workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/queue-${VF_QUEUE_NO}.* > /dev/null 2>&1; then
-        cp ../workflow/output-files/queues/${VF_QUEUE_NO_1}/$/{VF_QUEUE_NO_2}/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/
+        cp ../workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/queue-${VF_QUEUE_NO}.* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/output-files/queues/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/
     fi
 }
 
@@ -121,11 +121,11 @@ start_ng_server() {
 ng_server_check() {
 
     # Testing if the ng-server is still working
-    ng --nailgun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
+    ng --dun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
     exit_code=$?
 
     # Checking the exit status
-    if [ ${exit_code} != 0 ]; then
+    if [[ ${exit_code} != 0 && ${exit_code} != 130  ]]; then
 
         # Printing warning message
         echo " * Warning: The NG Server seems to be not running anymore. Trying to restart..."
@@ -138,14 +138,26 @@ ng_server_check() {
         exit_code=$?
 
         # Checking the exit status
-        if [ ${exit_code} != 0 ]; then
+        if [[ ${exit_code} != 0 && ${exit_code} != 130  ]]; then
 
-            # Printing warning message
-            echo " * Error: Restarting of the NG Server has failed... "
-            error_response_std $LINENO
-        else
+            # Testing if it is running again already - e.g. because another queue already restarted it
+            sleep 3
+            ng --dun-server localhost --nailgun-port ${NG_PORT} com.martiansoftware.nailgun.examples.Exit 0
+            exit_code=$?
 
-            # Printing warning message
+            # Checking the exit status
+            if [[ ${exit_code} != 0 && ${exit_code} != 130  ]]; then
+
+                # Printing warning message
+                echo " * Error: Restarting of the NG Server has failed... "
+                error_response_std $LINENO
+            else
+
+                # Printing message
+                echo " * The NG Server is already running again... "
+            fi
+
+            # Printing message
             echo " * The NG Server was successfully restarted... "
         fi
     fi
@@ -269,6 +281,12 @@ if [[ ( "${protonation_state_generation}" == "true" && ( "${protonation_program_
     # Java 10/11 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:OnOutOfMemoryError="echo %p" -XX:OnError="echo %p" -Xlog:gc*:file=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -Xlog:all=warning:file=${PWD}/java.warning.${VF_QUEUE_NO_12}.log
     # Java 8 debugging options: -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${PWD}/java.gc.${VF_QUEUE_NO_12}.log -XX:-PrintConcurrentLocks -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:${PWD}/java.gc.${VF_QUEUE_NO_12}.log
     start_ng_server
+
+    # Preparing the other binary files
+    mkdir -p ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin
+    cp bin/* ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin/
+    chmod u+x ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin/*
+    export PATH="${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/packages/bin/:$PATH"
 fi
 
 # Starting the individual queues
@@ -300,7 +318,7 @@ done
 
 # Checking if all queues exited without error ("wait" waits for all of them, but always returns 0)
 exit_code=0
-for pid in ${pids[@]}; do
+for pid in "${pids[@]}"; do
     wait $pid || let "exit_code=1"
 done
 if [ "$exit_code" == "1" ]; then
