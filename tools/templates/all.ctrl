@@ -182,7 +182,7 @@ desalting=true
 #   * true
 # Settable via range control files: Yes
 
-desalting_obligatory=false
+    desalting_obligatory=false
 # Setting only required if desalting=true
 # Possible values:
 #   * true: Successful desalting of the ligand is mandatory (unsuccessful desalting leads to the omission of this ligand).

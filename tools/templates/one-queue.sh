@@ -910,7 +910,7 @@ obabel_generate_pdb() {
 
         # Variables
         pdb_generation_success="true"
-        pdb_generation_remark="REMARK    Generation of the the PDB file (without conformation generation) was carried out by Open Babel version ${obabel_version}"
+        pdb_generation_remark="REMARK    Generation of the PDB file (without conformation generation) was carried out by Open Babel version ${obabel_version}"
         smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_protomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi)
 
         # Modifying the header of the pdb file and correction the charges in the pdb file in order to be conform with the official specifications (otherwise problems with obabel)
@@ -960,14 +960,14 @@ obabel_generate_targetformat() {
         if [[ "${targetformat}" == "pdb" || "${targetformat}" = "pdbqt" ]]; then
 
             # Variables
-            pdb_targetformat_remark="REMARK    Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
+            pdb_targetformat_remark="REMARK    Generation of the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
 
             # Modifying the header of the targetformat file
             sed "s|REMARK  Name.*|REMARK    Small molecule (ligand)\nREMARK    Compound: ${next_ligand}\nREMARK    SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\nREMARK    Created on $(date)|g" ${targetformat_output_file} | sed "s/ UN[LK] / LIG /g" | sed '/^\s*$/d' > ${targetformat_output_file}.tmp
             mv ${targetformat_output_file}.tmp ${targetformat_output_file}
         elif [[ "${targetformat}" == "mol2" ]]; then
             # Variables
-            mol2_targetformat_remark="# Generation of the the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
+            mol2_targetformat_remark="# Generation of the target format file (${targetformat}) was carried out by Open Babel version ${obabel_version}."
 
             # Modifying the header of the targetformat file
             sed "1i# Small molecule (ligand)\n# Compound: ${next_ligand}\n# SMILES: ${smiles[0]}\n${pdb_desalting_remark}\n${pdb_neutralization_remark}\n${pdb_tautomerization_remark}\n${pdb_protonation_remark}\n${pdb_generation_remark}\n${pdb_conformation_remark}\n${pdb_targetformat_remark}\n${pdb_trancheassignment_remark}\n# Created on $(date)" ${targetformat_output_file} | sed "s/REMARK    /# /"  > ${targetformat_output_file}.tmp
