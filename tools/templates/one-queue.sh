@@ -174,7 +174,7 @@ next_ligand_collection() {
         # Determining the collection notation format
         number_of_dashes=$(echo "${next_ligand_collection}" | awk -F "_" '{print NF-1}')
         if [[ ${number_of_dashes} == "1" ]]; then
-            next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+            next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $2}')"
             next_ligand_collection_tranche="${next_ligand_collection/_*}"
             next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
         elif [[ ${number_of_dashes} == "2" ]]; then
@@ -323,8 +323,8 @@ prepare_collection_files_tmp() {
 
         # Extracting all the SMILES at the same time (faster than individual for each ligand separately)
         tar -xf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}
-        for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/); do
-            awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file}
+        for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/); do
+            awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file}
         done
 
     elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
@@ -420,7 +420,7 @@ clean_collection_files_tmp() {
             done
 
             # Updating the ligand collection files
-            echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
+            echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/${VF_QUEUE_NO}
             ligands_succeeded_tautomerization="$(grep "tautomerization([0-9]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status | grep -c tautomerization)"
             ligands_succeeded_targetformat="$(grep -c "targetformat-generation([A-Za-z]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status)"
             ligands_failed="$(grep -c "failed total" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status)"
@@ -588,7 +588,7 @@ desalt() {
     timings_before_tautomers="${timings_before_tautomers}:desalt=${temp_end_time_ms}"
 }
 
-#Neutralization with standardizer
+# Neutralization with standardizer
 standardizer_neutralize() {
 
     # Timings
@@ -678,7 +678,7 @@ obabel_neutralize() {
 
         # Carrying out the neutralization
         trap '' ERR
-        (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi --neutralize -osmi -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1 )
+        (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi --neutralize -osmi -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1 )
         last_exit_code=$?
         trap 'error_response_std $LINENO' ERR
 
@@ -686,7 +686,7 @@ obabel_neutralize() {
             echo "    * Warning: Neutralization with obabel failed. obabel was interrupted by the timeout command..."
         elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found'; then
             echo "    * Warning: Neutralization with obabel failed. An error flag was detected in the log files..."
-        elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
+        elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
             echo "    * Warning: Neutralization with obabel failed. No valid SMILES file was generated..."
         else
             echo "    * Ligand successfully neutralized by obabel."
@@ -703,7 +703,7 @@ obabel_neutralize() {
         neutralization_type="untouched"
 
         # Copying the ligand from the desalting step
-        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
 
     fi
 }
@@ -759,22 +759,22 @@ cxcalc_tautomerize() {
 obabel_tautomerize() {
     # Carrying out the protonation
     trap '' ERR
-    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obtautomer ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1)
+    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obtautomer ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1)
     last_exit_code=$?
     trap 'error_response_std $LINENO' ERR
 
     # Checking if the tautomerization was successful
     if [ "${last_exit_code}" -ne "0" ]; then
       echo "    * Warning: Protonation with obabel failed. obabel was interrupted by the timeout command..."
-    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp ]]; then
+    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp ]]; then
       echo "    * Warning: Tautomerization with obabel failed. No valid SMILES were generated..."
     elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'invalid|failed|timelimit|error|no such file|not found|non-zero'; then
         echo "    * Warning: Tautomerization with obabel failed. An error flag was detected in the log files..."
-    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp ]]; then
+    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp ]]; then
         echo "    * Warning: Tautomerization with obabel failed. No valid SMILES were generated..."
     else
         echo "    * Ligand successfully tautomerized by obabel."
-        tautomer_smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp | tr "\n" " ")
+        tautomer_smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp | tr "\n" " ")
         tautomerization_success="true"
         pdb_tautomerization_remark="REMARK    The tautomeric state was generated by obabel."
         tautomerization_program="obabel"
@@ -784,7 +784,7 @@ obabel_tautomerize() {
         next_ligand_tautomers=""
         for tautomer_smile in ${tautomer_smiles}; do
             tautomer_index=$((tautomer_index + 1))
-            echo ${tautomer_smile} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}_T${tautomer_index}.smi
+            echo ${tautomer_smile} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}_T${tautomer_index}.smi
             next_ligand_tautomers="${next_ligand_tautomers} ${next_ligand}_T${tautomer_index}"
         done
     fi
@@ -2464,7 +2464,7 @@ while true; do
             # Determining the collection notation format
             number_of_dashes=$(echo "${next_ligand_collection}" | awk -F "_" '{print NF-1}')
             if [[ ${number_of_dashes} == "1" ]]; then
-                next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+                next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $2}')"
                 next_ligand_collection_tranche="${next_ligand_collection/_*}"
                 next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
             elif [[ ${number_of_dashes} == "2" ]]; then
@@ -2486,8 +2486,8 @@ while true; do
                 # Extracting all the SMILES at the same time (faster)
                 tar -xf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}
                 # Creating the clean SMILES
-                for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/); do
-                    awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file}
+                for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/); do
+                    awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file}
                 done
             elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
                 cp ${collection_folder}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.txt.gz ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}_${next_ligand_collection_ID}.txt.gz
@@ -2734,7 +2734,7 @@ while true; do
                 echo "    * Warning: Ligand will be further processed without neutralization"
 
                 # Copying the original ligand
-                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
             fi
         else
 
@@ -2744,7 +2744,7 @@ while true; do
     else
 
         # Copying the original ligand
-        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
 
     fi
 
@@ -2884,7 +2884,7 @@ while true; do
                 next_ligand_tautomers=${next_ligand}
 
                 # Copying the original ligand
-                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+                cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
             fi
         else
 
@@ -2895,7 +2895,7 @@ while true; do
     else
 
         # Copying the original ligand
-        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranch}/${next_ligand_collection_tranch}/${next_ligand_collection_ID}/${next_ligand}.smi
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
 
         # Variables
         next_ligand_tautomers=${next_ligand}
