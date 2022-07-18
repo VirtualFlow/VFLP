@@ -657,6 +657,9 @@ standardizer_neutralize() {
 # Neutralization with obabel
 obabel_neutralize() {
 
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+
     # Checking if the charged counterion
     charged_counterion=false
     if echo ${desalted_smiles_smallest_fragment} | grep -c -E "\-\]|\+\]" &>/dev/null; then
@@ -706,6 +709,10 @@ obabel_neutralize() {
         cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
 
     fi
+
+    # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+    timings_before_tautomers="${timings_before_tautomers}:obabel_neutralize=${temp_end_time_ms}"
 }
 
 # Tautomerization with cxcalc
@@ -757,7 +764,11 @@ cxcalc_tautomerize() {
 
 # Tautomerization with obabel
 obabel_tautomerize() {
-    # Carrying out the protonation
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+
+    # Carrying out the tautomerization
     trap '' ERR
     (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obtautomer ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1)
     last_exit_code=$?
@@ -788,6 +799,10 @@ obabel_tautomerize() {
             next_ligand_tautomers="${next_ligand_tautomers} ${next_ligand}_T${tautomer_index}"
         done
     fi
+
+    # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+    timings_before_tautomers="${timings_before_tautomers}:obabel_tautomerize=${temp_end_time_ms}"
 }
 
 # Protonation with cxcalc
