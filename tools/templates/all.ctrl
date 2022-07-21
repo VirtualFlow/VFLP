@@ -193,10 +193,20 @@ desalting=true
 ***********************************************************************    Neutralization    ********************************************************************
 
 neutralization=true
-# Neutralizes molecules using JChem's Standardizer of ChemAxon
+# Neutralizes molecules using Open Babel or JChem's Standardizer of ChemAxon
 # Possible values:
 #   * false
 #   * true
+# Settable via range control files: Yes
+
+neutralization_program_1=obabel
+neutralization_program_2=none
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Setting only required if neutralization=true
+# Possible values:
+#   * obabel
+#   * standardizer
+#   * none (only for neutralization_program_2)
 # Settable via range control files: Yes
 
 neutralization_mode=after_desalting_if_charged
@@ -221,6 +231,16 @@ tautomerization=true
 # Possible values:
 #   * false
 #   * true
+# Settable via range control files: Yes
+
+tautomerization_program_1=obabel
+tautomerization_program_2=none
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Setting only required if tautomerization=true
+# Possible values:
+#   * obabel
+#   * cxcalc
+#   * none (only for tautomerization_program_2)
 # Settable via range control files: Yes
 
 tautomerization_obligatory=false

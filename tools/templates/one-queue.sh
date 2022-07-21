@@ -174,7 +174,7 @@ next_ligand_collection() {
         # Determining the collection notation format
         number_of_dashes=$(echo "${next_ligand_collection}" | awk -F "_" '{print NF-1}')
         if [[ ${number_of_dashes} == "1" ]]; then
-            next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+            next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $2}')"
             next_ligand_collection_tranche="${next_ligand_collection/_*}"
             next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
         elif [[ ${number_of_dashes} == "2" ]]; then
@@ -323,8 +323,8 @@ prepare_collection_files_tmp() {
 
         # Extracting all the SMILES at the same time (faster than individual for each ligand separately)
         tar -xf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}
-        for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/); do
-            awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file}
+        for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/); do
+            awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file}
         done
 
     elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
@@ -420,7 +420,7 @@ clean_collection_files_tmp() {
             done
 
             # Updating the ligand collection files
-            echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO}
+            echo -n "" > ../workflow/ligand-collections/current/${VF_QUEUE_NO_1}/${VF_QUEUE_NO_2}/${VF_QUEUE_NO}
             ligands_succeeded_tautomerization="$(grep "tautomerization([0-9]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status | grep -c tautomerization)"
             ligands_succeeded_targetformat="$(grep -c "targetformat-generation([A-Za-z]\+):success" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status)"
             ligands_failed="$(grep -c "failed total" ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/workflow/ligand-collections/ligand-lists/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.status)"
@@ -588,6 +588,7 @@ desalt() {
     timings_before_tautomers="${timings_before_tautomers}:desalt=${temp_end_time_ms}"
 }
 
+# Neutralization with standardizer
 standardizer_neutralize() {
 
     # Timings
@@ -653,7 +654,68 @@ standardizer_neutralize() {
     timings_before_tautomers="${timings_before_tautomers}:standardizer_neutralize=${temp_end_time_ms}"
 }
 
-# Protonation with cxcalc
+# Neutralization with obabel
+obabel_neutralize() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+
+    # Checking if the charged counterion
+    charged_counterion=false
+    if echo ${desalted_smiles_smallest_fragment} | grep -c -E "\-\]|\+\]" &>/dev/null; then
+        charged_counterion="true"
+    fi
+
+    # Checking type of neutralization mode
+    neutralization_flag="false"
+    if [[ "${neutralization_mode}" == "always" ]]; then
+        neutralization_flag="true"
+    elif [[ "${neutralization_mode}" == "only_genuine_desalting" && "${number_of_smiles_fragments}" -ge "2" ]]; then
+        neutralization_flag="true"
+    elif [[ "${neutralization_mode}" == "only_genuine_desalting_and_if_charged" && "${number_of_smiles_fragments}" -ge "2" && "${charged_counterion}" == "true" ]]; then
+        neutralization_flag="true"
+    fi
+
+    # Checking if conversion successful
+    if [ ${neutralization_flag} == "true" ]; then
+
+        # Carrying out the neutralization
+        trap '' ERR
+        (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obabel -ismi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi --neutralize -osmi -O ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1 )
+        last_exit_code=$?
+        trap 'error_response_std $LINENO' ERR
+
+        if [ "${last_exit_code}" -ne "0" ]; then
+            echo "    * Warning: Neutralization with obabel failed. obabel was interrupted by the timeout command..."
+        elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'failed|timelimit|error|no such file|not found'; then
+            echo "    * Warning: Neutralization with obabel failed. An error flag was detected in the log files..."
+        elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ]]; then
+            echo "    * Warning: Neutralization with obabel failed. No valid SMILES file was generated..."
+        else
+            echo "    * Ligand successfully neutralized by obabel."
+            neutralization_success="true"
+            pdb_neutralization_remark="REMARK    The compound was neutralized by obabel."
+            neutralization_type="genuine"
+        fi
+    else
+        # Printing some information
+        echo "    * This ligand does not need to be neutralized, leaving it untouched."
+
+        # Variables
+        neutralization_success="true"
+        neutralization_type="untouched"
+
+        # Copying the ligand from the desalting step
+        cp ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_desalted/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi
+
+    fi
+
+    # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+    timings_before_tautomers="${timings_before_tautomers}:obabel_neutralize=${temp_end_time_ms}"
+}
+
+# Tautomerization with cxcalc
 cxcalc_tautomerize() {
 
     # Timings
@@ -698,6 +760,49 @@ cxcalc_tautomerize() {
     # Timings
     temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
     timings_before_tautomers="${timings_before_tautomers}:cxcalc_tautomerize=${temp_end_time_ms}"
+}
+
+# Tautomerization with obabel
+obabel_tautomerize() {
+
+    # Timings
+    temp_start_time_ms=$(($(date +'%s * 1000 + %-N / 1000000')))
+
+    # Carrying out the tautomerization
+    trap '' ERR
+    (ulimit -v ${obabel_memory_limit}; { timeout ${obabel_time_limit} bin/time_bin -f "    * Timings of obabel (user real system): %U %e %S" obtautomer ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_neutralized/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp 2> >(tee ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp 1>&2 ) ; } 2>&1)
+    last_exit_code=$?
+    trap 'error_response_std $LINENO' ERR
+
+    # Checking if the tautomerization was successful
+    if [ "${last_exit_code}" -ne "0" ]; then
+      echo "    * Warning: Protonation with obabel failed. obabel was interrupted by the timeout command..."
+    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp ]]; then
+      echo "    * Warning: Tautomerization with obabel failed. No valid SMILES were generated..."
+    elif tail -n 30 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output.tmp | grep -v "^+" | tail -n 3 | grep -i -E 'invalid|failed|timelimit|error|no such file|not found|non-zero'; then
+        echo "    * Warning: Tautomerization with obabel failed. An error flag was detected in the log files..."
+    elif [[ ! -s ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp ]]; then
+        echo "    * Warning: Tautomerization with obabel failed. No valid SMILES were generated..."
+    else
+        echo "    * Ligand successfully tautomerized by obabel."
+        tautomer_smiles=$(cat ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}.smi.tmp | tr "\n" " ")
+        tautomerization_success="true"
+        pdb_tautomerization_remark="REMARK    The tautomeric state was generated by obabel."
+        tautomerization_program="obabel"
+
+        # Storing each tautomer SMILES in a file and storing the new ligand names
+        tautomer_index=0
+        next_ligand_tautomers=""
+        for tautomer_smile in ${tautomer_smiles}; do
+            tautomer_index=$((tautomer_index + 1))
+            echo ${tautomer_smile} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/output-files/incomplete/smi_tautomers/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${next_ligand}_T${tautomer_index}.smi
+            next_ligand_tautomers="${next_ligand_tautomers} ${next_ligand}_T${tautomer_index}"
+        done
+    fi
+
+    # Timings
+    temp_end_time_ms="$(($(date +'%s * 1000 + %-N / 1000000') - ${temp_start_time_ms}))"
+    timings_before_tautomers="${timings_before_tautomers}:obabel_tautomerize=${temp_end_time_ms}"
 }
 
 # Protonation with cxcalc
@@ -2171,13 +2276,24 @@ neutralization="$(grep -m 1 "^neutralization=" ${VF_CONTROLFILE_TEMP} | tr -d '[
 if [ "${neutralization}" == "true" ]; then
 
     # Variables
+    neutralization_program_1="$(grep -m 1 "^neutralization_program_1=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    neutralization_program_2="$(grep -m 1 "^neutralization_program_2=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     neutralization_mode="$(grep -m 1 "^neutralization_mode=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     neutralization_obligatory="$(grep -m 1 "^neutralization_obligatory=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    standardizer_version="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.standardizer.StandardizerCLI -h | head -n 1 | awk -F '[ ,]' '{print $2}')"
+
+    # Interdependent variables
+    if [[ "${neutralization_program_1}" ==  "standardizer" ]] || [[ "${neutralization_program_2}" ==  "standardizer" ]]; then
+      standardizer_version="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.standardizer.StandardizerCLI -h | head -n 1 | awk -F '[ ,]' '{print $2}')"
+    fi
 
     # Checking variable values
-    if [[ ( "${neutralization_mode}" == "if_genuine_desalting" || "${neutralization_mode}" == "if_genuine_desalting_and_charged" ) && ! "${desalting}" == "true" ]]; then
-
+    if [[ "${neutralization_program_1}" !=  "standardizer" ]] && [[ "${neutralization_program_1}" !=  "obabel" ]]; then
+        echo -e " Error: The value (${neutralization_program_1}) for neutralization_program_1 which was specified in the controlfile is invalid..."
+        error_response_std $LINENO
+    elif [[ "${neutralization_program_2}" !=  "standardizer" ]] && [[ "${neutralization_program_2}" !=  "obabel" ]] && [[ "${neutralization_program_2}" !=  "none" ]]; then
+        echo -e " Error: The value (${neutralization_program_2}) for neutralization_program_2 which was specified in the controlfile is invalid..."
+        error_response_std $LINENO
+    elif [[ ( "${neutralization_mode}" == "if_genuine_desalting" || "${neutralization_mode}" == "if_genuine_desalting_and_charged" ) && ! "${desalting}" == "true" ]]; then
         # Printing some information
         echo -e " Error: The value (${neutralization_mode}) of the variable neutralization_mode requires desalting to be enabled, but it is disabled."
         error_response_std $LINENO
@@ -2190,9 +2306,25 @@ tautomerization="$(grep -m 1 "^tautomerization=" ${VF_CONTROLFILE_TEMP} | tr -d 
 if [ "${tautomerization}" == "true" ]; then
 
     # Variables
+    tautomerization_program_1="$(grep -m 1 "^tautomerization_program_1=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+    tautomerization_program_2="$(grep -m 1 "^tautomerization_program_2=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
     tautomerization_obligatory="$(grep -m 1 "^tautomerization_obligatory=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    cxcalc_tautomerization_options="$(grep -m 1 "^cxcalc_tautomerization_options=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
-    cxcalc_version="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator | grep -m 1 version | sed "s/.*version \([0-9. ]*\).*/\1/")"
+
+    # Interdependent variables
+    if [[ "${tautomerization_program_1}" ==  "cxcalc" ]] || [[ "${tautomerization_program_2}" ==  "cxcalc" ]]; then
+      cxcalc_tautomerization_options="$(grep -m 1 "^cxcalc_tautomerization_options=" ${VF_CONTROLFILE_TEMP} | tr -d '[[:space:]]' | awk -F '[=#]' '{print $2}')"
+      cxcalc_version="$(ng --nailgun-server localhost --nailgun-port ${NG_PORT} chemaxon.marvin.Calculator | grep -m 1 version | sed "s/.*version \([0-9. ]*\).*/\1/")"
+    fi
+
+    # Checking some variables
+    if [[ "${tautomerization_program_1}" !=  "cxcalc" ]] && [[ "${tautomerization_program_1}" !=  "obabel" ]]; then
+        echo -e " Error: The value (${tautomerization_program_1}) for tautomerization_program_1 which was specified in the controlfile is invalid..."
+        error_response_std $LINENO
+    elif [[ "${tautomerization_program_2}" !=  "cxcalc" ]] && [[ "${tautomerization_program_2}" !=  "obabel" ]] && [[ "${tautomerization_program_2}" !=  "none" ]]; then
+        echo -e " Error: The value (${tautomerization_program_2}) for tautomerization_program_2 which was specified in the controlfile is invalid..."
+        error_response_std $LINENO
+    fi
+
 fi
 
 # Protonation settings
@@ -2214,7 +2346,7 @@ if [ "${protonation_state_generation}" == "true" ]; then
     if [[ "${protonation_program_1}" !=  "cxcalc" ]] && [[ "${protonation_program_1}" !=  "obabel" ]]; then
         echo -e " Error: The value (${protonation_program_1}) for protonation_program_1 which was specified in the controlfile is invalid..."
         error_response_std $LINENO
-    elif [[ "${protonation_program_2}" !=  "cxcalc" ]] && [[ "${protonation_program_2}" !=  "obabel" ]] && [[ "${protonation_program_2}" ==  "none" ]]; then
+    elif [[ "${protonation_program_2}" !=  "cxcalc" ]] && [[ "${protonation_program_2}" !=  "obabel" ]] && [[ "${protonation_program_2}" !=  "none" ]]; then
         echo -e " Error: The value (${protonation_program_2}) for protonation_program_2 which was specified in the controlfile is invalid..."
         error_response_std $LINENO
     fi
@@ -2239,7 +2371,7 @@ if [ "${conformation_generation}" == "true" ]; then
     if [[ "${conformation_program_1}" !=  "molconvert" ]] && [[ "${conformation_program_1}" !=  "obabel" ]]; then
         echo -e " Error: The value (${conformation_program_1}) for conformation_program_1 which was specified in the controlfile is invalid..."
         error_response_std $LINENO
-    elif [[ "${conformation_program_2}" !=  "molconvert" ]] && [[ "${conformation_program_2}" !=  "obabel" ]] && [[ "${protonation_program_2}" ==  "none" ]]; then
+    elif [[ "${conformation_program_2}" !=  "molconvert" ]] && [[ "${conformation_program_2}" !=  "obabel" ]] && [[ "${conformation_program_2}" !=  "none" ]]; then
         echo -e " Error: The value (${conformation_program_2}) for conformation_program_2 which was specified in the controlfile is invalid..."
         error_response_std $LINENO
     fi
@@ -2347,7 +2479,7 @@ while true; do
             # Determining the collection notation format
             number_of_dashes=$(echo "${next_ligand_collection}" | awk -F "_" '{print NF-1}')
             if [[ ${number_of_dashes} == "1" ]]; then
-                next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $3}')"
+                next_ligand_collection_ID="$(echo ${next_ligand_collection} | awk -F '[_ ]' '{print $2}')"
                 next_ligand_collection_tranche="${next_ligand_collection/_*}"
                 next_ligand_collection_metatranche="${next_ligand_collection_tranche:0:2}"
             elif [[ ${number_of_dashes} == "2" ]]; then
@@ -2369,8 +2501,8 @@ while true; do
                 # Extracting all the SMILES at the same time (faster)
                 tar -xf ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.tar -C ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}
                 # Creating the clean SMILES
-                for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/); do
-                    awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${file}
+                for file in $(ls -1 ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/); do
+                    awk '{print $1}' ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file} > ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi_clean/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}/${file}
                 done
             elif [[ "${input_library_format}" == "metatranche_tranche_collection_gz" ]]; then
                 cp ${collection_folder}/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}/${next_ligand_collection_ID}.txt.gz ${VF_TMPDIR}/${USER}/VFLP/${VF_JOBLETTER}/${VF_QUEUE_NO_12}/${VF_QUEUE_NO}/input-files/ligands/smi/collections/${next_ligand_collection_metatranche}/${next_ligand_collection_tranche}_${next_ligand_collection_ID}.txt.gz
@@ -2558,12 +2690,40 @@ while true; do
         neutralization_success="false"
 
         # Printing information
-        echo -e "\n * Starting the neutralization step"
+        echo -e "\n * Starting the first neutralization attempt with ${neutralization_program_1} (neutralization_program_1)"
 
-        # Carrying out the neutralization step
-        standardizer_neutralize
+        # Determining neutralization_program_1
+        case "${neutralization_program_1}" in
+                standardizer)
+                    # Attempting the neutralization with cxcalc
+                    standardizer_neutralize
+                    ;;
+                obabel)
+                    # Attempting the neutralization with obabel
+                    obabel_neutralize
+                    ;;
+        esac
 
-        # Checking if the neutralization has failed
+        # Checking if first neutralization has failed
+        if [ "${neutralization_success}" == "false" ]; then
+
+            # Printing information
+            echo "    * Starting second neutralization attempt with ${neutralization_program_2} (neutralization_program_2)"
+
+            # Determining neutralization_program_2
+            case "${neutralization_program_2}" in
+                standardizer)
+                    # Attempting the neutralization with cxcalc
+                    standardizer_neutralize
+                    ;;
+                obabel)
+                    # Attempting the neutralization with obabel
+                    obabel_neutralize
+                    ;;
+            esac
+        fi
+
+        # Checking if both neutralization attempts have failed
         if [ "${neutralization_success}" == "false" ]; then
 
             # Printing information
@@ -2677,12 +2837,40 @@ while true; do
         tautomerization_success="false"
 
         # Printing information
-        echo -e "\n * Starting the tautomerization with cxcalc"
+        echo "    * Starting first tautomerization attempt with ${tautomerization_program_1} (tautomerization_program_1)"
 
-        # Carrying out the tautomerization
-        cxcalc_tautomerize
+        # Determining tautomerization_program_1
+        case "${tautomerization_program_1}" in
+                cxcalc)
+                    # Attempting the tautomerization with cxcalc
+                    cxcalc_tautomerize
+                    ;;
+                obabel)
+                    # Attempting the tautomerization with obabel
+                    obabel_tautomerize
+                    ;;
+        esac
 
-        # Checking if the tautomerization has failed
+        # Checking if first tautomerization has failed
+        if [ "${tautomerization_success}" == "false" ]; then
+
+            # Printing information
+            echo "    * Starting second tautomerization attempt with ${tautomerization_program_2} (tautomerization_program_2)"
+
+            # Determining tautomerization_program_2
+            case "${tautomerization_program_2}" in
+                cxcalc)
+                    # Attempting the tautomerization with cxcalc
+                    cxcalc_tautomerize
+                    ;;
+                obabel)
+                    # Attempting the tautomerization with obabel
+                    obabel_tautomerize
+                    ;;
+            esac
+        fi
+
+        # Checking if both of the tautomerization attempts have failed
         if [ "${tautomerization_success}" == "false" ]; then
 
             # Printing information
@@ -2699,8 +2887,7 @@ while true; do
 
                 # Updating the ligand list
                 update_ligand_list_end false "during tautomerization"
-t 1.
-# For each tranch type <X>
+
                 # Skipping the ligand
                 continue
             else
@@ -2729,6 +2916,7 @@ t 1.
         next_ligand_tautomers=${next_ligand}
 
     fi
+
 
     # Checking if we have more than one tautomer
     next_ligand_tautomers_count=$(echo ${next_ligand_tautomers} | wc -w)
