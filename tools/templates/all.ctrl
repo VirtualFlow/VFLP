@@ -1,221 +1,198 @@
 # Each line which starts with '#' is a comment/description of the variable above the comment
 
-*****************************************************************************************************************************************************************
-***************************************************************    Job Resource Configuration    ****************************************************************
-*****************************************************************************************************************************************************************
 
-job_letter=t
-# One alphabetic character (i.e. a letter from a-z or A-Z)
-# Should not be changed during runtime, and be the same for all joblines
-# Required when running VF several times on the same cluster to distinguish the jobs in the batchsystem
-# Settable via range control files: No
+****** Job Resource Configuration
 
-batchsystem=SLURM
-# Possible values: SLURM, TOQRUE, PBS, LSF, SGE
-# Settable via range control files: No
+job_name=testing
+# alphabetic characters (i.e. letters from a-z or A-Z)
+# Used to describe distinct runs (using the same name will
+# overwrite data if using S3!)
 
-partition=debug
-# Partitions are also called queues in some batchsystems
-# Settable via range control files: Yes
-
-timelimit=1-00:00:00
-# Format for slurm: dd-hh:mm:ss
-# Format for TORQUE and PBS: hh:mm:ss
-# Format for SGE: hh:mm:ss
-# Format for LSF: hh:mm
-# For all batchsystems: always fill up with two digits per field (used be the job scripts)
-# Settable via range control files: Yes
-
-steps_per_job=1
-# Not (yet) available for LSF and SGE (is always set to 1)
-# Should not be changed during runtime, and be the same for all joblines
-# Settable via range control files: Yes
-
-cpus_per_step=32
-# Sets the slurm cpus-per-task variable (task = step) in SLURM
-# In LSF this corresponds to the number of slots per node
-# Should not be changed during runtime, and be the same for all joblines
-# Not yet available for SGE (always set to 1)
-# Settable via range control files: Yes
-
-queues_per_step=64
-# Sets the number of queues/processes per step
-# Should not be changed during runtime, and be the same for all joblines
-# Not yet available for SGE (always set to 1)
-# Settable via range control files: Yes
+threads_to_use=8
+# This sets how many processes the main execution loop should be using
+# to process. This is generally 2x the number of vCPUs or hyperthreads
+# available on the system it is being run on
 
 
-*****************************************************************************************************************************************************************
-*********************************************************************    Workflow Options    ********************************************************************
-*****************************************************************************************************************************************************************
+************************************************
+** Batch system configuration
+************************************************
 
-central_todo_list_splitting_size=10000
-# When the folders are initially prepared the first time, the central todo list will be split into pieces of size <central_todo_list_splitting_size>. One task corresponds to one collection.
-# Recommended value: < 100000, e.g. 10000
-# Possible values: Positive integer
-# The smaller the value, the faster the ligand collections can be distributed.
-# For many types of clusters it is recommended if the total number of splitted todo lists stays below 10000.
-# Settable via range control files: Yes
+batchsystem=awsbatch
+# Possible values: awsbatch, slurm
 
-ligands_todo_per_queue=1000
-# Used as a limit of ligands for the to-do lists
-# This value should be divisible by the next setting "ligands_todo_per_refilling_step"
-# Settable via range control files: Yes
 
-ligands_per_refilling_step=1000
-# The to-do files of the queues are filled with <ligands_per_refilling_step> ligands per refill step
-# A number roughly equal to the average of number of ligands per collection is recommended
-# Settable via range control files: Yes
+****** AWS Batch Options (if batchsystem=awsbatch)
 
-collection_folder=../../../collections/Enamine_2021_test
+### To use AWS Batch you must first complete the steps outlined
+### in the user guide for AWS Batch
+
+aws_batch_prefix=vf
+# Prefix for the name of the AWS Batch queues. This is normally 'vf'
+# if you used the CloudFormation template
+
+aws_batch_number_of_queues=2
+# Should be set to the number of queues that are setup for AWS Batch.
+# Generally this number is 2 unless you have a large-scale (100K+ vCPUs)
+# setup
+
+aws_batch_jobdef=vf-jobdef-vflp
+# Generally this is [aws_batch_prefix]-jobdef-vflp
+# (e.g. if aws_batch_prefix=vf, then aws_batch_jobdef=vf-jobdef-vflp
+
+aws_batch_array_job_size=2
+# Target for the number of jobs that should be in a single array job for AWS Batch.
+
+aws_ecr_repository_name=vf-vflp-ecr
+# Set it to the name of the Elastic Container Registry (ECR)
+# repository (e.g. vf-vflp-ecr) in your AWS account
+# (If you used the template it is generally vf-vflp-ecr)
+
+aws_region=us-east-1
+# Set to the AWS location code where you are running AWS Batch
+# (e.g. us-east-1 for North America, Northern Virginia)
+
+aws_batch_subjob_vcpus=8
+# Set to the number of vCPUs that should be launched per subjob.
+# 'threads_to_use' above should be >= to this value.
+
+aws_batch_subjob_memory=15000
+# Memory per subjob to setup for the container in MB
+
+aws_batch_subjob_timeout=10800
+# Maximum amount of time (in seconds) that a single AWS Batch job should
+# ever run before being terminated.
+
+****** Slurm Options (if batchsystem=slurm)
+
+slurm_template=./templates/template1.slurm.sh
+# Template for the slurm job
+# Additional slurm attributes can be added directly to this
+# template file if they are not available as pass throughs from
+# VFVS
+
+slurm_array_job_throttle=100
+# Maximum number of jobs running within a single slurm array job
+
+slurm_partition=partition
+# Partition to submit the job
+
+slurm_cpus=18
+# Number of CPUs that are being used
+
+slurm_array_job_size=100
+# Maximum number of concurrent jobs from a single array job
+# that should be run
+
+
+
+************************************************
+** Storage configuration
+************************************************
+
+job_storage_mode=s3
+# This mode determines where data is retrieved and stored from as part of
+# VFVS. Valid modes:
+#   * s3: Job data is stored on S3 object store, which is the required
+#         mode if using AWS Batch. Items under the "S3 Object Store"
+#         heading in the configuration are required if this mode is used
+#   * sharedfs: This mode requires that all running jobs have access to the
+#         same shared filesystem that will allow for both input and output
+#         of data. This is required if using Slurm
+
+****** Object Store Settings (S3)
+
+object_store_job_bucket=virtualflow-data
+# Bucket name for the job data
+
+object_store_job_prefix=jobs/vflp
+# Where to place job-specific data. This includes where VirtualFlow will place
+# the input data needed for jobs as well as the output files. Data be be placed
+# in object_store_job_prefix/<job_letter>
+
+object_store_data_bucket=virtualflow-data
+# Bucket name for the collection data
+
+object_store_data_collection_prefix=vflp/data/Enamine_2021_test
+# Prefix used within the object store to address the collections
+
+****** Shared Filesystem Settings
+
+collection_folder=/home/ec2-user/collections
+# Path to where the collection file are stored
+#  * This is used when job_storage_mode=sharedfs or
+#    when the uploader helper script is being used
+#
 # Slash at the end is not required (optional)
-# Relative pathname is required w.r.t. the folder tools/
-# Settable via range control files: Yes
+# Either pathname is required w.r.t. the folder tools/
+#     or absolute path (e.g. /home/vfuser/collections)
 
-input_library_format=metatranche_tranche_collection_gz
-# Supported values:
-# * metatranche_tranche_collection_gz : Requires a tab separated input file. The first column the SMILES, in the second column the compound names, and additional columns with compound properties are optional.
-# * metatranche_tranche_collection_individual_tar_gz
+# Output of processed ligands will be placed in
+# ../workflow/complete (where ../workflow is relative to the tools
+# directory of the VFVS installation
 
-minimum_time_remaining=10
-# In minutes
-# A new job if the time left until the end of the walltime is smaller than the timelimit
-# This is checked before each ligand is screened
-# Thus the timelimit should be larger than the maximum time which is needed to process one ligand
-# Settable via range control files: Yes
+****** Workflow Options
 
-dispersion_time_min=3
-# One positive integer, resembling the time in seconds
-dispersion_time_max=10
-# One positive integer, resembling the time in seconds
-# The dispersion time is used when jobs try to access the central task list.
-# Each job has to wait a random amount of time in the dispersion interval.
-# The effect of this is that when two jobs arrive at the same time at the central task list, the random waiting time will disperse their access on the central task list in time
-# Settable via range control files: Yes
+ligands_todo_per_queue=10000
+# Used as a limit of ligands for the to-do lists.
+# A reasonable number for this is generally 1000. The length of time
+#     to process will depend on the docking scenarios run
 
-verbosity_commands=standard
-# Possible values: standard, debug
-# This option mainly effects the screen output and the logfiles
-# Settable via range control files: No
-
-verbosity_logfiles=debug
-# Possible values:
-#   * standard
-#   * debug : activates the set -x option. Increases size of log-files in average by nearly a factor of 10
-# This option affects the preparation scripts for setting up the basic workflow files (before the workflow is running)
-# Settable via range control files: Yes
-
-store_queue_log_files=all_uncompressed
-# Supported values (experimental)
-#   * all_uncompressed: requires most memory any and storage, but is recommending for test runs and debugging purposes
-#   * all_compressed: requires less memory and storage than uncompressed, but during the last part of the log files might get lost (in particular during crashes) due to the on-the-fly compression
-#   * only_error_uncompressed: only stderr is logged
-#   * only_error_compressed: only stderr is logged and compressed. The last part of the log might get lost (in particular during crashes) due to the on-the-fly compression.
-#   * std_compressed_error_uncompressed
-#   * all_compressed_error_uncompressed
-#   * none: reduces required memory and storage
-# Settable via range control files: Yes
-
-keep_ligand_summary_logs=true
-# Summary log files which show for each ligand the success status of conversion and the conversion time.
-# If the conversion failed, a reason is stated.
-# If the transformation succeeded, the conversion programs which were used are stated.
-# Possible values:
-#   * false
-#   * true
-# Settable via range control files: Yes
-
-error_sensitivity=normal
-# Possible values: normal, high
-# high sets the shell options "-uo pipefail". Not recommended for production runs, useful mainly for debugging. Pipefails often occur with tar combined with head/tail in pipes, which are not an actual problem.
-# The u-option will always lead to a direct exit of the shell script when an unset variable is going to be used.
-# Settable via range control files: Yes
-
-error_response=fail
-# Affects most errors, but not all (e.g. not the u-option of the shell)
-# Possible values:
-#   * ignore    : ignore error and continue
-#   * next_job  : end this job and start new job
-#   * fail      : exit workflow with failure (exit code 1)
-# Settable via range control files: Yes
-
-tempdir_default=/tmp
+tempdir_default=/dev/shm
 # The directory which is used for the temporary workflow files which need a normal performance
-# Is normally a local SSD or HDD
-# The directory does only need to be available on the node on which the job step/queue is running
-# In the tempdir, a subfolder named ${USER} will automatically be created
-# Settable via range control files: Yes
+# Is normally a local SSD or HDD. A temporary directory will be created underneath this dir
 
 tempdir_fast=/dev/shm
 # The directory which is used for the temporary workflow files which need a fast perfomance
-# Should be a a local ram filesystem/ramdisk
-# The directory does only need to be available on the node on which the job step/queue is running
-# In the tempdir, a subfolder named ${USER} will automatically be created
-# Settable via range control files: Yes
+# Should be a a local ram filesystem/ramdisk. A temporary directory will be created underneath this dir
 
-outputfiles_level=collection
-# Possible values:
-#   * collection  : The collection output files are stored in tar.gz format. They are stored in subfolders named by metatranche and tranche to reduce the number of files per folder.
-#                   Advantages:
-#                       * Less I/O on the shared cluster file system (as existing tranche archives don't have to be read during storage of completed collectionsds)
-#                       * No risk of output-file clashes when two queues want to store completed collections on the shared filesystem
-#   * tranche     : For each tranche a tar archive is created, which contains the gzipped collection output files.
-#                   Advantages:
-#                       * Less output files (only for each tranch) for each of the output file types (e.g. results, summaries, logfiles, ...)
-
-prepare_queue_todolists=true
-# Possible values:
-#   * false The todo lists will not be prepared/refilled at the beginning of the jobs. Useful mainly when the todolists are prepared in advance before the workflow is started.
-#   * true: The todo lists for each queue will be prepared/refilled during the beginning of each job.
+store_all_intermediate_logs=false
+# This determines if the intermediate files (all intermediate steps) are 
+# retained for review after a run. This is not recommended unless you
+# are debugging as it increases output by over 2x
+# Valid values:
+#   * true: Keep the logs. They will be placed in intermediate/
+#   * false: Do not retain the logs
 
 
-*****************************************************************************************************************************************************************
-*****************************************************************    Ligand Preparation Options    **************************************************************
-*****************************************************************************************************************************************************************
+************************************************
+** Ligand Preparation Options
+************************************************
 
-*************************************************************************    Desalting    ***********************************************************************
+
+****** Desalting
 
 desalting=true
 # If true, extracts the largest organic part of the molecule
 # Possible values:
 #   * false
 #   * true
-# Settable via range control files: Yes
 
-    desalting_obligatory=false
+desalting_obligatory=false
 # Setting only required if desalting=true
 # Possible values:
 #   * true: Successful desalting of the ligand is mandatory (unsuccessful desalting leads to the omission of this ligand).
 #   * false: The ligand will continue to be processed even if the desalting step fails.
-# Settable via range control files: Yes
 
-
-***********************************************************************    Neutralization    ********************************************************************
+****** Neutralization
 
 neutralization=true
-# Neutralizes molecules using Open Babel or JChem's Standardizer of ChemAxon
+# Neutralizes molecules using JChem's Standardizer of ChemAxon
 # Possible values:
 #   * false
 #   * true
-# Settable via range control files: Yes
 
-neutralization_program_1=obabel
-neutralization_program_2=none
-# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
-# Setting only required if neutralization=true
-# Possible values:
-#   * obabel
-#   * standardizer
-#   * none (only for neutralization_program_2)
-# Settable via range control files: Yes
 
-neutralization_mode=after_desalting_if_charged
+neutralization_mode=only_genuine_desalting_and_if_charged
+###neutralization_mode=after_desalting_if_charged
 # Only relevant if neutralization=true
 # Possible values:
 #   * always: always neutralize the molecule
-#   * only_genuine_desalting: only neutralize the molecule if the input structure contained more than one component
-#   * only_genuine_desalting_and_if_charged: only neutralize if the input structure contained more than one component and if the smallest component contained an ion
-# Settable via range control files: Yes
+#   * only_genuine_desalting: only neutralize the molecule if the input structure
+#     contained more than one component
+#   * only_genuine_desalting_and_if_charged: only neutralize if the input structure
+#     contained more than one component and if the smallest component contained an ion
+
 
 neutralization_obligatory=false
 # Setting only required if neutralization=true
@@ -225,37 +202,24 @@ neutralization_obligatory=false
 # Settable via range control files: Yes
 
 
-**********************************************************************    Tautomerization    ********************************************************************
+****** Tautomerization
 
 tautomerization=true
 # Possible values:
 #   * false
 #   * true
-# Settable via range control files: Yes
-
-tautomerization_program_1=obabel
-tautomerization_program_2=none
-# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
-# Setting only required if tautomerization=true
-# Possible values:
-#   * obabel
-#   * cxcalc
-#   * none (only for tautomerization_program_2)
-# Settable via range control files: Yes
 
 tautomerization_obligatory=false
 # Setting only required if tautomerization=true
 # Possible values:
 #   * true: Successful tautomerization of the ligand is mandatory (unsuccessful tautomerization leads to the omission of this ligand).
 #   * false: The ligand will continue to be processed even if the tautomerization step fails.
-# Settable via range control files: Yes
 
 cxcalc_tautomerization_options=
 # any options which should be passed to the tautomerization plugin of cxcalc
-# Settable via range control files: Yes
 
 
-***************************************************************    Protonation State Generation    **************************************************************
+****** Protonation State Generation
 
 protonation_state_generation=true
 # Possible values:
@@ -270,39 +234,40 @@ protonation_program_2=obabel
 #   * obabel
 #   * cxcalc
 #   * none (only for protonation_program_2)
-# Settable via range control files: Yes
+
 
 protonation_obligatory=false
 # Setting only required if protonation_state_generation=true
 # Possible values:
-#   * true: Successful protonation of the ligand is mandatory (unsuccessful protonation leads to the omission of this ligand).
-#   * false: The ligand will continue to be processed even if the protonation step fails. This might light to protonation states which are unphysiological.
-# Settable via range control files: Yes
+#   * true: Successful protonation of the ligand is mandatory (unsuccessful
+#     protonation leads to the omission of this ligand).
+#   * false: The ligand will continue to be processed even if the protonation step fails.
+#     This might light to protonation states which are unphysiological.
+
 
 protonation_pH_value=7.4
 # Setting only required if protonation_state_generation=true
 # Possible values: floating point number between 0.0 and 14.0
-# Settable via range control files: Yes
 
 
-******************************************************************    Conformation Generation    ****************************************************************
+****** Conformation Generation
 
 conformation_generation=true
 # Generation of 3D conformation/coordinates of the ligand
 # Possible values:
 #   * false
 #   * true
-# Settable via range control files: Yes
 
-conformation_program_1=molconvert
 conformation_program_2=obabel
+conformation_program_1=molconvert
 # Setting only required if conformation_generation=true
-# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead.
+# If the second program also fails, then the ligand is skipped.
+#
 # Possible values:
 #   * obabel
 #   * molconvert
 #   * none (only possible for conformation_program_2)
-# Settable via range control files: Yes
 
 molconvert_3D_options=-3:{fine}
 # Setting only required if conformation_generation=true and one of the programs used is molconvert
@@ -313,39 +278,37 @@ molconvert_3D_options=-3:{fine}
 #   *  3{fine}     Find low energy conformer Leave failed fragments intact
 #   *  3{fast}     Fast clean, if failed, perform fine clean, accept any generated structure (default)
 #   *  3{nofaulty} Same as S{fast}, but leave failed fragments intact.
-# Settable via range control files: Yes
 
 conformation_obligatory=true
 # Setting only required if conformation_generation=true
 # Possible values:
-#   * true: Successful 3D conformation generation of the ligand is mandatory (unsuccessful conformation generation leads to the omission of this ligand).
-#   * false: The ligand will continue to be processed even if the conformation generation step fails.
-# Settable via range control files: Yes
+#   * true: Successful 3D conformation generation of the ligand is mandatory
+#     (unsuccessful conformation generation leads to the omission of this ligand).
+#   * false: The ligand will continue to be processed even if the conformation
+#      generation step fails.
 
 
-*****************************************************************    Target Format Generation    ****************************************************************
+
+****** Target Format Generation
 
 targetformats=pdb:pdbqt:sdf:mol2:smi
 # Possible values: Any format supported by the Open Babel, using the file format identifiers used by Open Babel.
 # A complete list can be obtained by running the command "obabel -L formats"
 # Multiple target formats can be specified by separating them with colons, e.g. pdb:sdf:pdbqt
-# Settable via range control files: Yes
 
 
-*************************************************************************    Open Babel    **********************************************************************
+****** Open Babel
 
 obabel_memory_limit=1000000
 # In KB
 # Recommended value: >= 500000
-# Settable via range control files: Yes
 
 obabel_time_limit=50
 # In seconds
 # OpenBabel seems to have an internal limit of 240 seconds for conformation generation
-# Settable via range control files: Yes
 
 
-*************************************************************************    Energy Check    **********************************************************************
+****** Energy Check
 
 energy_check=true
 # Determines whether the potential energy is checked by obenergy (Open Babel Enegy). This can be useuful to filter out compounds with unrealistic predicted 3D geometry
@@ -357,14 +320,14 @@ energy_max=10000
 # Maximum allowed energy value. Recommended: 10000
 # Possible values: Positive integer
 
-********************************************************************    Tranche Assignments    ****************************************************************
+****** Tranche Assignments
 
 tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
-tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:atomcount_file:fsp3_file
-#mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:logd_file:logs_file:atomcount_file:bondcount_file:ringcount_file:aromaticringcount_file:mr_file:formalcharge_file:positivechargecount_file:negativechargecount_file:fsp3_file:chiralcentercount_file:halogencount_file:sulfurcount_file:NOcount_file:electronegativeatomcount_file
+tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:heavyatomcount_file:fsp3_file
+#mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:logd_file:logs_file:heavyatomcount_file:bondcount_file:ringcount_file:aromaticringcount_file:mr_file:formalcharge_file:positivechargecount_file:negativechargecount_file:fsp3_file:chiralcentercount_file:halogencount_file:sulfurcount_file:NOcount_file:electronegativeatomcount_file
 # These variables are only needed if tranche_assignments=true
 # Multiple values are separated by colons
 # Possible values:
@@ -407,7 +370,7 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * tpsa_file: topological polar surface area by JChem's cxcalc
 #   * logd_file: octanol water partition coefficient
 #   * logs_file: aqueous solubility in mol/L
-#   * atomcount_file: number of atoms (including hydrogen)
+#   * heavyatomcount_file: number of atoms (including hydrogen)
 #   * bondcount_file: numner of bonds (including hydrogen-heavy atom bonds)
 #   * ringcount_file: number of non-aromatic rings
 #   * aromaticringcount_file: number of aromatic rings
@@ -423,29 +386,17 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * electronegativeatomcount_file: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
 
 
-# For each tranche type which reads the value from a file, the column ID (starting at 1) containing the value needs to be specified
-mw_file_column=8
-logp_file_column=10
-hba_file_column=11
-hbd_file_column=12
-rotb_file_column=13
-tpsa_file_column=15
-logd_file_column=
-logs_file_column=
-atomcount_file_column=9
-bondcount_file_column=
-ringcount_file_column=
-aromaticringcount_fil_columne=
-mr_file_column=
-formalcharge_file_column=
-positivechargecount_file_column=
-negativechargecount_file_column=
-fsp3_file_column=14
-chiralcentercount_file_column=
-halogencount_file_column=
-sulfurcount_file_column=
-NOcount_file_column=
-electronegativeatomcount_file_column=
+file_fieldnames=smi:ligand-name:3:4:5:6:7:mw:heavyatomcount:logp:hba:hbd:rotb:fsp3:tpsa:16:17:18:19
+# For each tranche type which reads the value from a file, those values must be defined. 
+# At a minimum 'smi' and 'ligand-name' are REQUIRED (and are generally expected to be the first
+# two items per line
+#
+# e.g. file_fieldnames=smi:ligand-name:-:-:-:-:-:mw:atomcount
+#      This means that the first column should be tghe SMILES string, the second
+#      column is the 'friendly name', columns 3-7 are values not used,
+#      column 8 is the value that should be used for mw_file in tranche assignment,
+#      column 9 is the value that should be used for atomcount_file in tranche assignment
+
 
 # For each tranche_type X in the variable tranche_types, one additional variable "tranche_<X>_partition" has to be specified.
 # This variable has to be a set of N >= 1 values (at least one), separated by colons, which partitions the value range of the molecular property of tranche <X> into N+1 intervals.
@@ -490,7 +441,7 @@ tranche_rotb_file_partition=1:3:5:7:9:10
 tranche_tpsa_file_partition=20:40:60:80:100:120:140
 tranche_logd_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
 tranche_logs_file_partition=-1:0:1:2:2.5:3:3.5:4:4.5:5
-tranche_atomcount_file_partition=10:20:30:40:50
+tranche_heavyatomcount_file_partition=10:20:30:40:50
 tranche_bondcount_file_partition=10:20:30:40:50
 tranche_ringcount_file_partition=0:1:2:3:4:5
 tranche_aromaticringcount_file_partition=0:1:2:3:4:5
@@ -505,64 +456,7 @@ tranche_sulfurcount_file_partition=0:1:2:3:4:5
 tranche_NOcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 tranche_electronegativeatomcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 
-# For each tranche_type in tranche_types it needs to be specified whether the successful calculation of the tranche property is mandatory or not.
-# These variables are only needed if tranche_assignments=true
-tranche_mw_jchem_mandatory=true
-tranche_mw_obabel_mandatory=true
-tranche_logp_jchem_mandatory=true
-tranche_logp_obabel_mandatory=true
-tranche_hba_jchem_mandatory=true
-tranche_hba_obabel_mandatory=true
-tranche_hbd_jchem_mandatory=true
-tranche_hbd_obabel_mandatory=true
-tranche_rotb_jchem_mandatory=true
-tranche_rotb_obabel_mandatory=true
-tranche_tpsa_jchem_mandatory=true
-tranche_tpsa_obabel_mandatory=true
-tranche_logd_mandatory=true
-tranche_logs_mandatory=false
-tranche_atomcount_jchem_mandatory=true
-tranche_atomcount_obabel_mandatory=true
-tranche_bondcount_jchem_mandatory=true
-tranche_bondcount_obabel_mandatory=true
-tranche_ringcount_mandatory=true
-tranche_aromaticringcount_mandatory=true
-tranche_formalcharge_mandatory=true
-tranche_mr_jchem_mandatory=true
-tranche_mr_obabel_mandatory=true
-tranche_positivechargecount_mandatory=true
-tranche_negativechargecount_mandatory=true
-tranche_fsp3_mandatory=true
-tranche_chiralcentercount_mandatory=true
-tranche_halogencount_mandatory=true
-tranche_sulfurcount_mandatory=true
-tranche_NOcount_mandatory=true
-tranche_electronegativeatomcount_mandatory=true
-tranche_mw_file_mandatory=true
-tranche_logp_file_mandatory=true
-tranche_hba_file_mandatory=true
-tranche_hbd_file_mandatory=true
-tranche_rotb_file_mandatory=true
-tranche_tpsa_file_mandatory=true
-tranche_logd_file_mandatory=true
-tranche_logs_file_mandatory=true
-tranche_atomcount_file_mandatory=true
-tranche_bondcount_file_mandatory=true
-tranche_ringcount_file_mandatory=true
-tranche_aromaticringcount_file_mandatory=true
-tranche_mr_file_mandatory=true
-tranche_formalcharge_file_mandatory=true
-tranche_positivechargecount_file_mandatory=true
-tranche_negativechargecount_file_mandatory=true
-tranche_fsp3_file_mandatory=true
-tranche_chiralcentercount_file_mandatory=true
-tranche_halogencount_file_mandatory=true
-tranche_sulfurcount_file_mandatory=true
-tranche_NOcount_file_mandatory=true
-tranche_electronegativeatomcount_file_mandatory=true
-
-
-*******************************************************************    JChem-Related Packages    ****************************************************************
+****** JChem-Related Packages
 
 jchem_package_filename=jchemsuite.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps, and if tranche_assignments=true
@@ -571,7 +465,6 @@ jchem_package_filename=jchemsuite.tar.gz
 # Possible values:
 #   * <filename>
 #   * none
-# Settable via range control files: Yes
 
 chemaxon_license_filename=chemaxon-license.cxl
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
@@ -579,9 +472,9 @@ chemaxon_license_filename=chemaxon-license.cxl
 # Possible values:
 #   * <filename>
 #   * none
-# Settable via range control files: Yes
 
-java_package_filename=java11_bin.tar.gz
+#Java_package_filename=java11_bin.tar.gz
+java_package_filename=none
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Any JRE binary distribution of version of at least version 8.
 # If java is provided by the system (e.g. by loading a module), then no Java package needs to be provided.
@@ -590,7 +483,6 @@ java_package_filename=java11_bin.tar.gz
 # Possible values:
 #   * <filename>
 #   * none
-# Settable via range control files: Yes
 
 ng_package_filename=nailgun.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
@@ -600,41 +492,9 @@ ng_package_filename=nailgun.tar.gz
 # Possible values:
 #   * <filename>
 #   * none
-# Settable via range control files: Yes
 
-java_max_heap_size=2
+java_max_heap_size=4
 # Size in GB
 # Recommended: >= 1 GB * queues_per_step
 # The required memory depends mainly on how many queues are run per step (and thus per JVM/NG server), since one JVM is used per step
-# Settable via range control files: Yes
 
-
-*****************************************************************************************************************************************************************
-*******************************************************************    Terminating Variables    *****************************************************************
-*****************************************************************************************************************************************************************
-
-stop_after_next_check_interval=false
-# Determines whether the queue is stopped after the ligand batch currently in progress. The size of the ligand batches is determined by the <ligand_check_interval> variable.
-# Possible values:
-#   * false : The queue will continue to process ligands as long as there are ligands remaining for the queue
-#   * true : No new ligand will be started after the current ligand is completed
-# Settable via range control files: Yes
-
-ligand_check_interval=100
-# Possible values
-#   * Positive integer
-# Settable via range control files: Yes
-
-stop_after_collection=false
-# Determines whether the queue is stopped after the current collection is completed
-# Possible values:
-#   * false : A new collection will be started if the current collection is completed and if there are collections remaining
-#   * true : No new collection will be started after the current collection is completed
-# Settable via range control files: Yes
-
-stop_after_job=false
-# Determines whether the queue is stopped after the current job is completed
-# Possible values:
-#   * false : A new job will be submitted if there are more ligands in the current collection or unprocessed collections remaining
-#   * true : No new job is submitted after the current job has ended
-# Settable via range control files: Yes
