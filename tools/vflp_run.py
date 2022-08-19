@@ -68,11 +68,13 @@ def process_ligand(ctx):
 		'status': "failed",
 		'base_ligand': ctx['ligand'],
 		'ligands': {},
+		'stereoisomers': {},
+		'seconds': 0
 	}
 
 	base_ligand = completion_event['base_ligand']
 	base_ligand['key'] = ctx['ligand_key']
-	base_ligand['tautomers']: []
+	base_ligand['stereoisomers']: []
 	base_ligand['timers'] = []
 	base_ligand['status_sub'] = []
 	base_ligand['remarks'] = {}
@@ -87,6 +89,7 @@ def process_ligand(ctx):
 		logging.warning("    * Warning: The desalting procedure has failed...")
 		base_ligand['status_sub'].append(['desalt', { 'state': 'failed', 'text': 'desalting failed' } ])
 		if(ctx['config']['desalting_obligatory'] == "true"):
+			completion_event['seconds'] = time.perf_counter() - start_time
 			return completion_event;
 		else:
 			logging.warning("    * Warning: Ligand will be further processed without desalting")
@@ -106,6 +109,7 @@ def process_ligand(ctx):
 		# Can we go on?
 		if(ctx['config']['neutralization_obligatory'] == "true"):
 			logging.error("    * Warning: Ligand will be skipped since a successful neutralization is required according to the controlfile.")
+			completion_event['seconds'] = time.perf_counter() - start_time
 			return completion_event
 
 		logging.warning("    * Warning: Ligand will be further processed without neutralization")
@@ -113,43 +117,45 @@ def process_ligand(ctx):
 
 	base_ligand['timers'].append(['neutralization', time.perf_counter() - step_timer_start])
 
-	# Tautomer generation
+
+	# Stereoisomer generation
+
 	step_timer_start = time.perf_counter()
 	try:
 		#base_ligand['smi_neutralized']
-		tautomer_generation(ctx, base_ligand)
+		stereoisomer_generation(ctx, base_ligand)
 	except RuntimeError as error:
-		logging.error(f"    * Warning: The tautomerization has failed. (error: {str(error)}, smi: {str(base_ligand['smi_neutralized'])}")
-		base_ligand['status_sub'].append(['tautomerization', { 'state': 'failed', 'text': f'Failed {str(error)}' } ])
+		logging.error(f"    * Warning: The stereoisomer generation has failed. (error: {str(error)}, smi: {str(base_ligand['smi_neutralized'])}")
+		base_ligand['status_sub'].append(['stereoisomer', { 'state': 'failed', 'text': f'Failed {str(error)}' } ])
 
 		# Can we go on?
-		if(ctx['config']['tautomerization_obligatory'] == "true"):
-			logging.warning("    * Warning: Ligand will be skipped since a successful tautomerization is required according to the controlfile.")
+		if(ctx['config']['stereoisomer_obligatory'] == "true"):
+			logging.warning("    * Warning: Ligand will be skipped since a successful stereoisomer generation is required according to the controlfile.")
+			completion_event['seconds'] = time.perf_counter() - start_time
 			return completion_event
 		else:
-			base_ligand['tautomer_smiles'] = [ base_ligand['smi_neutralized'] ]
+			base_ligand['stereoisomer_smiles'] = [ base_ligand['smi_neutralized'] ]
 
-	base_ligand['timers'].append(['tautomerization', time.perf_counter() - step_timer_start])
+	base_ligand['timers'].append(['stereoisomer', time.perf_counter() - step_timer_start])
 
-	# In some cases this will generate additional tautomers, which we need to process -- in other cases it will just be
+	# In some cases this will generate additional steroisomers, which we need to process -- in other cases it will just be
 	# the same ligand
-	number_of_tautomers = len(base_ligand['tautomer_smiles'])
-	
+	number_of_stereoisomers = len(base_ligand['stereoisomer_smiles'])
 
-	# Loop through every tautomer
-	for index, tautomer_smile_full in enumerate(base_ligand['tautomer_smiles']):
-		tautomer_timer_start = time.perf_counter()
+	# Loop through every stereoisomer
+	for index, stereoisomer_smile_full in enumerate(base_ligand['stereoisomer_smiles']):
+		stereoisomer_timer_start = time.perf_counter()
 
-		print(f"      * Processing ({index+1} of {number_of_tautomers}) for {base_ligand['key']}")
+		print(f"      * Processing Stereoisomer ({index+1} of {number_of_stereoisomers}) for {base_ligand['key']}")
 
 		# If the SMILES string has a space, take the first part
-		tautomer_smile = tautomer_smile_full.split()[0]
-		tautomer_key = f"{base_ligand['key']}_T{index}"
-		logging.debug(f"processing {index}, tautomer_key:{tautomer_key} smile:{tautomer_smile}")
+		stereoisomer_smile = stereoisomer_smile_full.split()[0]
+		stereoisomer_key = f"{base_ligand['key']}_S{index}"
+		logging.debug(f"processing stereoisomer {index}, stereoisomer_key:{stereoisomer_key} smile:{stereoisomer_smile}")
 
-		tautomer = {
-			'key': tautomer_key,
-			'smi': tautomer_smile,
+		stereoisomer = {
+			'key': stereoisomer_key,
+			'smi': stereoisomer_smile,
 			'remarks': base_ligand['remarks'],
 			'status': "failed",
 			'status_sub': [],
@@ -159,15 +165,17 @@ def process_ligand(ctx):
 		}
 
 		#
-		completion_event['ligands'][tautomer_key] = tautomer
+		completion_event['stereoisomers'][stereoisomer_key] = stereoisomer
 
 		try:
-			process_tautomer(ctx, base_ligand, completion_event['ligands'][tautomer_key])
+			process_stereoisomer(ctx, base_ligand, stereoisomer, completion_event['ligands'])
 		except RuntimeError as error:
-			logging.error(f"Failed processing {tautomer_key} (error: {str(error)})")
+			logging.error(f"Failed processing {stereoisomer_key} (error: {str(error)})")
 
-		tautomer_timer_end = time.perf_counter()
-		tautomer['seconds'] = tautomer_timer_end - tautomer_timer_start
+		stereoisomer_timer_end = time.perf_counter()
+		stereoisomer['seconds'] = stereoisomer_timer_end - stereoisomer_timer_start
+
+
 
 	end_time = time.perf_counter()
 	completion_event['seconds'] = end_time - start_time
@@ -179,7 +187,69 @@ def process_ligand(ctx):
 
 def get_smi_string(ligand):
 	return ligand['smi'].split()[0]
-	#return ligand['smi']
+
+
+def process_stereoisomer(ctx, ligand, stereoisomer, completion_ligands):
+
+	stereoisomer['status'] = "failed"
+
+	# Tautomer generation
+	step_timer_start = time.perf_counter()
+	try:
+		#base_ligand['smi_neutralized']
+		tautomer_generation(ctx, stereoisomer)
+	except RuntimeError as error:
+		logging.error(f"    * Warning: The tautomerization has failed. (error: {str(error)}, smi: {str(stereoisomer['smi'])}")
+		stereoisomer['status_sub'].append(['tautomerization', { 'state': 'failed', 'text': f'Failed {str(error)}' } ])
+
+		# Can we go on?
+		if(ctx['config']['tautomerization_obligatory'] == "true"):
+			logging.warning("    * Warning: stereoisomer will be skipped since a successful tautomerization is required according to the controlfile.")
+			return
+		else:
+			stereoisomer['tautomer_smiles'] = [ stereoisomer['smi'] ]
+
+	stereoisomer['timers'].append(['tautomerization', time.perf_counter() - step_timer_start])
+
+	# In some cases this will generate additional tautomers, which we need to process -- in other cases it will just be
+	# the same ligand
+	number_of_tautomers = len(stereoisomer['tautomer_smiles'])
+
+
+	# Loop through every tautomer
+	for index, tautomer_smile_full in enumerate(stereoisomer['tautomer_smiles']):
+		tautomer_timer_start = time.perf_counter()
+
+		print(f"      ** Processing tautomer ({index+1} of {number_of_tautomers}) for {stereoisomer['key']}")
+
+		# If the SMILES string has a space, take the first part
+		tautomer_smile = tautomer_smile_full.split()[0]
+		tautomer_key = f"{stereoisomer['key']}_T{index}"
+		logging.debug(f"processing {index}, tautomer_key:{tautomer_key} smile:{tautomer_smile}")
+
+		tautomer = {
+			'key': tautomer_key,
+			'smi': tautomer_smile,
+			'remarks': ligand['remarks'],
+			'status': "failed",
+			'status_sub': [],
+			'index': index,
+			'seconds': 0,
+			'timers': []
+		}
+
+		#
+		completion_ligands[tautomer_key] = tautomer
+
+		try:
+			process_tautomer(ctx, ligand, completion_ligands[tautomer_key])
+		except RuntimeError as error:
+			logging.error(f"Failed processing {tautomer_key} (error: {str(error)})")
+
+		tautomer_timer_end = time.perf_counter()
+		tautomer['seconds'] = tautomer_timer_end - tautomer_timer_start
+
+	stereoisomer['status'] = "success"
 
 
 #######################
@@ -259,16 +329,29 @@ def neutralization(ctx, ligand):
 
 
 #######################
+# Step 3: Stereoisomer Generation
+
+def stereoisomer_generation(ctx, ligand):
+
+	if(ctx['config']['stereoisomer_generation'] == "true"):
+		logging.info("Starting the stereoisomer generation with cxcalc")
+		run_chemaxon_stereoisomer_generation(ctx, ligand)
+		ligand['status_sub'].append(['stereoisomer', { 'state': 'success', 'text': '' } ])
+	else:
+		ligand['stereoisomer_smiles'] = [ ligand['smi_neutralized'] ]
+
+
+#######################
 # Step 3: Tautomerization
 
-def tautomer_generation(ctx, ligand):
+def tautomer_generation(ctx, stereoisomer):
 
 	if(ctx['config']['tautomerization'] == "true"):
 		logging.info("Starting the tautomerization with cxcalc")
-		run_chemaxon_tautomer_generation(ctx, ligand)
-		ligand['status_sub'].append(['tautomerization', { 'state': 'success', 'text': '' } ])
+		run_chemaxon_tautomer_generation(ctx, stereoisomer)
+		stereoisomer['status_sub'].append(['tautomerization', { 'state': 'success', 'text': '' } ])
 	else:
-		ligand['tautomer_smiles'] = [ ligand['smi_neutralized'] ]
+		stereoisomer['tautomer_smiles'] = [ stereoisomer['smi'] ]
 
 
 #### For each Tautomer -- Steps 4-9
@@ -334,8 +417,9 @@ def process_tautomer(ctx, ligand, tautomer):
 			logging.error(f"conformation_generation failed for {tautomer['key']}")
 			if(ctx['config']['conformation_obligatory'] == "true"):
 				raise RuntimeError(f'Conformation failed, but is required error:{str(error)}') from error
+		else:
+			tautomer['status_sub'].append(['conformation', { 'state': conformation_success, 'text': '' } ])
 
-		tautomer['status_sub'].append(['conformation', { 'state': 'success', 'text': '' } ])
 		tautomer['timers'].append(['conformation', time.perf_counter() - step_timer_start])
 
 	## PDB Generation
@@ -359,6 +443,7 @@ def process_tautomer(ctx, ligand, tautomer):
 
 		if(not obabel_check_energy(ctx, tautomer, tautomer['pdb_file'], ctx['config']['energy_max'])):
 			logging.warning("    * Warning: Ligand will be skipped since it did not pass the energy-check.")
+			tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': '' } ])
 			raise RuntimeError('Failed energy check')
 		else:
 			tautomer['status_sub'].append(['energy-check', { 'state': 'success', 'text': '' } ])
@@ -920,23 +1005,62 @@ def run_chemaxon_neutralization_standardizer(ctx, ligand):
 
 	ligand['timers'].append(['chemaxon_neutralization', time.perf_counter() - step_timer_start])
 
-# Step 3: Tautomerization
 
-def run_chemaxon_tautomer_generation(ctx, ligand):
+# Step 3a: Stereoisomer Generation
+
+def run_chemaxon_stereoisomer_generation(ctx, ligand):
 	step_timer_start = time.perf_counter()
 
 	# Place smi string into a file that can be read
 	local_file = ctx['intermediate_dir'] / "neutralized.smi"
 	write_file_single(local_file, ligand['smi_neutralized'])
+
+	local_args = [
+		"chemaxon.marvin.Calculator",
+		"stereoisomers",
+		*(ctx['config']['cxcalc_stereoisomer_generation_options'].split()),
+		local_file,
+	]
+
+
+	ligand['stereoisomer_smiles'] = []
+
+	ret = run_chemaxon_general(local_args, ctx['config']['nailgun_port'], ctx['config']['nailgun_host'], must_have_output=1)
+
+
+	debug_save_output(stdout=ret['stdout'], stderr=ret['stderr'], ctx=ctx, file="chemaxon_stereoisomer")
+
+	lines = ret['stdout'].splitlines()
+	if(len(lines) >= 1):
+		for line in lines:
+			ligand['stereoisomer_smiles'].append(line)
+
+		ligand['remarks']['stereoisomer'] = f"The stereoisomers were generated by cxcalc version {ctx['versions']['cxcalc']} of ChemAxons JChem Suite."
+		ligand['timers'].append(['chemaxon_stereoisomer', time.perf_counter() - step_timer_start])
+		return
+	else:
+		raise RuntimeError("No output for stereoisomer state generation")
+
+	raise RuntimeError("Stereoisomer generation failed")
+
+
+# Step 3b: Tautomerization
+
+def run_chemaxon_tautomer_generation(ctx, stereoisomer):
+	step_timer_start = time.perf_counter()
+
+	# Place smi string into a file that can be read
+	local_file = ctx['intermediate_dir'] / "stereoisomer.smi"
+	write_file_single(local_file, stereoisomer['smi'])
 	
 	local_args = [
 		"chemaxon.marvin.Calculator", 
 		"tautomers",
-		ctx['config']['cxcalc_tautomerization_options'],
+		*(ctx['config']['cxcalc_tautomerization_options'].split()),
 		local_file
 	]
 
-	ligand['tautomer_smiles'] = []
+	stereoisomer['tautomer_smiles'] = []
 
 	ret = run_chemaxon_general(local_args, ctx['config']['nailgun_port'], ctx['config']['nailgun_host'], must_have_output=1)
 
@@ -947,9 +1071,9 @@ def run_chemaxon_tautomer_generation(ctx, ligand):
 	if(len(lines) >= 1):
 		tautomer_smiles_strings = lines[-1].split()
 		if(len(tautomer_smiles_strings) > 1):
-			ligand['tautomer_smiles'] = tautomer_smiles_strings[1].split(".")
-			ligand['remarks']['tautomerization'] = f"The tautomeric state was generated by cxcalc version {ctx['versions']['cxcalc']} of ChemAxons JChem Suite."
-			ligand['timers'].append(['chemaxon_tautomerization', time.perf_counter() - step_timer_start])
+			stereoisomer['tautomer_smiles'] = tautomer_smiles_strings[1].split(".")
+			stereoisomer['remarks']['tautomerization'] = f"The tautomeric state was generated by cxcalc version {ctx['versions']['cxcalc']} of ChemAxons JChem Suite."
+			stereoisomer['timers'].append(['chemaxon_tautomerization', time.perf_counter() - step_timer_start])
 			return
 		else:
 			raise RuntimeError(f"Not able to split last line on spaces line={'|'.join(lines)})") 
@@ -1083,7 +1207,7 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 
 def molconvert_generate_conformation(ctx, tautomer, input_file, output_file):
 	logging.debug(f"Running conformation with molconvert for {tautomer['key']}")
-	run_molconvert([ str(ctx['config']['molconvert_3D_options']) ], input_file, output_file, ctx['config']['nailgun_port'], ctx['config']['nailgun_host'])
+	run_molconvert([ *(str(ctx['config']['molconvert_3D_options']).split()) ], input_file, output_file, ctx['config']['nailgun_port'], ctx['config']['nailgun_host'])
 	
 
 def run_molconvert(molconvert_3D_options, input_file, output_file, nailgun_port, nailgun_host):
@@ -1299,9 +1423,6 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 	tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
 
 	remark_string = generate_remarks(tautomer['remarks']) + "\n"
-
-	#print(f"generate pbd out: {'|'.join(output_lines)}")
-
 
 	# Modify the output file as needed #
 	with open(output_file, "w") as write_file:
@@ -1802,7 +1923,8 @@ def process_collection(ctx, collection_key, collection, collection_data):
 			'timers': task_result['base_ligand']['timers'],
 			'status': task_result['status'],
 			'status_sub': task_result['base_ligand']['status_sub'],
-			'tautomers': task_result['ligands']
+			'tautomers': task_result['ligands'],
+			'stereoisomers': task_result['stereoisomers'],
 		}
 		collection_summary['ligands'][ligand_key]['seconds'] = task_result['seconds']
 
@@ -2014,7 +2136,6 @@ def get_collection_data(ctx, collection_key):
 			reader = csv.DictReader(f, fieldnames=collection['fieldnames'], delimiter='\t')
 			for row in reader:
 				ligand_key = row['ligand-name']
-				print(f"{ligand_key}")
 				collection_data['ligands'][ligand_key] = {
 					'smi': row['smi'],
 					'file_data': row

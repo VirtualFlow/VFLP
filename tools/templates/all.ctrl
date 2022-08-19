@@ -201,6 +201,24 @@ neutralization_obligatory=false
 #   * false: The ligand will continue to be processed even if the neutralization step fails.
 # Settable via range control files: Yes
 
+****** Stereoisomer Generation
+
+stereoisomer_generation=false
+# Possible values:
+#   * false
+#   * true
+
+stereoisomer_obligatory=true
+# Setting only required if stereoisomer_generation=true
+# Possible values:
+#   * true: Successful stereoisomer generation of the ligand is mandatory
+#           (unsuccessful tautomerization leads to the omission of this ligand).
+#   * false: The ligand will continue to be processed even if the stereoisomer generation
+#            step fails.
+
+cxcalc_stereoisomer_generation_options=-T -f smiles
+# any options which should be passed to the stereoisomer plugin of cxcalc
+
 
 ****** Tautomerization
 
