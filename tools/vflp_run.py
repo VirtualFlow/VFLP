@@ -77,7 +77,9 @@ def process_ligand(ctx):
 	base_ligand['stereoisomers']: []
 	base_ligand['timers'] = []
 	base_ligand['status_sub'] = []
-	base_ligand['remarks'] = {}
+	base_ligand['remarks'] = {
+		'collection_key': f"Original Collection: {ctx['collection_key']}"
+	}
 
 	print(f"* Processing {base_ligand['key']}")
 
@@ -230,6 +232,8 @@ def process_stereoisomer(ctx, ligand, stereoisomer, completion_ligands):
 		tautomer = {
 			'key': tautomer_key,
 			'smi': tautomer_smile,
+			'smi_stereoisomer': stereoisomer['smi'],
+			'smi_original': ligand['smi'],
 			'remarks': ligand['remarks'],
 			'status': "failed",
 			'status_sub': [],
@@ -543,7 +547,7 @@ def tranche_assignment(ctx, ligand, tautomer):
 
 	try:
 		with open(smi_file, 'w') as f:
-			f.write(tautomer['smi'])
+			f.write(tautomer['smi_protomer'])
 			##f.write("\n")
 	except Exception as err:
 		logging.error(f"Cannot open {local_file}: {str(err)}")
@@ -620,23 +624,23 @@ def tranche_assignment(ctx, ligand, tautomer):
 		elif(tranche_type == "mr_jchem"):
 			tranche_value = cxcalc_attribute(tautomer, smi_file, ["refractivity"], nailgun_port, nailgun_host)
 		elif(tranche_type == "formalcharge"):
-			tranche_value = formalcharge(tautomer['smi'])	
+			tranche_value = formalcharge(tautomer['smi_protomer'])
 		elif(tranche_type == "positivechargecount"):
-			tranche_value = positivecharge(tautomer['smi'])	
+			tranche_value = positivecharge(tautomer['smi_protomer'])
 		elif(tranche_type == "negativechargecount"):
-			tranche_value = negativecharge(tautomer['smi'])	
+			tranche_value = negativecharge(tautomer['smi_protomer'])
 		elif(tranche_type == "fsp3"):
 			tranche_value = cxcalc_attribute(tautomer, smi_file, ["fsp3"], nailgun_port, nailgun_host)
 		elif(tranche_type == "chiralcentercount"):
 			tranche_value = cxcalc_attribute(tautomer, smi_file, ["chiralcentercount"], nailgun_port, nailgun_host)	
 		elif(tranche_type == "halogencount"):
-			tranche_value = halogencount(tautomer['smi'])	
+			tranche_value = halogencount(tautomer['smi_protomer'])
 		elif(tranche_type == "sulfurcount"):
-			tranche_value = sulfurcount(tautomer['smi'])	
+			tranche_value = sulfurcount(tautomer['smi_protomer'])
 		elif(tranche_type == "NOcount"):
-			tranche_value = NOcount(tautomer['smi'])	
+			tranche_value = NOcount(tautomer['smi_protomer'])
 		elif(tranche_type == "electronegativeatomcount"):
-			tranche_value = electronegativeatomcount(tautomer['smi'])	
+			tranche_value = electronegativeatomcount(tautomer['smi_protomer'])
 		elif(tranche_type == "mw_file"):
 			tranche_value = get_file_data(ligand, "mw")			
 		elif(tranche_type == "logp_file"):
@@ -834,7 +838,7 @@ def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 			'desalting', 'neutralization', 'tautomerization',
 			'protonation', 'generation', 'conformation',
 			'targetformat', 'trancheassignment', 'trancheassignment_attr', 
-			'tranche_str', 'date'
+			'tranche_str', 'date', 'collection_key'
 		]
 	else:
 		remark_ordering = remark_order
