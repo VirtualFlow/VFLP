@@ -58,6 +58,27 @@ def parse_config(filename):
     config['tranche_types'] = config['tranche_types'].split(":")
     config['file_fieldnames'] = config['file_fieldnames'].split(":")
 
+    timeout_defaults = {
+        'chemaxon_neutralization_timeout' : 30,
+        'cxcalc_stereoisomer_timeout' : 30,
+        'cxcalc_tautomerization_timeout' : 30,
+        'cxcalc_protonation_timeout': 30,
+        'obabel_protonation_timeout': 30,
+        'molconvert_conformation_timeout': 30,
+        'obabel_conformation_timeout': 30
+    }
+
+    for timeout_key in timeout_defaults:
+        if(empty_value(config, timeout_key)):
+            print(f"* '{timeout_key}' not set, so setting to default of {timeout_defaults[timeout_key]}")
+            config[timeout_key] = timeout_defaults[timeout_key]
+        elif(not config[timeout_key].isnumeric()):
+            print(f"* '{timeout_key}' not valid, so setting to default of {timeout_defaults[timeout_key]}")
+            config[timeout_key] = timeout_defaults[timeout_key]
+        else:
+            config[timeout_key] = int(config[timeout_key])
+
+
     return config
 
 
@@ -152,8 +173,6 @@ def check_parameters(config):
                 error = 1
         else:
             print(f"* batchsystem '{config['batchsystem']}' is not supported. Only awsbatch and slurm are supported")
-
-
 
 
     return error

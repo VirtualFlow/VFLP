@@ -37,6 +37,7 @@ import re
 import tempfile
 import gzip
 import time
+import pprint
 from botocore.config import Config
 
 
@@ -210,9 +211,20 @@ def process(config):
                 subjob = current_workunit['subjobs'][subjob_key]
 
                 subjob['status'] = job['status']
+
+
+                pp = pprint.PrettyPrinter(width=41, compact=True)
+                pp.pprint(job) 
+
+                vcpu = 0;
+                for attribute in job['container']['resourceRequirements']:
+                    if attribute['type'] == "VCPU":
+                        vcpu = attribute['value']
+                        break
+
                 subjob['detailed_status'] = {
                     'container': {
-                        'vcpus': job['container']['vcpus']
+                        'vcpus': vcpu
                     },
                     'attempts': job['attempts']
                 }

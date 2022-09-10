@@ -182,6 +182,8 @@ neutralization=true
 #   * false
 #   * true
 
+chemaxon_neutralization_timeout=15
+# Time in seconds to wait to timeout
 
 neutralization_mode=only_genuine_desalting_and_if_charged
 ###neutralization_mode=after_desalting_if_charged
@@ -219,6 +221,8 @@ stereoisomer_obligatory=true
 cxcalc_stereoisomer_generation_options=-T -f smiles
 # any options which should be passed to the stereoisomer plugin of cxcalc
 
+cxcalc_stereoisomer_timeout=15
+# Time in seconds to wait to timeout
 
 ****** Tautomerization
 
@@ -236,6 +240,8 @@ tautomerization_obligatory=false
 cxcalc_tautomerization_options=
 # any options which should be passed to the tautomerization plugin of cxcalc
 
+cxcalc_tautomerization_timeout=15
+# Time in seconds to wait to timeout
 
 ****** Protonation State Generation
 
@@ -252,6 +258,12 @@ protonation_program_2=obabel
 #   * obabel
 #   * cxcalc
 #   * none (only for protonation_program_2)
+
+cxcalc_protonation_timeout=15
+# Time in seconds to wait to timeout
+
+obabel_protonation_timeout=15
+# Time in seconds to wait to timeout
 
 
 protonation_obligatory=false
@@ -297,6 +309,13 @@ molconvert_3D_options=-3:{fine}
 #   *  3{fast}     Fast clean, if failed, perform fine clean, accept any generated structure (default)
 #   *  3{nofaulty} Same as S{fast}, but leave failed fragments intact.
 
+molconvert_conformation_timeout=15
+# Time in seconds to wait to timeout
+
+obabel_conformation_timeout=15
+# Time in seconds to wait to timeout
+
+
 conformation_obligatory=true
 # Setting only required if conformation_generation=true
 # Possible values:
@@ -320,10 +339,6 @@ targetformats=pdb:pdbqt:sdf:mol2:smi
 obabel_memory_limit=1000000
 # In KB
 # Recommended value: >= 500000
-
-obabel_time_limit=50
-# In seconds
-# OpenBabel seems to have an internal limit of 240 seconds for conformation generation
 
 
 ****** Energy Check
