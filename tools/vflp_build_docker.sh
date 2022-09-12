@@ -19,7 +19,7 @@
 
 export VFLP_CONFIG_JSON="../workflow/config.json"
 
-AWS_REGION=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document| grep region | awk '{print $3}' | sed 's/"//g' | sed 's/,//g'` 
+AWS_REGION=$(jq -r .aws_region ${VFLP_CONFIG_JSON})
 ACCOUNT_ID=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep accountId | awk '{print $3}' | sed 's/"//g' | sed 's/,//g'` 
 REPOSITORY_NAME=$(jq -r .aws_ecr_repository_name ${VFLP_CONFIG_JSON})
 chemaxon_license_filename=$(jq -r .chemaxon_license_filename ${VFLP_CONFIG_JSON})

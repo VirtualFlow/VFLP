@@ -2185,8 +2185,10 @@ def main():
 	else:
 		print("could not run df -h")
 
+	aws_region = os.getenv('VFLP_REGION', "us-east-1")
+
 	botoconfig = Config(
-	   region_name = 'us-east-1',
+	   region_name = aws_region,
 	   retries = {
 	      'max_attempts': 15,
 	      'mode': 'standard'
