@@ -84,15 +84,6 @@ If you have previously setup a job in this directory the command will let you kn
 
 Once you run this command the workflow is defined using the current state of all.ctrl and todo.all. Changes to those files at this point will not be used unless vflp_prepare_folders.py is run again.
 
-#### Build Docker Image (first time only)
-
-This is only required once (or if files have been changed and need to be updated). This will prepare the container that AWS Batch will use to run VFLP
-
-```bash
-./vflp_build_docker.sh
-```
-
-
 #### Generate Workunits
 
 VFLP can process billions of ligands and in order to process these efficiently it is helpful to segment this work into smaller chunks. A workunit is a segment of work that contains many 'subjobs' that are the actual execution elements. Often a workunit will have approximately 200 subjobs and each subjob will contain about 60 minutes worth of computation.
