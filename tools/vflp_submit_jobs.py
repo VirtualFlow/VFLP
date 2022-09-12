@@ -179,7 +179,10 @@ def submit_aws_batch(config, client, current_workunit, jobline):
 					},
 				],
 				'environment': [
-				
+					{
+						'name': 'VFLP_REGION',
+						'value': config['aws_region']
+					},
 					{
 						'name': 'VFLP_RUN_MODE',
 						'value': "awsbatch"
