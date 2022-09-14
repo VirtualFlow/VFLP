@@ -212,10 +212,6 @@ def process(config):
 
                 subjob['status'] = job['status']
 
-
-                pp = pprint.PrettyPrinter(width=41, compact=True)
-                pp.pprint(job) 
-
                 vcpu = 0;
                 for attribute in job['container']['resourceRequirements']:
                     if attribute['type'] == "VCPU":
