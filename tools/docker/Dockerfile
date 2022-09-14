@@ -16,6 +16,7 @@
 # along with VirtualFlow.  If not, see <https://www.gnu.org/licenses/>.
 
 FROM amazonlinux:2 as vflpbuild
+RUN yum -y install java-11-amazon-corretto-headless
 
 ARG CX_LICENSE_FILE
 
@@ -23,6 +24,12 @@ ADD templates /opt/vf/tools/templates
 
 ADD packages/jchemsuite.tar.gz /opt/vf/packages
 ADD packages/nailgun.tar.gz /opt/vf/packages
+ADD helper /opt/vf/helper
+
+WORKDIR /opt/vf/helper/vf
+RUN javac -cp "/opt/vf/packages/jchemsuite/lib/*" CxCalcAttr.java
+WORKDIR /opt/vf/helper
+RUN jar cf CxCalcAttr.jar vf
 
 COPY $CX_LICENSE_FILE /opt/vf/packages/chemaxon/license.cxl
 

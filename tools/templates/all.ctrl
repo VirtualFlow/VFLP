@@ -359,7 +359,7 @@ tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
-tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:rotb_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:heavyatomcount_file:fsp3_file
+tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:heavyatomcount_file:fsp3_file
 #mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:logd_file:logs_file:heavyatomcount_file:bondcount_file:ringcount_file:aromaticringcount_file:mr_file:formalcharge_file:positivechargecount_file:negativechargecount_file:fsp3_file:chiralcentercount_file:halogencount_file:sulfurcount_file:NOcount_file:electronegativeatomcount_file
 # These variables are only needed if tranche_assignments=true
 # Multiple values are separated by colons
@@ -373,7 +373,6 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * hbd_jchem: hydrogen bond donor count
 #   * hbd_obabel: hydrogen bond donor count
 #   * rotb_jchem: rotatable bond count
-#   * rotb_obabel: rotatable bond count
 #   * tpsa_jchem: topological polar surface area by JChem's cxcalc
 #   * tpsa_obabel: topological polar surface area by Open Babel
 #   * logd: octanol water partition coefficient
@@ -490,6 +489,10 @@ tranche_NOcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 tranche_electronegativeatomcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 
 ****** JChem-Related Packages
+
+use_cxcalc_helper=1
+# If using AWS Batch, then set this to 1. If not, then set to 0 currently. This option
+# provides an optimization to improve performance of the chemaxon properties
 
 jchem_package_filename=jchemsuite.tar.gz
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps, and if tranche_assignments=true
