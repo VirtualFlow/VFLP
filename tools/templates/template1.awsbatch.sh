@@ -38,7 +38,7 @@ trap 'error_response_std $LINENO' ERR
 # Adjusting the CHEMAXON_LICENSE_URL environment variable
 VFLP_PKG_BASE=/opt/vf/packages
 export CHEMAXON_LICENSE_URL="${VFLP_PKG_BASE}/chemaxon/license.cxl"
-export CLASSPATH="${VFLP_PKG_BASE}/nailgun/nailgun-server/target/classes:${VFLP_PKG_BASE}/nailgun/nailgun-examples/target/classes:${VFLP_PKG_BASE}/jchemsuite/lib/*"
+export CLASSPATH="/opt/vf/helper/*:${VFLP_PKG_BASE}/nailgun/nailgun-server/target/classes:${VFLP_PKG_BASE}/nailgun/nailgun-examples/target/classes:${VFLP_PKG_BASE}/jchemsuite/lib/*"
 export PATH="${VFLP_PKG_BASE}/nailgun/nailgun-client/target/:$PATH"
 
 export VFLP_WORKUNIT_SUBJOB=${AWS_BATCH_JOB_ARRAY_INDEX}

@@ -83,6 +83,10 @@ def process_ligand(ctx):
 
 	print(f"* Processing {base_ligand['key']}")
 
+	if(base_ligand['smi'] == ""):
+		logging.error(f"    * Warning: Ligand {base_ligand['key']} skipped since SMI is blank")
+		return completion_event;
+
 	# De-salting
 	step_timer_start = time.perf_counter()
 	try:
@@ -539,6 +543,7 @@ def tranche_assignment(ctx, ligand, tautomer):
 	tranche_value = ""
 	tranche_string = ""
 	obabel_attributes = {}
+	cxcalc_attributes = {}
 
 	# Place smi string into a file that can be read
 	smi_file = f"{ctx['temp_dir'].name}/smi_tautomers_{tautomer['key']}.smi"
@@ -560,79 +565,65 @@ def tranche_assignment(ctx, ligand, tautomer):
 	# Figure out if we need to run obabel
 
 	obabel_run = 0;
-	for tranche_type in ctx['config']['tranche_types']:
-		if(tranche_type == "mw_obabel" or 
-			tranche_type == "logp_obabel" or
-			tranche_type == "tpsa_obabel" or
-			tranche_type == "atomcount_obabel" or 
-			tranche_type == "bondcount_obabel" or 
-			tranche_type == "mr_obabel"):
+	cxcalc_run = 0;
 
-			obabel_run = 1
-			break
+	attributes = {
+		"mw_obabel": { "prog": "obabel", "prog_name": "mol_weight", "val": "INVALID" },
+		"logp_obabel": { "prog": "obabel", "prog_name": "logP", "val": "INVALID" },
+		"tpsa_obabel": { "prog": "obabel", "prog_name": "PSA", "val": "INVALID" },
+		"atomcount_obabel": { "prog": "obabel", "prog_name": "PSA", "val": "INVALID" },
+		"bondcount_obabel": { "prog": "obabel", "prog_name": "PSA", "val": "INVALID" },
+		"mr_obabel": { "prog": "obabel", "prog_name": "PSA", "val": "INVALID" },
+		"mw_jchem": { "prog": "cxcalc", "prog_name": "mass", "val": "INVALID" },
+		"logp_jchem": { "prog": "cxcalc", "prog_name": "logp", "val": "INVALID" },
+		"hbd_jchem": { "prog": "cxcalc", "prog_name": "donorcount", "val": "INVALID" },
+		"hba_jchem": { "prog": "cxcalc", "prog_name": "acceptorcount", "val": "INVALID" },
+		"rotb_jchem": { "prog": "cxcalc", "prog_name": "rotatablebondcount", "val": "INVALID" },
+		"tpsa_jchem": { "prog": "cxcalc", "prog_name": "polarsurfacearea", "val": "INVALID" },
+		"atomcount_jchem": { "prog": "cxcalc", "prog_name": "atomcount", "val": "INVALID" },
+		"bondcount_jchem": { "prog": "cxcalc", "prog_name": "bondcount", "val": "INVALID" },
+		"ringcount": { "prog": "cxcalc", "prog_name": "ringcount", "val": "INVALID" },
+		"aromaticringcount": { "prog": "cxcalc", "prog_name": "aromaticringcount", "val": "INVALID" },
+		"mr_jchem": { "prog": "cxcalc", "prog_name": "refractivity", "val": "INVALID" },
+		"fsp3": { "prog": "cxcalc", "prog_name": "fsp3", "val": "INVALID" },
+		"chiralcentercount": { "prog": "cxcalc", "prog_name": "chiralcentercount", "val": "INVALID" },
+		"logd": { "prog": "cxcalc", "prog_name": "logd", "val": "INVALID" },
+		"logs": { "prog": "cxcalc", "prog_name": "logs", "val": "INVALID" }
+	}
+
+	string_attributes = []
+
+	for tranche_type in ctx['config']['tranche_types']:
+		if tranche_type in attributes:
+			if(attributes[tranche_type]['prog'] == "obabel"):
+				obabel_run = 1
+			elif(attributes[tranche_type]['prog'] == "cxcalc"):
+				cxcalc_run = 1
 
 	if(obabel_run == 1):
-		obabel_attributes = run_obabel_attributes(ctx, tautomer, smi_file)
+		run_obabel_attributes(ctx, tautomer, smi_file, attributes)
+
+	if(cxcalc_run == 1):
+		if('use_cxcalc_helper' in ctx['config']):
+			use_single = int(ctx['config']['use_cxcalc_helper'])
+		else:
+			use_single = 0
+		run_cxcalc_attributes(tautomer, smi_file, nailgun_port, nailgun_host, ctx['config']['tranche_types'], attributes, use_single=use_single)
 
 	for tranche_type in ctx['config']['tranche_types']:
-		if(tranche_type == "mw_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["mass"], nailgun_port, nailgun_host)
-		elif(tranche_type == "mw_obabel"):
-			tranche_value = obabel_attributes['mol_weight']
-		elif(tranche_type == "logp_obabel"):
-			tranche_value = obabel_attributes['logP']
-		elif(tranche_type == "logp_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["logp"], nailgun_port, nailgun_host)
-		elif(tranche_type == "hba_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["acceptorcount"], nailgun_port, nailgun_host)
+
+		if(tranche_type in attributes):
+			tranche_value = attributes[tranche_type]['val']
 		elif(tranche_type == "hba_obabel"):
 			tranche_value = run_obabel_hba(smi_file, tautomer)
-		elif(tranche_type == "hbd_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["donorcount"], nailgun_port, nailgun_host)
 		elif(tranche_type == "hbd_obabel"):
 			tranche_value = run_obabel_hbd(smi_file, tautomer)
-		elif(tranche_type == "rotb_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["rotatablebondcount"], nailgun_port, nailgun_host)
-		elif(tranche_type == "rotb_obabel"):
-			# Note that num_rotors is not reported in obabel 2.3.2
-			# it is tested to be there in 3.1.1. For now use chemaxon if obabel does not have the attribute.
-			tranche_value = obabel_attributes['num_rotors']
-			if(tranche_value == "INVALID"):
-				tranche_value = cxcalc_attribute(tautomer, smi_file, ["rotatablebondcount"], nailgun_port, nailgun_host)
-		elif(tranche_type == "tpsa_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["polarsurfacearea"], nailgun_port, nailgun_host)			
-		elif(tranche_type == "tpsa_obabel"):
-			tranche_value = obabel_attributes['PSA']
-		elif(tranche_type == "logd"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["logd"], nailgun_port, nailgun_host)
-		elif(tranche_type == "logs"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["logs"], nailgun_port, nailgun_host)
-		elif(tranche_type == "atomcount_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["atomcount"], nailgun_port, nailgun_host)
-		elif(tranche_type == "atomcount_obabel"):
-			tranche_value = obabel_attributes['num_atoms']
-		elif(tranche_type == "bondcount_obabel"):
-			tranche_value = obabel_attributes['num_bonds']
-		elif(tranche_type == "bondcount_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["bondcount"], nailgun_port, nailgun_host)
-		elif(tranche_type == "ringcount"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["ringcount"], nailgun_port, nailgun_host)
-		elif(tranche_type == "aromaticringcount"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["aromaticringcount"], nailgun_port, nailgun_host)
-		elif(tranche_type == "mr_obabel"):
-			tranche_value = obabel_attributes['MR']
-		elif(tranche_type == "mr_jchem"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["refractivity"], nailgun_port, nailgun_host)
 		elif(tranche_type == "formalcharge"):
 			tranche_value = formalcharge(tautomer['smi_protomer'])
 		elif(tranche_type == "positivechargecount"):
 			tranche_value = positivecharge(tautomer['smi_protomer'])
 		elif(tranche_type == "negativechargecount"):
 			tranche_value = negativecharge(tautomer['smi_protomer'])
-		elif(tranche_type == "fsp3"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["fsp3"], nailgun_port, nailgun_host)
-		elif(tranche_type == "chiralcentercount"):
-			tranche_value = cxcalc_attribute(tautomer, smi_file, ["chiralcentercount"], nailgun_port, nailgun_host)	
 		elif(tranche_type == "halogencount"):
 			tranche_value = halogencount(tautomer['smi_protomer'])
 		elif(tranche_type == "sulfurcount"):
@@ -1153,6 +1144,54 @@ def cxcalc_protonate(ctx, tautomer):
 # Get the last line of output, the value if interest is after the tab character
 
 
+def run_cxcalc_attributes(tautomer, local_file, nailgun_port, nailgun_host, attribute_list, attributes, use_single=0):
+
+	step_timer_start = time.perf_counter()
+
+	if(use_single == 1):
+		attrs = {}
+
+		cxcalc_attrs = []
+		for attr in attribute_list:
+			if(attr in attributes and attributes[attr]['prog'] == "cxcalc"):
+				cxcalc_attrs.append(attributes[attr]['prog_name'])
+
+		local_args = [
+			"vf.CxCalcAttr",
+			local_file,
+			*cxcalc_attrs
+		]
+
+		ret = run_chemaxon_general(local_args, nailgun_port, nailgun_host, must_have_output=1)
+
+		# Check output
+		output_lines = ret['stdout'].splitlines()
+		if(len(output_lines) > 0):
+			for line in output_lines:
+				attr = line.split(",", 2)
+				if(len(attr) == 2):
+					(attr_key, attr_value) = line.split(",", 2)
+					attrs[attr_key] = attr_value
+				else:
+					raise RuntimeError("Unable to parse output of CxCalcAttr")
+		else:
+			raise RuntimeError("Unable to parse output of CxCalcAttr")
+
+
+		for attr in attribute_list:
+			if(attr in attributes and attributes[attr]['prog'] == "cxcalc"):
+				attributes[attr]['val'] = attrs[attributes[attr]['prog_name']]
+	else:
+
+		for attr in attribute_list:
+			if(attr in attributes and attributes[attr]['prog'] == "cxcalc"):
+				attributes[attr]['val'] = cxcalc_attribute(tautomer, local_file, [attributes[attr]['prog_name']], nailgun_port, nailgun_host)
+
+
+	tautomer['timers'].append([f'chemaxon_attr', time.perf_counter() - step_timer_start])
+	return attributes
+
+
 def cxcalc_attribute(tautomer, local_file, arguments, nailgun_port, nailgun_host):
 
 	step_timer_start = time.perf_counter()
@@ -1327,23 +1366,16 @@ def run_obabel_protonation(ctx, tautomer):
 
 # Step 5: Assign Tranche
 
-def run_obabel_attributes(ctx, tautomer, local_file):
+def run_obabel_attributes(ctx, tautomer, local_file, attributes):
 
 	step_timer_start = time.perf_counter()
-	attributes = {
-		'mol_weight': "INVALID",
-		'exact_mass': "INVALID",
-		'num_atoms': "INVALID",
-		'num_bonds': "INVALID",
-		'num_residues': "INVALID",
-		'num_rotors': "INVALID",
-		'sequence': "INVALID",
-		'num_rings': "INVALID",
-		'logP': "INVALID",
-		'PSA': "INVALID",
-		'MR': "INVALID",
 
-	}
+	captured_attrs = {}
+	obabel_attrs = []
+	for attr in attributes:
+		if(attributes[attr]['prog'] == "obabel"):
+			obabel_attrs.append(attributes[attr]['prog_name'])
+
 
 	cmd = [ 'obprop', local_file]
 	try:
@@ -1351,8 +1383,6 @@ def run_obabel_attributes(ctx, tautomer, local_file):
 	except subprocess.TimeoutExpired as err:
 		raise RuntimeError(f"obprop timed out") from err
 	
-	debug_save_output(stdout=ret.stdout, stderr=ret.stderr, tautomer=tautomer, ctx=ctx, file="obabel_attributes")
-
 	output_lines = ret.stdout.splitlines()
 
 	if(len(output_lines) == 0):
@@ -1364,13 +1394,18 @@ def run_obabel_attributes(ctx, tautomer, local_file):
 			if(len(line_values) == 2):
 				line_key, line_value = line_values
 
-				if(line_key in attributes):
-					attributes[line_key] = line_value
+				if(line_key in obabel_attrs):
+					captured_attrs[line_key] = line_value
 					logging.debug(f"Got {line_key}:{line_value} for obabel")
+
+
+	for attr in attributes:
+		if(attributes[attr]['prog'] == "obabel"):
+			if attributes[attr]['prog_name'] in captured_attrs:
+				attributes[attr]['val'] = captured_attrs[attributes[attr]['prog_name']]
 
 	tautomer['timers'].append(['obabel_attributes', time.perf_counter() - step_timer_start])
 
-	return attributes
 
 
 
