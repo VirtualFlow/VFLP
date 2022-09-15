@@ -359,7 +359,7 @@ tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
-tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:heavyatomcount_file:fsp3_file
+tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_obabel:logp_obabel:hba_obabel:hbd_obabel:tpsa_obabel:logd:logs:atomcount_jchem:atomcount_obabel:bondcount_jchem:bondcount_obabel:ringcount:aromaticringcount:formalcharge:mr_jchem:mr_obabel:positivechargecount:negativechargecount:fsp3:chiralcentercount:halogencount:sulfurcount:NOcount:electronegativeatomcount:mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:heavyatomcount_file:fsp3_file:enamine_type
 #mw_file:logp_file:hba_file:hbd_file:rotb_file:tpsa_file:logd_file:logs_file:heavyatomcount_file:bondcount_file:ringcount_file:aromaticringcount_file:mr_file:formalcharge_file:positivechargecount_file:negativechargecount_file:fsp3_file:chiralcentercount_file:halogencount_file:sulfurcount_file:NOcount_file:electronegativeatomcount_file
 # These variables are only needed if tranche_assignments=true
 # Multiple values are separated by colons
@@ -416,6 +416,7 @@ tranche_types=mw_jchem:logp_jchem:hba_jchem:hbd_jchem:rotb_jchem:tpsa_jchem:mw_o
 #   * sulfurcount_file: number of sulfur atoms (S)
 #   * NOcount_file: number of oxygen and nitrogen atoms (N, O)
 #   * electronegativeatomcount_file: number of electronegative atoms (N, O, S, P, F, Br, Cl, I)
+#   * enamine_type: Enamine type category
 
 
 file_fieldnames=smi:ligand-name:3:4:5:6:7:mw:heavyatomcount:logp:hba:hbd:rotb:fsp3:tpsa:16:17:18:19
@@ -428,6 +429,8 @@ file_fieldnames=smi:ligand-name:3:4:5:6:7:mw:heavyatomcount:logp:hba:hbd:rotb:fs
 #      column is the 'friendly name', columns 3-7 are values not used,
 #      column 8 is the value that should be used for mw_file in tranche assignment,
 #      column 9 is the value that should be used for atomcount_file in tranche assignment
+#      Other valid options include: enamine (for enamine_type), mw, heavyatomcount,
+#         logp, hba, hbd, rotb, fsp3, tpsa
 
 
 # For each tranche_type X in the variable tranche_types, one additional variable "tranche_<X>_partition" has to be specified.
@@ -487,6 +490,13 @@ tranche_halogencount_file_partition=0:1:2:3:4:5
 tranche_sulfurcount_file_partition=0:1:2:3:4:5
 tranche_NOcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
 tranche_electronegativeatomcount_file_partition=0:1:2:3:4:5:6:7:8:9:10
+
+# For tranche types that are characters or strings (non-numeric)
+# they should be in the format tranche_(tranche_type)_mapping=M:A,C:B
+#  -- the above sample shows that a string value of "M" should
+#     map to tranche of A, "C" to a tranche of B
+
+tranche_enamine_type_mapping=M:A,S:B
 
 ****** JChem-Related Packages
 
