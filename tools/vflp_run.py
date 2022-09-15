@@ -591,7 +591,7 @@ def tranche_assignment(ctx, ligand, tautomer):
 		"logs": { "prog": "cxcalc", "prog_name": "logs", "val": "INVALID" }
 	}
 
-	string_attributes = []
+	string_attributes = ['enamine_type']
 
 	for tranche_type in ctx['config']['tranche_types']:
 		if tranche_type in attributes:
@@ -614,6 +614,8 @@ def tranche_assignment(ctx, ligand, tautomer):
 
 		if(tranche_type in attributes):
 			tranche_value = attributes[tranche_type]['val']
+		elif(tranche_type == "enamine_type"):
+			tranche_value = get_file_data(ligand, "enamine")
 		elif(tranche_type == "hba_obabel"):
 			tranche_value = run_obabel_hba(smi_file, tautomer)
 		elif(tranche_type == "hbd_obabel"):
@@ -680,20 +682,34 @@ def tranche_assignment(ctx, ligand, tautomer):
 
 		tranche_value = str(tranche_value)
 
-		# Make sure we have a valid value
-		match = re.search(r'^([0-9+\-eE\.]+)$', tranche_value)
-		if(match):
-			letter = assign_character(ctx['config']['tranche_partitions'][tranche_type], tranche_value)
-			tranche_string += letter
+		if(tranche_type in string_attributes):
+			# process as string
+			letter = assign_character_mapping(ctx['config']['tranche_mappings'][tranche_type], tranche_value)
 			logging.debug(f"Assigning {letter} based on '{tranche_value}' for type {tranche_type}. String now: {tranche_string}")
 			tautomer['remarks']['trancheassignment_attr'].append(f"{tranche_type}: {tranche_value}")
 		else:
-			logging.error(f"Invalid result from tranche_type:{tranche_type}, value was: '{tranche_value}'")
-			raise RuntimeError(f"Invalid result from tranche_type:{tranche_type}, value was: '{tranche_value}'")
+			# Make sure we have a valid numerical value
+			match = re.search(r'^([0-9+\-eE\.]+)$', tranche_value)
+			if(match):
+				letter = assign_character(ctx['config']['tranche_partitions'][tranche_type], tranche_value)
 
+				logging.debug(f"Assigning {letter} based on '{tranche_value}' for type {tranche_type}. String now: {tranche_string}")
+				tautomer['remarks']['trancheassignment_attr'].append(f"{tranche_type}: {tranche_value}")
+			else:
+				logging.error(f"Invalid result from tranche_type:{tranche_type}, value was: '{tranche_value}'")
+				raise RuntimeError(f"Invalid result from tranche_type:{tranche_type}, value was: '{tranche_value}'")
+
+		tranche_string += letter
 
 	tautomer['tranche_string'] = tranche_string
 	tautomer['remarks']['tranche_str'] = f"Tranche: {tranche_string}"
+
+def assign_character_mapping(string_mapping, tranche_value):
+
+	if(tranche_value in string_mapping):
+		return string_mapping[tranche_value]
+
+	return "X"
 
 
 

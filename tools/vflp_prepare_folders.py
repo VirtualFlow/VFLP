@@ -35,7 +35,8 @@ import shutil
 def parse_config(filename):
 
     config = {
-        'tranche_partitions' : {}
+        'tranche_partitions' : {},
+        'tranche_mappings' : {}
     }
 
     with open(filename, "r") as read_file:
@@ -46,10 +47,17 @@ def parse_config(filename):
                 matches = match.groupdict()
 
                 # Special handling for partitions
-                match_partition = re.search(r'^tranche\_(?P<type>.*?)\_partition$', matches['parameter'])
+                match_partition = re.search(r'^tranche\_(?P<type>.*?)\_(?P<qualifier>partition|mapping)$', matches['parameter'])
                 if(match_partition):
                     matches_partition = match_partition.groupdict()
-                    config['tranche_partitions'][matches_partition['type']] = matches['parameter_value'].split(":")
+
+                    if(matches_partition['qualifier'] == "mapping"):
+                        config['tranche_mappings'][matches_partition['type']] = {}
+                        for mapping in matches['parameter_value'].split(","):
+                            (map_from, map_to) = mapping.split(":")
+                            config['tranche_mappings'][matches_partition['type']][map_from] = map_to
+                    else:
+                        config['tranche_partitions'][matches_partition['type']] = matches['parameter_value'].split(":")
                 else:
                     config[matches['parameter']] = matches['parameter_value']
 
