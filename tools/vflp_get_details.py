@@ -226,7 +226,7 @@ def process(config):
 
 def get_status_info_path(ctx, collection):
     remote_dir = [
-        ctx['config']['object_store_job_prefix_full'],
+        ctx['config']['object_store_job_ouput_data_prefix_full'],
         "complete",
         "status",
         collection['metatranche'],
@@ -241,7 +241,7 @@ def get_status_info(ctx, collection):
 
 
     remote_path = get_status_info_path(ctx, collection)
-    job_bucket = ctx['config']['object_store_job_bucket']
+    job_bucket = ctx['config']['object_store_job_output_data_bucket']
     local_path = f"{ctx['temp_dir'].name}/tmp.json.gz"
     collection_status = None
 

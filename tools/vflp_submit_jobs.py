@@ -150,7 +150,7 @@ def submit_aws_batch(config, client, current_workunit, jobline):
 		subjobs_count = 2
 
 	# Path to the data files
-	object_store_input_path = f"{config['object_store_job_prefix_full']}"
+	object_store_input_path = f"{config['object_store_job_ouput_data_prefix_full']}"
 
 	# Which queue to submit to
 	batch_queue_number = ((jobline - 1) % int(config['aws_batch_number_of_queues'])) + 1
@@ -213,7 +213,7 @@ def submit_aws_batch(config, client, current_workunit, jobline):
 					},
 					{
 						'name': 'VFLP_CONFIG_JOB_BUCKET',
-						'value': config['object_store_job_bucket']
+						'value': config['object_store_job_output_data_bucket']
 					},
 					
 				]

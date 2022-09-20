@@ -72,7 +72,7 @@ def publish_workunit(ctx, index, workunit_subjobs, status):
 	if(ctx['config']['job_storage_mode'] == "s3"):
 		# Upload it to S3....
 		object_path = [
-			ctx['config']['object_store_job_prefix_full'],
+			ctx['config']['object_store_job_ouput_data_prefix_full'],
 			"input",
 			"tasks",
 			f"{index}.json.gz"
@@ -80,7 +80,7 @@ def publish_workunit(ctx, index, workunit_subjobs, status):
 		object_name = "/".join(object_path)
 
 		try:
-			response = ctx['s3'].upload_file(local_file_path, ctx['config']['object_store_job_bucket'], object_name)
+			response = ctx['s3'].upload_file(local_file_path, ctx['config']['object_store_job_output_data_bucket'], object_name)
 		except ClientError as e:
 			logging.error(e)
 			raise
@@ -99,7 +99,7 @@ def publish_workunit(ctx, index, workunit_subjobs, status):
 def gen_s3_download_path(ctx, metatranche, tranche, collection_name):
 
 	object_path = [
-		ctx['config']['object_store_data_collection_prefix'],
+		ctx['config']['object_store_ligand_library_prefix'],
 		metatranche,
 		tranche,
 		f"{collection_name}.txt.gz"
@@ -134,7 +134,7 @@ def add_collection_to_subjob(ctx, subjob, collection_key, collection_count, meta
 
 	if(ctx['config']['job_storage_mode'] == "s3"):
 	 	download_s3_path = gen_s3_download_path(ctx, metatranche, tranche, collection_name)
-	 	subjob['collections'][collection_key]['s3_bucket'] = ctx['config']['object_store_data_bucket']
+	 	subjob['collections'][collection_key]['s3_bucket'] = ctx['config']['object_store_ligand_library_bucket']
 	 	subjob['collections'][collection_key]['s3_download_path'] = gen_s3_download_path(ctx, metatranche, tranche, collection_name)
 
 	elif(ctx['config']['job_storage_mode'] == "sharedfs"):
