@@ -49,6 +49,10 @@ import csv
 import socket
 import atexit
 import shutil
+import rdkit
+import rdkit.Chem.QED
+import rdkit.Chem.Scaffolds.MurckoScaffold
+
 from datetime import datetime
 from pathlib import Path
 from botocore.config import Config
@@ -391,11 +395,22 @@ def process_tautomer(ctx, ligand, tautomer):
 
 	tautomer['remarks']['basic'] = "Small molecule (ligand)"
 	tautomer['remarks']['compound'] = f"Compound: {tautomer['key']}"
-	tautomer['remarks']['smiles'] = f"SMILES: {tautomer['smi_protomer']}"
 
+	tautomer['remarks']['smiles_original'] = f"SMILES_orig: {tautomer['smi_original']}"
+	tautomer['remarks']['smiles_current'] = f"SMILES_current: {tautomer['smi_protomer']}"
+
+	# Generate data for the attributes as needed
 	step_timer_start = time.perf_counter()
-	# Reassigning the tranches if needed
-	
+	tautomer['attr'] = generate_attributes(ctx, ligand, tautomer)
+	tautomer['timers'].append(['attr-generation', time.perf_counter() - step_timer_start])
+
+	# If there are specific attributes to place in remarks, do that now
+	tautomer['remarks']['additional_attr'] = []
+	for attribute_type in ctx['config']['attributes_to_generate']:
+		tautomer['remarks']['additional_attr'].append(f"{attribute_type}: {tautomer['attr'][attribute_type]}")
+
+	# Assign the tranches if needed
+	step_timer_start = time.perf_counter()
 	if(ctx['config']['tranche_assignments'] == "true"):
 		try:
 			tranche_assignment(ctx, ligand, tautomer)
@@ -484,7 +499,7 @@ def process_tautomer(ctx, ligand, tautomer):
 		output_file = output_dir / f"{tautomer['tranche_string']}_{tautomer['key']}.{target_format}"
 
 		try:
-			obabel_generate_targetformat(ctx, tautomer, target_format, tautomer['pdb_file'], output_file)
+			generate_target_format(ctx, tautomer, target_format, tautomer['pdb_file'], output_file)
 		except RuntimeError as error:
 			logging.error(f"failed generation for format {target_format}")
 			tautomer['status_sub'].append([f'targetformat-generation({target_format})', { 'state': 'failed', 'text': str(error) } ])
@@ -498,6 +513,21 @@ def process_tautomer(ctx, ligand, tautomer):
 	# Note that the target format generation could have failed at this point
 
 	tautomer['status'] = "success"
+
+
+
+def generate_target_format(ctx, tautomer, target_format, pdb_file, output_file):
+
+	if(target_format == "smi"):
+		# We can just use the SMI string that we already have
+		write_file_single(output_file, tautomer['smi_protomer'])
+	elif(target_format == "pdb"):
+		# The input to this function is already a pdb file, so we can
+		# just copy it
+		shutil.copyfile(pdb_file, output_file)
+	else:
+		obabel_generate_targetformat(ctx, tautomer, target_format, pdb_file, output_file)
+
 
 
 
@@ -538,36 +568,8 @@ def run_protonation_generation(ctx, tautomer):
 #######################
 # Step 5: Assign Tranche
 
-def tranche_assignment(ctx, ligand, tautomer):
-
-	tranche_value = ""
-	tranche_string = ""
-	obabel_attributes = {}
-	cxcalc_attributes = {}
-
-	# Place smi string into a file that can be read
-	smi_file = f"{ctx['temp_dir'].name}/smi_tautomers_{tautomer['key']}.smi"
-	nailgun_port = ctx['config']['nailgun_port']
-	nailgun_host = ctx['config']['nailgun_host']
-
-	try:
-		with open(smi_file, 'w') as f:
-			f.write(tautomer['smi_protomer'])
-			##f.write("\n")
-	except Exception as err:
-		logging.error(f"Cannot open {local_file}: {str(err)}")
-		raise err
-
-
-	tautomer['remarks']['trancheassignment'] = "Ligand properties"
-	tautomer['remarks']['trancheassignment_attr'] = []
-
-	# Figure out if we need to run obabel
-
-	obabel_run = 0;
-	cxcalc_run = 0;
-
-	attributes = {
+def get_mol_attributes():
+	return {
 		"mw_obabel": { "prog": "obabel", "prog_name": "mol_weight", "val": "INVALID" },
 		"logp_obabel": { "prog": "obabel", "prog_name": "logP", "val": "INVALID" },
 		"tpsa_obabel": { "prog": "obabel", "prog_name": "PSA", "val": "INVALID" },
@@ -588,17 +590,46 @@ def tranche_assignment(ctx, ligand, tautomer):
 		"fsp3": { "prog": "cxcalc", "prog_name": "fsp3", "val": "INVALID" },
 		"chiralcentercount": { "prog": "cxcalc", "prog_name": "chiralcentercount", "val": "INVALID" },
 		"logd": { "prog": "cxcalc", "prog_name": "logd", "val": "INVALID" },
-		"logs": { "prog": "cxcalc", "prog_name": "logs", "val": "INVALID" }
+		"logs": { "prog": "cxcalc", "prog_name": "logs", "val": "INVALID" },
+		"doublebondstereoisomercount_jchem": { "prog": "cxcalc", "prog_name": "doublebondstereoisomercount", "val": "INVALID" },
+		"aromaticproportion_jchem": { "prog": "cxcalc", "prog_name": "aromaticproportion", "val": "INVALID" },
+		"qed_rdkit": { "prog": "rdkit", "prog_name": "qed", "val": "INVALID" },
+		"scaffold_rdkit": { "prog": "rdkit", "prog_name": "scaffold", "val": "INVALID" },
 	}
 
-	string_attributes = ['enamine_type']
+def generate_attributes(ctx, ligand, tautomer):
 
-	for tranche_type in ctx['config']['tranche_types']:
+	attribute_dict = {}
+	attributes_to_generate = {}
+
+	if(ctx['config']['tranche_assignments'] == "true"):
+		for tranche_type in ctx['config']['tranche_types']:
+			if tranche_type not in attributes_to_generate:
+				attributes_to_generate[tranche_type] = 1
+	for attribute_type in ctx['config']['attributes_to_generate']:
+		if attribute_type not in attributes_to_generate:
+			attributes_to_generate[attribute_type] = 1
+
+
+	smi_file = f"{ctx['temp_dir'].name}/smi_tautomers_{tautomer['key']}.smi"
+	write_file_single(smi_file, tautomer['smi_protomer'])
+
+	nailgun_port = ctx['config']['nailgun_port']
+	nailgun_host = ctx['config']['nailgun_host']
+
+	attributes = get_mol_attributes()
+
+	for tranche_type in attributes_to_generate:
 		if tranche_type in attributes:
 			if(attributes[tranche_type]['prog'] == "obabel"):
 				obabel_run = 1
 			elif(attributes[tranche_type]['prog'] == "cxcalc"):
 				cxcalc_run = 1
+			elif(attributes[tranche_type]['prog'] == "rdkit"):
+				rdkit_run = 1
+		else:
+			# We need to generate this one at a time
+			attribute_dict[tranche_type] = generate_single_attribute(ctx, tranche_type, ligand, tautomer, smi_file)
 
 	if(obabel_run == 1):
 		run_obabel_attributes(ctx, tautomer, smi_file, attributes)
@@ -608,74 +639,104 @@ def tranche_assignment(ctx, ligand, tautomer):
 			use_single = int(ctx['config']['use_cxcalc_helper'])
 		else:
 			use_single = 0
-		run_cxcalc_attributes(tautomer, smi_file, nailgun_port, nailgun_host, ctx['config']['tranche_types'], attributes, use_single=use_single)
+		run_cxcalc_attributes(tautomer, smi_file, nailgun_port, nailgun_host, attributes_to_generate.keys(), attributes, use_single=use_single)
+
+	if(rdkit_run == 1):
+		run_rdkit_attributes(ctx, tautomer, tautomer['smi_protomer'], attributes_to_generate.keys(), attributes)
+
+
+	# Put all of the attributes from obabel, cxcalc, and rdkit into
+	# the return dict
+
+	for tranche_type in attributes_to_generate:
+		if tranche_type in attributes:
+			attribute_dict[tranche_type] = attributes[tranche_type]['val']
+
+
+	return attribute_dict;
+
+
+def generate_single_attribute(ctx, attribute, ligand, tautomer, smi_file):
+
+	if(attribute == "enamine_type"):
+		return get_file_data(ligand, "enamine")
+	elif(attribute == "hba_obabel"):
+		return run_obabel_hba(smi_file, tautomer)
+	elif(attribute == "hbd_obabel"):
+		return run_obabel_hbd(smi_file, tautomer)
+	elif(attribute == "formalcharge"):
+		return formalcharge(tautomer['smi_protomer'])
+	elif(attribute == "positivechargecount"):
+		return positivecharge(tautomer['smi_protomer'])
+	elif(attribute == "negativechargecount"):
+		return negativecharge(tautomer['smi_protomer'])
+	elif(attribute == "halogencount"):
+		return halogencount(tautomer['smi_protomer'])
+	elif(attribute == "sulfurcount"):
+		return sulfurcount(tautomer['smi_protomer'])
+	elif(attribute == "NOcount"):
+		return NOcount(tautomer['smi_protomer'])
+	elif(attribute == "electronegativeatomcount"):
+		return electronegativeatomcount(tautomer['smi_protomer'])
+	elif(attribute == "mw_file"):
+		return get_file_data(ligand, "mw")
+	elif(attribute == "logp_file"):
+		return get_file_data(ligand, "logp")
+	elif(attribute == "hba_file"):
+		return get_file_data(ligand, "hba")
+	elif(attribute == "hbd_file"):
+		return get_file_data(ligand, "hbd")
+	elif(attribute == "rotb_file"):
+		return get_file_data(ligand, "rotb")
+	elif(attribute == "tpsa_file"):
+		return get_file_data(ligand, "tpsa")
+	elif(attribute == "logd_file"):
+		return get_file_data(ligand, "logd")
+	elif(attribute == "logs_file"):
+		return get_file_data(ligand, "logs")
+	elif(attribute == "heavyatomcount_file"):
+		return get_file_data(ligand, "heavyatomcount")
+	elif(attribute == "ringcount_file"):
+		return get_file_data(ligand, "ringcount")
+	elif(attribute == "aromaticringcount_file"):
+		return get_file_data(ligand, "aromaticringcount")
+	elif(attribute == "mr_file"):
+		return get_file_data(ligand, "mr")
+	elif(attribute == "formalcharge_file"):
+		return get_file_data(ligand, "formalcharge")
+	elif(attribute == "positivechargecount_file"):
+		return get_file_data(ligand, "positivecharge")
+	elif(attribute == "negativechargecount_file"):
+		return get_file_data(ligand, "negativechargeount")
+	elif(attribute == "fsp3_file"):
+		return get_file_data(ligand, "fsp3")
+	elif(attribute == "chiralcentercount_file"):
+		return get_file_data(ligand, "chiralcentercount")
+	elif(attribute == "halogencount_file"):
+		return get_file_data(ligand, "halogencount")
+	elif(attribute == "sulfurcount_file"):
+		return get_file_data(ligand, "sulfurcount")
+	elif(attribute == "NOcount_file"):
+		return get_file_data(ligand, "NOcount")
+	elif(attribute == "electronegativeatomcount_file"):
+		return get_file_data(ligand, "electronegativeatomcount")
+	else:
+		logging.error(f"The value '{attribute}'' of the variable used as an attribute is not supported.")
+		raise RuntimeError(f"The value '{attribute}'' of the variable used as an attribute is not supported.")
+
+def tranche_assignment(ctx, ligand, tautomer):
+
+	tranche_value = ""
+	tranche_string = ""
+
+	tautomer['remarks']['trancheassignment_attr'] = []
+
+	string_attributes = ['enamine_type']
 
 	for tranche_type in ctx['config']['tranche_types']:
 
-		if(tranche_type in attributes):
-			tranche_value = attributes[tranche_type]['val']
-		elif(tranche_type == "enamine_type"):
-			tranche_value = get_file_data(ligand, "enamine")
-		elif(tranche_type == "hba_obabel"):
-			tranche_value = run_obabel_hba(smi_file, tautomer)
-		elif(tranche_type == "hbd_obabel"):
-			tranche_value = run_obabel_hbd(smi_file, tautomer)
-		elif(tranche_type == "formalcharge"):
-			tranche_value = formalcharge(tautomer['smi_protomer'])
-		elif(tranche_type == "positivechargecount"):
-			tranche_value = positivecharge(tautomer['smi_protomer'])
-		elif(tranche_type == "negativechargecount"):
-			tranche_value = negativecharge(tautomer['smi_protomer'])
-		elif(tranche_type == "halogencount"):
-			tranche_value = halogencount(tautomer['smi_protomer'])
-		elif(tranche_type == "sulfurcount"):
-			tranche_value = sulfurcount(tautomer['smi_protomer'])
-		elif(tranche_type == "NOcount"):
-			tranche_value = NOcount(tautomer['smi_protomer'])
-		elif(tranche_type == "electronegativeatomcount"):
-			tranche_value = electronegativeatomcount(tautomer['smi_protomer'])
-		elif(tranche_type == "mw_file"):
-			tranche_value = get_file_data(ligand, "mw")			
-		elif(tranche_type == "logp_file"):
-			tranche_value = get_file_data(ligand, "logp")
-		elif(tranche_type == "hba_file"):
-			tranche_value = get_file_data(ligand, "hba")
-		elif(tranche_type == "hbd_file"):
-			tranche_value = get_file_data(ligand, "hbd")
-		elif(tranche_type == "rotb_file"):
-			tranche_value = get_file_data(ligand, "rotb")
-		elif(tranche_type == "tpsa_file"):
-			tranche_value = get_file_data(ligand, "tpsa")
-		elif(tranche_type == "logd_file"):
-			tranche_value = get_file_data(ligand, "logd")
-		elif(tranche_type == "logs_file"):
-			tranche_value = get_file_data(ligand, "logs")
-		elif(tranche_type == "heavyatomcount_file"):
-			tranche_value = get_file_data(ligand, "heavyatomcount")	
-		elif(tranche_type == "ringcount_file"):
-			tranche_value = get_file_data(ligand, "ringcount")	
-		elif(tranche_type == "aromaticringcount_file"):
-			tranche_value = get_file_data(ligand, "aromaticringcount")	
-		elif(tranche_type == "mr_file"):
-			tranche_value = get_file_data(ligand, "mr")	
-		elif(tranche_type == "formalcharge_file"):
-			tranche_value = get_file_data(ligand, "formalcharge")
-		elif(tranche_type == "positivechargecount_file"):
-			tranche_value = get_file_data(ligand, "positivecharge")
-		elif(tranche_type == "negativechargecount_file"):
-			tranche_value = get_file_data(ligand, "negativechargeount")
-		elif(tranche_type == "fsp3_file"):
-			tranche_value = get_file_data(ligand, "fsp3")
-		elif(tranche_type == "chiralcentercount_file"):
-			tranche_value = get_file_data(ligand, "chiralcentercount")
-		elif(tranche_type == "halogencount_file"):
-			tranche_value = get_file_data(ligand, "halogencount")
-		elif(tranche_type == "sulfurcount_file"):
-			tranche_value = get_file_data(ligand, "sulfurcount")
-		elif(tranche_type == "NOcount_file"):
-			tranche_value = get_file_data(ligand, "NOcount")
-		elif(tranche_type == "electronegativeatomcount_file"):
-			tranche_value = get_file_data(ligand, "electronegativeatomcount")
+		if(tranche_type in tautomer['attr']):
+			tranche_value = tautomer['attr'][tranche_type]
 		else:
 			logging.error(f"The value '{tranche_type}'' of the variable tranche_types is not supported.")
 			raise RuntimeError(f"The value '{tranche_type}'' of the variable tranche_types is not supported.")
@@ -841,10 +902,11 @@ def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 
 	if(remark_order == "default"):
 		remark_ordering = [
-			'basic', 'compound', 'smiles',
+			'basic', 'compound', 'smiles_original', 'smiles_current',
 			'desalting', 'neutralization', 'tautomerization',
 			'protonation', 'generation', 'conformation',
 			'targetformat', 'trancheassignment', 'trancheassignment_attr', 
+			'additional_attr',
 			'tranche_str', 'date', 'collection_key'
 		]
 	else:
@@ -1254,7 +1316,8 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 	first_smile_component = tautomer['smi_protomer'].split()[0]
 
 	tautomer['remarks']['conformation'] = f"Generation of the 3D conformation was carried out by molconvert version {ctx['versions']['molconvert']}"
-	tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
+	tautomer['remarks']['targetformat'] = "Format generated as part of 3D conformation"
+	#tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
 
 
 	# Modifying the header of the pdb file and correction of the charges in the pdb file in 
@@ -1488,11 +1551,14 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 	# We are successful
 	if(conformation):
 		tautomer['remarks']['conformation'] = f"Generation of the 3D conformation was carried out by Open Babel version {ctx['versions']['obabel']}"
+		tautomer['remarks']['targetformat'] = "Format generated as part of conformation."
 	else:
 		tautomer['remarks']['generation'] = f"Generation of the the PDB file (without conformation generation) was carried out by Open Babel version {ctx['versions']['obabel']}"
+		tautomer['remarks']['targetformat'] = "Format generated as part of generation."
 
 	first_smile_component = tautomer['smi_protomer'].split()[0]
-	tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
+	#tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
+
 
 	remark_string = generate_remarks(tautomer['remarks']) + "\n"
 
@@ -1651,6 +1717,28 @@ def obabel_generate_targetformat(ctx, tautomer, target_format, input_pdb_file, o
 	logging.debug(f"Finished the target format of {target_format}")
 	tautomer['timers'].append([f'obabel_generate_{target_format}', time.perf_counter() - step_timer_start])
 
+
+
+################
+# RDKit
+#
+
+def run_rdkit_attributes(ctx, tautomer, smi, attributes_to_gen, attributes):
+
+	step_timer_start = time.perf_counter()
+
+	mol = rdkit.Chem.MolFromSmiles(smi)
+
+	for attr in attributes_to_gen:
+		if(attr in attributes and attributes[attr]['prog'] == "rdkit"):
+			if(attr == "qed_rdkit"):
+				attributes[attr]['val'] = rdkit.Chem.QED.qed(mol)
+			elif(attr == "scaffold_rdkit"):
+				attributes[attr]['val'] = rdkit.Chem.MolToSmiles(rdkit.Chem.Scaffolds.MurckoScaffold.GetScaffoldForMol(mol),canonical=True)
+
+	tautomer['timers'].append(['rdkit_attributes', time.perf_counter() - step_timer_start])
+
+
 ################
 # General Components
 #
@@ -1723,6 +1811,17 @@ def is_standardizer_used(ctx):
 
 def is_nailgun_needed(ctx):
 	return is_cxcalc_used(ctx) or is_molconvert_used(ctx) or  is_standardizer_used(ctx)
+
+
+def is_rdkit_needed(ctx):
+
+	attributes = get_mol_attributes()
+	if(ctx['main_config']['tranche_assignments'] == "true"):
+		for tranche_type in ctx['main_config']['tranche_types']:
+			if tranche_type in attributes:
+				if(attributes[tranche_type]['prog'] == "rdkit"):
+					return True
+	return False
 
 
 def get_helper_versions(ctx):

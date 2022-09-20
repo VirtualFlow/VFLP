@@ -17,7 +17,7 @@ python3 -m virtualenv $HOME/vflp_env
 Enter the virtualenv and install needed packages
 ```bash
 source $HOME/vflp_env/bin/activate
-python3 -m pip install boto3 jinja2
+python3 -m pip install boto3 jinja2 rdkit
 ```
 
 To exit a virtual environment:

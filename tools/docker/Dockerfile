@@ -39,7 +39,7 @@ FROM amazonlinux:2
 
 RUN amazon-linux-extras install epel -y
 RUN yum update -y && yum -y install python3 openbabel java-11-amazon-corretto-headless which iproute
-RUN pip3 install boto3
+RUN pip3 install boto3 rdkit
 
 COPY --from=vflpbuild /opt/vf /opt/vf
 ADD *.py *.sh /opt/vf/tools/
