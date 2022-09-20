@@ -65,6 +65,9 @@ def parse_config(filename):
     config['target_formats'] = config['targetformats'].split(":")
     config['tranche_types'] = config['tranche_types'].split(":")
     config['file_fieldnames'] = config['file_fieldnames'].split(":")
+    config['attributes_to_generate'] = config['attributes_to_generate'].split(":")
+
+
 
     timeout_defaults = {
         'chemaxon_neutralization_timeout' : 30,

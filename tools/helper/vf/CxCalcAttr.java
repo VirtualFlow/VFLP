@@ -6,6 +6,9 @@ import chemaxon.formats.MolImporter;
 import chemaxon.marvin.*;
 import chemaxon.marvin.plugin.*;
 import com.chemaxon.calculations.solubility.SolubilityCalculator;
+import com.chemaxon.calculations.stereoisomers.*;
+import com.chemaxon.calculations.stereoisomers.StereoisomerSettings.*;
+import java.util.EnumSet;
 
 public class CxCalcAttr {
 
@@ -35,7 +38,7 @@ public class CxCalcAttr {
 	}
 
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 		CxCalcAttr attr = new CxCalcAttr();
 
 		try {
@@ -48,6 +51,22 @@ public class CxCalcAttr {
 				String element = args[i];
 
 				switch (element.toLowerCase()) {
+					case "doublebondstereoisomercount":
+						StereoisomerSettings settings = StereoisomerSettings.create()
+							.setStereoisomerType(EnumSet.of(StereoisomerType.CISTRANS));
+						StereoisomerEnumeration enumeration =
+							new StereoisomerEnumeration(mol, settings);
+						System.out.println("doublebondstereoisomercount," + enumeration.getStereoisomerCount());
+						break;
+
+					case "aromaticproportion":
+						attr.initPTAP(mol);
+
+						int heavyAtomCount = attr.pTAP.getAliphaticAtomCount() + attr.pTAP.getAromaticAtomCount();
+						float aromaticProportion =  (float) attr.pTAP.getAromaticAtomCount() / (float) heavyAtomCount;
+						System.out.println("aromaticproportion," + aromaticProportion);
+						break;
+
 					case "logp":
 
 						logPPlugin pLogP = new logPPlugin();
