@@ -52,6 +52,7 @@ import shutil
 import rdkit
 import rdkit.Chem.QED
 import rdkit.Chem.Scaffolds.MurckoScaffold
+import selfies
 
 from datetime import datetime
 from pathlib import Path
@@ -424,6 +425,14 @@ def process_tautomer(ctx, ligand, tautomer):
 	tautomer['status_sub'].append(['tranche-assignment', { 'state': 'success', 'text': '' } ])
 	tautomer['timers'].append(['tranche-assignment', time.perf_counter() - step_timer_start])
 
+	# If SELFIES are requested, generate them here since we will place them in the
+	# pdb file as well
+
+	if "selfies" in ctx['config']['target_formats'] :
+		tautomer['selfies'] = selfies.encoder(tautomer['smi_protomer'])
+		tautomer['remarks']['additional_attr'].append(f"selfies: {tautomer['selfies']}")
+
+
 	# 3D conformation generation
 
 	# Where to place any PDB output (either from conformation or generation step)
@@ -525,6 +534,9 @@ def generate_target_format(ctx, tautomer, target_format, pdb_file, output_file):
 		# The input to this function is already a pdb file, so we can
 		# just copy it
 		shutil.copyfile(pdb_file, output_file)
+	elif(target_format == "selfies"):
+		# We can just use the SELFIES string that we already have
+		write_file_single(output_file, tautomer['selfies'])
 	else:
 		obabel_generate_targetformat(ctx, tautomer, target_format, pdb_file, output_file)
 
@@ -618,6 +630,10 @@ def generate_attributes(ctx, ligand, tautomer):
 	nailgun_host = ctx['config']['nailgun_host']
 
 	attributes = get_mol_attributes()
+
+	obabel_run = 0
+	cxcalc_run = 0
+	rdkit_run = 0
 
 	for tranche_type in attributes_to_generate:
 		if tranche_type in attributes:
