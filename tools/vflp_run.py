@@ -786,7 +786,7 @@ def assign_character(partitions, tranche_value):
 		return tranche_letters[0]
 	# If larger than the largest partition specified
 	elif(float(tranche_value) > float(partitions[-1])):
-		return tranche_letters[len(partitions) + 1]
+		return tranche_letters[len(partitions)]
 
 	# Otherwise go through each one until we are no longer smaller
 	for index, partition_value in enumerate(partitions):
