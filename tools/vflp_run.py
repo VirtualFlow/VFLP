@@ -1761,7 +1761,7 @@ def run_rdkit_attributes(ctx, tautomer, smi, attributes_to_gen, attributes):
 
 def copy_output(ctx, obj):
 
-	object_name = f"{ctx['config']['object_store_job_ouput_data_prefix_full']}/{obj['dest_path']}"
+	object_name = f"{ctx['config']['object_store_job_output_data_prefix_full']}/{obj['dest_path']}"
 
 	try:
 		response = ctx['s3'].upload_file(obj['src'], ctx['config']['object_store_bucket'], object_name)
@@ -2235,7 +2235,7 @@ def move_file(ctx, move_item):
 def generate_remote_path(ctx, collection, output_type="status", output_format="json.gz"):
 
 	if(ctx['job_storage_mode'] == "s3"):
-		prefix = ctx['main_config']['object_store_job_ouput_data_prefix_full']
+		prefix = ctx['main_config']['object_store_job_output_data_prefix_full']
 	elif(ctx['job_storage_mode'] == "sharedfs"):
 		prefix = ctx['workflow_dir']
 

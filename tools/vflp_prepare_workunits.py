@@ -72,7 +72,7 @@ def publish_workunit(ctx, index, workunit_subjobs, status):
 	if(ctx['config']['job_storage_mode'] == "s3"):
 		# Upload it to S3....
 		object_path = [
-			ctx['config']['object_store_job_ouput_data_prefix_full'],
+			ctx['config']['object_store_job_output_data_prefix_full'],
 			"input",
 			"tasks",
 			f"{index}.json.gz"

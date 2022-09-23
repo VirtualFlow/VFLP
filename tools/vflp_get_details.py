@@ -226,7 +226,7 @@ def process(config):
 
 def get_status_info_path(ctx, collection):
     remote_dir = [
-        ctx['config']['object_store_job_ouput_data_prefix_full'],
+        ctx['config']['object_store_job_output_data_prefix_full'],
         "complete",
         "status",
         collection['metatranche'],

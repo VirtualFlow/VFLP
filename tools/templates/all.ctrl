@@ -114,10 +114,10 @@ object_store_job_output_data_bucket=virtualflow-data
 # Bucket name for the job data
 # Trailing slashes should be used
 
-object_store_job_ouput_data_prefix=jobs/vflp
+object_store_job_output_data_prefix=jobs/vflp
 # Where to place job-specific data. This includes where VirtualFlow will place
 # the input data needed for jobs as well as the output files. Data be be placed
-# in object_store_job_ouput_data_prefix/<job_letter>
+# in object_store_job_output_data_prefix/<job_letter>
 # Trailing slashes should be used
 
 ****** Shared Filesystem Settings

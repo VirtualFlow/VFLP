@@ -61,7 +61,7 @@ def parse_config(filename):
                 else:
                     config[matches['parameter']] = matches['parameter_value']
 
-    config['object_store_job_ouput_data_prefix_full'] = f"{config['object_store_job_ouput_data_prefix']}/{config['job_name']}"
+    config['object_store_job_output_data_prefix_full'] = f"{config['object_store_job_output_data_prefix']}/{config['job_name']}"
     config['target_formats'] = config['targetformats'].split(":")
     config['tranche_types'] = config['tranche_types'].split(":")
     config['file_fieldnames'] = config['file_fieldnames'].split(":")
@@ -125,11 +125,11 @@ def check_parameters(config):
             if(empty_value(config, 'object_store_job_output_data_bucket')):
                 print("* 'object_store_job_output_data_bucket' must be set if job_storage_mode is 's3'")
                 error = 1
-            if(empty_value(config, 'object_store_job_ouput_data_prefix')):
-                print("* 'object_store_job_ouput_data_prefix' must be set if job_storage_mode is 's3'")
+            if(empty_value(config, 'object_store_job_output_data_prefix')):
+                print("* 'object_store_job_output_data_prefix' must be set if job_storage_mode is 's3'")
                 error = 1
             else:
-                config['object_store_job_ouput_data_prefix'].rstrip("/")
+                config['object_store_job_output_data_prefix'].rstrip("/")
             if(empty_value(config, 'object_store_ligand_library_bucket')):
                 print("* 'object_store_ligand_library_bucket' must be set if job_storage_mode is 's3'")
                 error = 1
