@@ -130,14 +130,14 @@ def check_parameters(config):
                 error = 1
             else:
                 config['object_store_job_output_data_prefix'].rstrip("/")
-            if(empty_value(config, 'object_store_ligand_library_bucket')):
-                print("* 'object_store_ligand_library_bucket' must be set if job_storage_mode is 's3'")
+            if(empty_value(config, 'object_store_input_ligand_library_bucket')):
+                print("* 'object_store_input_ligand_library_bucket' must be set if job_storage_mode is 's3'")
                 error = 1
-            if(empty_value(config, 'object_store_ligand_library_prefix')):
-                print("* 'object_store_ligand_library_prefix' must be set if job_storage_mode is 's3'")
+            if(empty_value(config, 'object_store_input_ligand_library_prefix')):
+                print("* 'object_store_input_ligand_library_prefix' must be set if job_storage_mode is 's3'")
                 error = 1
             else:
-                config['object_store_ligand_library_prefix'].rstrip("/")
+                config['object_store_input_ligand_library_prefix'].rstrip("/")
 
 
     if(empty_value(config, 'batchsystem')):

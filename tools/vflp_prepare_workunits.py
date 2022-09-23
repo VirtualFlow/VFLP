@@ -99,7 +99,7 @@ def publish_workunit(ctx, index, workunit_subjobs, status):
 def gen_s3_download_path(ctx, metatranche, tranche, collection_name):
 
 	object_path = [
-		ctx['config']['object_store_ligand_library_prefix'],
+		ctx['config']['object_store_input_ligand_library_prefix'],
 		metatranche,
 		tranche,
 		f"{collection_name}.txt.gz"
@@ -134,7 +134,7 @@ def add_collection_to_subjob(ctx, subjob, collection_key, collection_count, meta
 
 	if(ctx['config']['job_storage_mode'] == "s3"):
 	 	download_s3_path = gen_s3_download_path(ctx, metatranche, tranche, collection_name)
-	 	subjob['collections'][collection_key]['s3_bucket'] = ctx['config']['object_store_ligand_library_bucket']
+	 	subjob['collections'][collection_key]['s3_bucket'] = ctx['config']['object_store_input_ligand_library_bucket']
 	 	subjob['collections'][collection_key]['s3_download_path'] = gen_s3_download_path(ctx, metatranche, tranche, collection_name)
 
 	elif(ctx['config']['job_storage_mode'] == "sharedfs"):

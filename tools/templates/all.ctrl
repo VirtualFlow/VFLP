@@ -102,11 +102,11 @@ job_storage_mode=s3
 
 ****** Object Store Settings (S3)
 
-object_store_ligand_library_bucket=virtualflow-data
+object_store_input_ligand_library_bucket=virtualflow-data
 # Bucket name for the collection data
 # Trailing slashes should be used
 
-object_store_ligand_library_prefix=vflp/data/Enamine_2021_test
+object_store_input_ligand_library_prefix=vflp/data/Enamine_2021_test
 # Prefix used within the object store to address the collections
 # Trailing slashes should be used
 
