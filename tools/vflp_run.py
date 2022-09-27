@@ -1583,7 +1583,7 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 	#tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
 
 	local_remarks = tautomer['remarks'].copy()
-	local_remarks.remove('compound')
+	local_remarks.pop('compound')
 	remark_string = generate_remarks(local_remarks) + "\n"
 
 	# Modify the output file as needed #
