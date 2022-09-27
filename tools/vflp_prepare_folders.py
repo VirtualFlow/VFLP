@@ -117,6 +117,11 @@ def check_parameters(config):
         print("* 'threads_to_use' must be set in all.ctrl")
         error = 1
 
+    if(empty_value(config, 'job_storage_output_addressing') or (config['job_storage_output_addressing'] != "hash" and config['job_storage_output_addressing'] != "standard")):
+        print("* 'job_storage_output_addressing' must be set in all.ctrl to 'hash' or 'standard'")
+        error = 1
+
+
     if(empty_value(config, 'job_storage_mode') or (config['job_storage_mode'] != "s3" and config['job_storage_mode'] != "sharedfs")):
         print("* 'job_storage_mode' must be set to 's3' or 'sharedfs'")
         error = 1
