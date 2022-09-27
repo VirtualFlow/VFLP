@@ -167,7 +167,7 @@ def process_ligand(ctx):
 		stereoisomer = {
 			'key': stereoisomer_key,
 			'smi': stereoisomer_smile,
-			'remarks': base_ligand['remarks'],
+			'remarks': base_ligand['remarks'].copy(),
 			'status': "failed",
 			'status_sub': [],
 			'index': index,
@@ -243,7 +243,7 @@ def process_stereoisomer(ctx, ligand, stereoisomer, completion_ligands):
 			'smi': tautomer_smile,
 			'smi_stereoisomer': stereoisomer['smi'],
 			'smi_original': ligand['smi'],
-			'remarks': ligand['remarks'],
+			'remarks': ligand['remarks'].copy(),
 			'status': "failed",
 			'status_sub': [],
 			'index': index,
@@ -429,8 +429,13 @@ def process_tautomer(ctx, ligand, tautomer):
 	# pdb file as well
 
 	if "selfies" in ctx['config']['target_formats'] :
-		tautomer['selfies'] = selfies.encoder(tautomer['smi_protomer'])
-		tautomer['remarks']['additional_attr'].append(f"selfies: {tautomer['selfies']}")
+		try:
+			tautomer['status_sub'].append(['selfies', { 'state': 'success', 'text': '' } ])
+			tautomer['selfies'] = selfies.encoder(tautomer['smi_protomer'])
+			tautomer['remarks']['additional_attr'].append(f"selfies: {tautomer['selfies']}")
+		except selfies.exceptions.EncoderError as error:
+			tautomer['status_sub'].append(['selfies', { 'state': 'failed', 'text': f'{str(error)}' } ])
+			raise RuntimeError('Selfies generation failed')
 
 
 	# 3D conformation generation
@@ -915,11 +920,10 @@ def nonzero_pdb_coordinates(output_file):
 
 def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 
-
 	if(remark_order == "default"):
 		remark_ordering = [
 			'basic', 'compound', 'smiles_original', 'smiles_current',
-			'desalting', 'neutralization', 'tautomerization',
+			'desalting', 'neutralization', 'stereoisomer', 'tautomerization',
 			'protonation', 'generation', 'conformation',
 			'targetformat', 'trancheassignment', 'trancheassignment_attr', 
 			'additional_attr',
@@ -1339,12 +1343,14 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 	# Modifying the header of the pdb file and correction of the charges in the pdb file in 
 	# order to be conform with the official specifications (otherwise problems with obabel)
 
-	remark_string = generate_remarks(tautomer['remarks']) + "\n"
+	local_remarks = tautomer['remarks'].copy()
+	local_remarks.pop('compound')
+	remark_string = generate_remarks(local_remarks) + "\n"
 
 	line_count = 0
 	with open(output_file, "w") as write_file:
-		write_file.write(remark_string)
 		write_file.write(f"COMPND    Compound: {tautomer['key']}\n")
+		write_file.write(remark_string)
 		with open(output_file_tmp, "r") as read_file:
 			for line in read_file:
 				line_count += 1
@@ -1425,6 +1431,7 @@ def run_obabel_general(obabelargs, timeout=30, save_logfile=""):
 def write_file_single(filename, data_to_write):
 	with open(filename, "w") as write_file:
 		write_file.write(data_to_write)
+		write_file.write("\n")
 
 
 def run_obabel_general_get_value(obabelargs, output_file, timeout=30):
@@ -1575,13 +1582,14 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 	first_smile_component = tautomer['smi_protomer'].split()[0]
 	#tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
 
-
-	remark_string = generate_remarks(tautomer['remarks']) + "\n"
+	local_remarks = tautomer['remarks'].copy()
+	local_remarks.remove('compound')
+	remark_string = generate_remarks(local_remarks) + "\n"
 
 	# Modify the output file as needed #
 	with open(output_file, "w") as write_file:
-		write_file.write(remark_string)
 		write_file.write(f"COMPND    Compound: {tautomer['key']}\n")
+		write_file.write(remark_string)
 
 		with open(output_file_tmp, "r") as read_file:
 
@@ -1692,12 +1700,21 @@ def obabel_generate_targetformat(ctx, tautomer, target_format, input_pdb_file, o
 
 	remark_string = ""
 	if(target_format == "pdb"):
-		remarks = tautomer['remarks']
+		remarks = tautomer['remarks'].copy()
+		remarks.pop('compound')
 		remarks['targetformat'] = f"Generation of the the target format file ({target_format}) was carried out by Open Babel version {ctx['versions']['obabel']}"
 		remarks['date'] = f'Created on {now.strftime("%Y-%m-%d %H:%M:%S")}'
-		remark_string = generate_remarks(remarks, remark_order=['targetformat', 'date'] ,target_format=target_format) + "\n"
-	elif(target_format == "pdbqt" or target_format == "mol2"):
-		remarks = tautomer['remarks']
+		remark_string += f"COMPND    Compound: {tautomer['key']}\n"
+		remark_string += generate_remarks(remarks, remark_order=['targetformat', 'date'] ,target_format=target_format) + "\n"
+	elif(target_format == "pdbqt"):
+		remarks = tautomer['remarks'].copy()
+		remarks.pop('compound')
+		remarks['targetformat'] = f"Generation of the the target format file ({target_format}) was carried out by Open Babel version {ctx['versions']['obabel']}"
+		remarks['date'] = f'Created on {now.strftime("%Y-%m-%d %H:%M:%S")}'
+		remark_string += f"COMPND    Compound: {tautomer['key']}\n"
+		remark_string += generate_remarks(remarks, target_format=target_format) + "\n"
+	elif(target_format == "mol2"):
+		remarks = tautomer['remarks'].copy()
 		remarks['targetformat'] = f"Generation of the the target format file ({target_format}) was carried out by Open Babel version {ctx['versions']['obabel']}"
 		remarks['date'] = f'Created on {now.strftime("%Y-%m-%d %H:%M:%S")}'
 		remark_string = generate_remarks(remarks, target_format=target_format) + "\n"
@@ -1718,13 +1735,16 @@ def obabel_generate_targetformat(ctx, tautomer, target_format, input_pdb_file, o
 
 			for line in lines:
 				if(target_format == "pdb" or target_format == "pdbqt"):
-					if(re.search(r"TITLE|SOURCE|KEYWDS|EXPDTA|REVDAT|COMPND|HEADER|AUTHOR", line)):
+					if(re.search(r"TITLE|SOURCE|KEYWDS|EXPDTA|REVDAT|HEADER|AUTHOR", line)):
 						continue
 					line = re.sub(r" UN[LK] ", " LIG ", line)
 					if(re.search(r"^\s*$", line)):
 						continue
+					if(re.search(r'REMARK\s+Name', line)):
+						continue
 
 				# OpenBabel often has local path information that we can remove
+				#
 				final_filename_parts = input_pdb_file.split("/")
 				line = re.sub(rf"{input_pdb_file}", final_filename_parts[-1], line)
 
