@@ -49,6 +49,7 @@ import csv
 import socket
 import atexit
 import shutil
+import hashlib
 import rdkit
 import rdkit.Chem.QED
 import rdkit.Chem.Scaffolds.MurckoScaffold
@@ -1779,19 +1780,6 @@ def run_rdkit_attributes(ctx, tautomer, smi, attributes_to_gen, attributes):
 # General Components
 #
 
-def copy_output(ctx, obj):
-
-	object_name = f"{ctx['config']['object_store_job_output_data_prefix_full']}/{obj['dest_path']}"
-
-	try:
-		response = ctx['s3'].upload_file(obj['src'], ctx['config']['object_store_bucket'], object_name)
-	except botocore.exceptions.ClientError as e:
-		logging.error(e)
-		raise
-
-	return True
-
-
 def generate_tarfile(dir):	
 	os.chdir(str(Path(dir).parents[0]))
 
@@ -1799,6 +1787,12 @@ def generate_tarfile(dir):
 		tar.add(os.path.basename(dir))
 
 	return os.path.join(str(Path(dir).parents[0]), f"{os.path.basename(dir)}.tar.gz")
+
+
+
+def get_collection_hash(collection_key):
+	string_to_hash = f"{collection_key}"
+	return hashlib.sha256(string_to_hash.encode()).hexdigest()
 
 
 ####### Main thread
@@ -2255,9 +2249,27 @@ def move_file(ctx, move_item):
 def generate_remote_path(ctx, collection, output_type="status", output_format="json.gz"):
 
 	if(ctx['job_storage_mode'] == "s3"):
-		prefix = ctx['main_config']['object_store_job_output_data_prefix_full']
+		base_prefix = ctx['main_config']['object_store_job_output_data_prefix_full']
 	elif(ctx['job_storage_mode'] == "sharedfs"):
-		prefix = ctx['workflow_dir']
+		base_prefix = ctx['workflow_dir']
+
+
+	if(ctx['main_config']['job_storage_output_addressing'] == "hash"):
+		collection_string = f"{collection['metatranche']}_{collection['tranche']}_{collection['collection_name']}"
+		hash_string = get_collection_hash(collection_string)
+
+		prefix_components = [
+			base_prefix,
+			hash_string[0:2],
+			hash_string[2:4],
+		]
+	else:
+		prefix_components = [
+			base_prefix
+		]
+
+	prefix = "/".join(prefix_components)
+
 
 	if(output_format == "json.gz"):
 		remote_dir = [

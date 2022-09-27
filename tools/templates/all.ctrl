@@ -100,6 +100,15 @@ job_storage_mode=s3
 #         same shared filesystem that will allow for both input and output
 #         of data. This is required if using Slurm
 
+job_storage_output_addressing=hash
+# If input is placed with the hash addressing mode, then use 'hash'.
+# otherwise use "standard" for the classic addressing mode
+# 'hash' will place data in:
+#     [0-f][0-f]/[0-f][0-f]/complete/<output_type>/<metatranche>/<tranche>/<collection>
+# 'standard' will place data in:
+#     complete/<output_type>/<metatranche>/<tranche>/<collection>
+
+
 ****** Object Store Settings (S3)
 
 object_store_input_ligand_library_bucket=virtualflow-data
