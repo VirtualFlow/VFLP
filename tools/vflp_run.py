@@ -1745,9 +1745,7 @@ def obabel_generate_targetformat(ctx, tautomer, target_format, input_pdb_file, o
 						continue
 
 				# OpenBabel often has local path information that we can remove
-				#
-				final_filename_parts = input_pdb_file.split("/")
-				line = re.sub(rf"{input_pdb_file}", final_filename_parts[-1], line)
+				line = re.sub(rf"{input_pdb_file}", tautomer['key'], line)
 
 				write_file.write(line)
 
