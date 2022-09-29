@@ -80,7 +80,7 @@ public class CxCalcAttr {
 
 						logDPlugin pLogD = new logDPlugin();
 						pLogD.setMolecule(mol);
-						plugin.setpH(7.4)
+						plugin.setpH(7.4);
 						pLogD.run();
 
 						System.out.println("logd," + pLogD.getlogD());
