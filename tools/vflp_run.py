@@ -304,12 +304,38 @@ def desalt(ctx, ligand):
 		ligand['smi_desalted'] = smi_string
 
 
-
 #######################
 # Step 2: Neutralization
 
+def run_neutralization_instance(ctx, ligand, program):
+	step_timer_start = time.perf_counter()
+	valid_programs = ("standardizer", "obabel")
+
+	if(program == "none"):
+		raise RuntimeError(f"No neutralization program remaining")
+	elif(program not in valid_programs):
+		raise RuntimeError(f"Neutralization program '{program}' is not valid")
+
+	try:
+		if(program == "standardizer"):
+			run_chemaxon_neutralization_standardizer(ctx, ligand)
+		elif(program == "obabel"):
+			run_obabel_neutralization(ctx, ligand)
+	except RuntimeError as error:
+		ligand['timers'].append([f'{program}_neutralize', time.perf_counter() - step_timer_start])
+		return error
+
+	ligand['timers'].append([f'{program}_neutralize', time.perf_counter() - step_timer_start])
+
+
+def run_neutralization_generation(ctx, ligand):
+	try:
+		run_neutralization_instance(ctx, ligand, ctx['config']['neutralization_program_1'])
+	except RuntimeError as error:
+		run_neutralization_instance(ctx, ligand, ctx['config']['neutralization_program_2'])
+
 def neutralization(ctx, ligand):
-	
+
 	if(ctx['config']['neutralization'] == "true"):
 		run = 0
 
@@ -324,7 +350,7 @@ def neutralization(ctx, ligand):
 
 		if(run):
 			try:
-				ret = run_chemaxon_neutralization_standardizer(ctx, ligand)
+				ret = run_neutralization_generation(ctx, ligand)
 			except RuntimeError as error:
 				raise
 
@@ -335,11 +361,10 @@ def neutralization(ctx, ligand):
 			ligand['status_sub'].append(['neutralization', { 'state': 'success', 'text': 'untouched' } ])
 
 			ligand['smi_neutralized'] = ligand['smi_desalted']
-	
+
 	else:
 		# Skipping neutralization
-		ligand['smi_neutralized'] = ligand['longest_fragment']
-
+		ligand['smi_neutralized'] = ligand['smi_desalted']
 
 
 #######################
@@ -358,14 +383,40 @@ def stereoisomer_generation(ctx, ligand):
 #######################
 # Step 3: Tautomerization
 
+def tautomerization_instance(ctx, stereoisomer, program):
+	step_timer_start = time.perf_counter()
+	valid_programs = ("cxcalc", "obabel")
+
+	if(program == "none"):
+		raise RuntimeError(f"No tautomerization program remaining")
+	elif(program not in valid_programs):
+		raise RuntimeError(f"Tautomerization program '{program}' is not valid")
+
+	try:
+		if(program == "cxcalc"):
+			logging.info("Starting the tautomerization with cxcalc")
+			run_chemaxon_tautomer_generation(ctx, stereoisomer)
+			stereoisomer['status_sub'].append(['tautomerization', {'state': 'success', 'text': ''}])
+		elif(program == "obabel"):
+			logging.info("Starting the tautomerization with obtautomer")
+			run_obabel_tautomerization(ctx, stereoisomer)
+			stereoisomer['status_sub'].append(['tautomerization', {'state': 'success', 'text': ''}])
+	except RuntimeError as error:
+		stereoisomer['timers'].append([f'{program}_tautomerize', time.perf_counter() - step_timer_start])
+		return error
+
+	stereoisomer['timers'].append([f'{program}_tautomerize', time.perf_counter() - step_timer_start])
+
+
 def tautomer_generation(ctx, stereoisomer):
 
-	if(ctx['config']['tautomerization'] == "true"):
-		logging.info("Starting the tautomerization with cxcalc")
-		run_chemaxon_tautomer_generation(ctx, stereoisomer)
-		stereoisomer['status_sub'].append(['tautomerization', { 'state': 'success', 'text': '' } ])
+	if (ctx['config']['tautomerization'] == "true"):
+		try:
+			tautomerization_instance(ctx, stereoisomer, ctx['config']['tautomerization_program_1'])
+		except RuntimeError as error:
+			tautomerization_instance(ctx, stereoisomer, ctx['config']['tautomerization_program_2'])
 	else:
-		stereoisomer['tautomer_smiles'] = [ stereoisomer['smi'] ]
+		stereoisomer['tautomer_smiles'] = [stereoisomer['smi']]
 
 
 #### For each Tautomer -- Steps 4-9
@@ -463,7 +514,7 @@ def process_tautomer(ctx, ligand, tautomer):
 		tautomer['timers'].append(['conformation', time.perf_counter() - step_timer_start])
 
 	## PDB Generation
-	# If conformation generation failed, and we reached this point, 
+	# If conformation generation failed, and we reached this point,
 	# then conformation_obligatory=false, so we do not need to check this
 
 	if(ctx['config']['conformation_generation'] == "false" or conformation_success == "false"):
@@ -493,7 +544,7 @@ def process_tautomer(ctx, ligand, tautomer):
 	logging.debug(f"target formats is {ctx['config']['target_formats']}")
 	step_timer_start = time.perf_counter()
 	for target_format in ctx['config']['target_formats']:
-		
+
 		logging.debug(f"target_formats is {target_format}")
 
 		# Put in the main job temporary directory, not the temp dir
@@ -511,16 +562,21 @@ def process_tautomer(ctx, ligand, tautomer):
 		output_dir = Path("/".join(output_file_parts))
 		output_dir.mkdir(parents=True, exist_ok=True)
 
-		output_file = output_dir / f"{tautomer['tranche_string']}_{tautomer['key']}.{target_format}"
+		if (ctx['config']['tranche_assignments'] == "true"):
+			output_file = output_dir / f"{tautomer['tranche_string']}_{tautomer['key']}.{target_format}"
+		else:
+			output_file = output_dir / f"{tautomer['key']}.{target_format}"
 
 		try:
 			generate_target_format(ctx, tautomer, target_format, tautomer['pdb_file'], output_file)
 		except RuntimeError as error:
 			logging.error(f"failed generation for format {target_format}")
-			tautomer['status_sub'].append([f'targetformat-generation({target_format})', { 'state': 'failed', 'text': str(error) } ])
+			tautomer['status_sub'].append(
+				[f'targetformat-generation({target_format})', { 'state': 'failed', 'text': str(error) } ])
 		else:
 			logging.debug(f"succeeded generation for format {target_format}")
-			tautomer['status_sub'].append([f'targetformat-generation({target_format})', { 'state': 'success', 'text': '' } ])
+			tautomer['status_sub'].append(
+				[f'targetformat-generation({target_format})', { 'state': 'success', 'text': '' } ])
 
 	tautomer['timers'].append(['targetformats', time.perf_counter() - step_timer_start])
 
@@ -553,7 +609,7 @@ def generate_target_format(ctx, tautomer, target_format, pdb_file, output_file):
 # Step 4: Protonation
 
 
-def run_protonation_instance(ctx, tautomer, program):	
+def run_protonation_instance(ctx, tautomer, program):
 	step_timer_start = time.perf_counter()
 	valid_programs = ("cxcalc", "obabel")
 
@@ -561,7 +617,6 @@ def run_protonation_instance(ctx, tautomer, program):
 		raise RuntimeError(f"No protonation program remaining")
 	elif(program not in valid_programs):
 		raise RuntimeError(f"Protonation program '{program}' is not valid")
-
 
 	try:
 		if(program == "cxcalc"):
@@ -573,7 +628,6 @@ def run_protonation_instance(ctx, tautomer, program):
 		return error
 
 	tautomer['timers'].append([f'{program}_protonate', time.perf_counter() - step_timer_start])
-
 
 
 def run_protonation_generation(ctx, tautomer):
@@ -632,9 +686,6 @@ def generate_attributes(ctx, ligand, tautomer):
 	smi_file = f"{ctx['temp_dir'].name}/smi_tautomers_{tautomer['key']}.smi"
 	write_file_single(smi_file, tautomer['smi_protomer'])
 
-	nailgun_port = ctx['config']['nailgun_port']
-	nailgun_host = ctx['config']['nailgun_host']
-
 	attributes = get_mol_attributes()
 
 	obabel_run = 0
@@ -647,6 +698,8 @@ def generate_attributes(ctx, ligand, tautomer):
 				obabel_run = 1
 			elif(attributes[tranche_type]['prog'] == "cxcalc"):
 				cxcalc_run = 1
+				nailgun_port = ctx['config']['nailgun_port']
+				nailgun_host = ctx['config']['nailgun_host']
 			elif(attributes[tranche_type]['prog'] == "rdkit"):
 				rdkit_run = 1
 		else:
@@ -797,7 +850,7 @@ def assign_character_mapping(string_mapping, tranche_value):
 
 
 def assign_character(partitions, tranche_value):
-	
+
 	tranche_letters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	letter = ""
 
@@ -820,10 +873,10 @@ def assign_character(partitions, tranche_value):
 	return letter
 
 def halogencount(smi):
-	return ( 
-		smi.count('F') 
-		+ smi.count('Cl') 
-		+ smi.count('Br') 
+	return (
+		smi.count('F')
+		+ smi.count('Cl')
+		+ smi.count('Br')
 		+ smi.count('I')
 	)
 
@@ -874,7 +927,7 @@ def run_conformation_generation(ctx, tautomer, output_file):
 		run_conformation_instance(ctx, tautomer, ctx['config']['conformation_program_2'], output_file)
 
 
-def run_conformation_instance(ctx, tautomer, program, output_file):	
+def run_conformation_instance(ctx, tautomer, program, output_file):
 	step_timer_start = time.perf_counter()
 	valid_programs = ("molconvert", "obabel")
 
@@ -910,7 +963,7 @@ def nonzero_pdb_coordinates(output_file):
 
 			if(re.search(r"^(ATOM|HETATM)", line)):
 				line_parts = line.split()
-				
+
 				components_to_check= "".join(line_parts[5:7])
 				components_to_check = re.sub(r"[0.+-]", "", components_to_check)
 				if(not re.search(r"^\s*$", line)):
@@ -926,7 +979,7 @@ def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 			'basic', 'compound', 'smiles_original', 'smiles_current',
 			'desalting', 'neutralization', 'stereoisomer', 'tautomerization',
 			'protonation', 'generation', 'conformation',
-			'targetformat', 'trancheassignment', 'trancheassignment_attr', 
+			'targetformat', 'trancheassignment', 'trancheassignment_attr',
 			'additional_attr',
 			'tranche_str', 'date', 'collection_key'
 		]
@@ -935,7 +988,7 @@ def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 
 
 	if(target_format == "mol2"):
-		remark_prefix = "# " 
+		remark_prefix = "# "
 	elif(target_format =="pdb" or target_format == "pdbqt"):
 		remark_prefix = "REMARK    "
 	else:
@@ -945,9 +998,9 @@ def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 	for remark in remark_ordering:
 		if(remark in remark_list):
 			if(isinstance(remark_list[remark], list)):
-				 for sub_remark in remark_list[remark]:
-				 	if(sub_remark != ""):
-				 		remark_parts.append(remark_prefix + " * " + sub_remark)
+				for sub_remark in remark_list[remark]:
+					if(sub_remark != ""):
+						remark_parts.append(remark_prefix + " * " + sub_remark)
 			elif(remark_list[remark] != ""):
 				remark_parts.append(remark_prefix + remark_list[remark])
 	remark_string = "\n".join(remark_parts)
@@ -956,13 +1009,13 @@ def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 
 
 #######################
-# Step 7: PDB Generation 
+# Step 7: PDB Generation
 # [This only occurs if 3D conformation failed or Step 7 is not requested]
 #
 # Called directly from process_tautomer into obabel
 
 #######################
-# Step 8: Energy Check 
+# Step 8: Energy Check
 #
 # Called directly from process_tautomer into obabel
 
@@ -1076,11 +1129,11 @@ def run_chemaxon_general(chemaxon_args, nailgun_port, nailgun_host, must_have_ou
 
 def run_chemaxon_calculator(cxargs, local_file, nailgun_port, nailgun_host, timeout=30):
 	local_args = [
-		"chemaxon.marvin.Calculator", 
+		"chemaxon.marvin.Calculator",
 		*cxargs,
 		local_file
 	]
-	
+
 	return run_chemaxon_general(local_args, nailgun_port, nailgun_host, must_have_output=1, timeout=timeout)
 
 
@@ -1097,7 +1150,7 @@ def run_chemaxon_neutralization_standardizer(ctx, ligand):
 	write_file_single(local_file, ligand['smi_desalted'])
 
 	local_args = [
-		"chemaxon.standardizer.StandardizerCLI", 
+		"chemaxon.standardizer.StandardizerCLI",
 		local_file,
 		"-c",
 		"neutralize"
@@ -1162,9 +1215,9 @@ def run_chemaxon_tautomer_generation(ctx, stereoisomer):
 	# Place smi string into a file that can be read
 	local_file = ctx['intermediate_dir'] / "stereoisomer.smi"
 	write_file_single(local_file, stereoisomer['smi'])
-	
+
 	local_args = [
-		"chemaxon.marvin.Calculator", 
+		"chemaxon.marvin.Calculator",
 		"tautomers",
 		*(ctx['config']['cxcalc_tautomerization_options'].split()),
 		local_file
@@ -1187,10 +1240,10 @@ def run_chemaxon_tautomer_generation(ctx, stereoisomer):
 			return
 		else:
 			stereoisomer['timers'].append(['chemaxon_tautomerization', time.perf_counter() - step_timer_start])
-			raise RuntimeError(f"Not able to split last line on spaces line={'|'.join(lines)})") 
+			raise RuntimeError(f"Not able to split last line on spaces line={'|'.join(lines)})")
 	else:
 		stereoisomer['timers'].append(['chemaxon_tautomerization', time.perf_counter() - step_timer_start])
-		raise RuntimeError("No output for tautomer state generation") 
+		raise RuntimeError("No output for tautomer state generation")
 
 	stereoisomer['timers'].append(['chemaxon_tautomerization', time.perf_counter() - step_timer_start])
 	raise RuntimeError("Tautomer state generation failed")
@@ -1221,7 +1274,7 @@ def cxcalc_protonate(ctx, tautomer):
 		if(len(line_split) > 1):
 			tautomer['smi_protomer'] = line_split[1]
 
-			# Chemaxon can sometimes provide a second string. Just use the 
+			# Chemaxon can sometimes provide a second string. Just use the
 			# first one
 			#parts = line_split[1].split()
 			#if(len(parts) > 1):
@@ -1295,7 +1348,7 @@ def cxcalc_attribute(tautomer, local_file, arguments, nailgun_port, nailgun_host
 
 	step_timer_start = time.perf_counter()
 	ret = run_chemaxon_calculator(arguments, local_file, nailgun_port, nailgun_host)
-	
+
 	output_lines = ret['stdout'].splitlines()
 	if(len(output_lines) > 1):
 		line = output_lines[-1]
@@ -1320,7 +1373,7 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 
 	write_file_single(input_file, tautomer['smi_protomer'])
 	molconvert_generate_conformation(ctx, tautomer, input_file, output_file_tmp)
-	
+
 	if(not os.path.isfile(output_file_tmp)):
 		logging.debug("No pdb file generated in conformation")
 		raise RuntimeError("No pdbfile generated")
@@ -1331,7 +1384,7 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 	if(not nonzero_pdb_coordinates(output_file_tmp)):
 		logging.debug(f"The output PDB file exists but does not contain valid coordinates.")
 		raise RuntimeError("The output PDB file exists but does not contain valid coordinates.")
- 
+
 	# FIXME -- do we want this? This will grab only the first part of an SMI string and will
 	# ignore extended attributes
 	first_smile_component = tautomer['smi_protomer'].split()[0]
@@ -1341,7 +1394,7 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 	#tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
 
 
-	# Modifying the header of the pdb file and correction of the charges in the pdb file in 
+	# Modifying the header of the pdb file and correction of the charges in the pdb file in
 	# order to be conform with the official specifications (otherwise problems with obabel)
 
 	local_remarks = tautomer['remarks'].copy()
@@ -1359,7 +1412,7 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 					continue
 				line = re.sub(r"REVDAT.*$", "\n", line)
 				line = re.sub(r"NONE", "", line)
-				line = re.sub(r" UN[LK] ", " LIG ", line)				
+				line = re.sub(r" UN[LK] ", " LIG ", line)
 				line = re.sub(r"\+0", "", line)
 				line = re.sub(r"([+-])([0-9])$", r"\2\1", line)
 				if(re.search(r"^\s*$", line)):
@@ -1371,7 +1424,7 @@ def chemaxon_conformation(ctx, tautomer, output_file):
 def molconvert_generate_conformation(ctx, tautomer, input_file, output_file):
 	logging.debug(f"Running conformation with molconvert for {tautomer['key']}")
 	run_molconvert([ *(str(ctx['config']['molconvert_3D_options']).split()) ], input_file, output_file, ctx['config']['nailgun_port'], ctx['config']['nailgun_host'], timeout=ctx['config']['molconvert_conformation_timeout'])
-	
+
 
 def run_molconvert(molconvert_3D_options, input_file, output_file, nailgun_port, nailgun_host, timeout=30):
 	local_args = [
@@ -1388,16 +1441,7 @@ def run_molconvert(molconvert_3D_options, input_file, output_file, nailgun_port,
 # OBabel Components
 #
 
-
-# Step 1: Desalt (not performed by OBabel)
-# Step 2: Neutralization (not performed by OBabel)
-# Step 3: Tautomerization (not performed by OBabel)
-# Step 4: Protonation 
-#
-
-
-
-# Step 4: 3D Protonation 
+# General functions for obabel and obtautomer
 
 def run_obabel_general(obabelargs, timeout=30, save_logfile=""):
 
@@ -1419,7 +1463,7 @@ def run_obabel_general(obabelargs, timeout=30, save_logfile=""):
 	if(ret.returncode != 0):
 		raise RuntimeError(f"Return code from obabel is {ret.returncode}")
 
-	for line in ret.stdout.splitlines() + ret.stderr.splitlines(): 
+	for line in ret.stdout.splitlines() + ret.stderr.splitlines():
 		if(re.search(r'failed|timelimit|error|no such file|not found', line)):
 			raise RuntimeError(f"An error flag was detected in the log files from obabel")
 
@@ -1429,11 +1473,40 @@ def run_obabel_general(obabelargs, timeout=30, save_logfile=""):
 	}
 
 
+def run_obtautomer_general(obtautomerargs, output_file, timeout=30, save_logfile=""):
+
+	obtautomerargs_x = []
+	for arg in obtautomerargs:
+		if(arg != ""):
+			obtautomerargs_x.append(arg)
+
+	cmd = [
+		'obtautomer',
+		*obtautomerargs
+	]
+
+	try:
+		ret = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+		write_file_single(output_file, ret.stdout)
+	except subprocess.TimeoutExpired as err:
+		raise RuntimeError(f"obtautomer timed out") from err
+
+	if(ret.returncode != 0):
+		raise RuntimeError(f"Return code from obtautomer is {ret.returncode}")
+
+	for line in ret.stdout.splitlines() + ret.stderr.splitlines():
+		if(re.search(r'failed|timelimit|error|no such file|not found', line)):
+			raise RuntimeError(f"An error flag was detected in the log files from obtautomer")
+
+	return {
+		'stderr' : ret.stderr,
+		'stdout' : ret.stdout
+	}
+
 def write_file_single(filename, data_to_write):
 	with open(filename, "w") as write_file:
 		write_file.write(data_to_write)
 		write_file.write("\n")
-
 
 def run_obabel_general_get_value(obabelargs, output_file, timeout=30):
 	ret = run_obabel_general(obabelargs, timeout=timeout)
@@ -1448,6 +1521,69 @@ def run_obabel_general_get_value(obabelargs, output_file, timeout=30):
 		raise RuntimeError(f"No output in file from obabel")
 
 	return lines[0]
+
+def run_obtautomer_general_get_value(obtautomerargs, output_file, timeout=30):
+	ret = run_obtautomer_general(obtautomerargs, output_file, timeout=timeout)
+
+	if(not os.path.isfile(output_file)):
+		raise RuntimeError(f"No output file from obtautomer")
+
+	with open(output_file, "r") as read_file:
+		lines = read_file.readlines()
+
+	if(len(lines) == 0):
+		raise RuntimeError(f"No output in file from obtautomer")
+
+	return lines
+
+# Step 1: Desalt (not performed by OBabel)
+# Step 2: Neutralization (not performed by OBabel)
+
+def run_obabel_neutralization(ctx, ligand):
+
+	input_file = f"{ctx['temp_dir'].name}/obabel.neutra_input.smi"
+	output_file = f"{ctx['temp_dir'].name}/obabel.neutra_output.smi"
+
+	# Output the SMI to a temp input file
+	write_file_single(input_file, ligand['smi_desalted'])
+
+	cmd = [
+		'-ismi', input_file,
+		'--neutralize',
+		'-osmi', '-O', output_file
+	]
+
+	ligand['smi_neutralized'] = run_obabel_general_get_value(cmd, output_file, timeout=ctx['config']['obabel_neutralization_timeout'])
+	ligand['neutralization_success'] = 1
+	ligand['remarks']['neutralization'] = "The compound was neutralized by Open Babel."
+	ligand['neutralization_type'] = "genuine"
+
+
+# Step 3: Tautomerization (not performed by OBabel)
+
+def run_obabel_tautomerization(ctx, stereoisomer):
+
+	input_file = f"{ctx['temp_dir'].name}/obabel.tauto_input.smi"
+	output_file = f"{ctx['temp_dir'].name}/obabel.tauto_output.smi"
+
+	# Output the SMI to a temp input file
+	write_file_single(input_file, stereoisomer['smi'])
+
+	cmd = [
+		input_file
+	]
+
+	stereoisomer['tautomer_smiles'] = []
+	stereoisomer['tautomer_smiles'] = run_obtautomer_general_get_value(cmd, output_file, timeout=ctx['config']['obabel_tautomerization_timeout'])
+	del (stereoisomer['tautomer_smiles'][-1])
+	stereoisomer['tautomer_smiles'] = [i.strip() for i in stereoisomer['tautomer_smiles']]
+
+	stereoisomer['remarks']['tautomerization'] = "The tautomeric state was generated by Open Babel."
+
+
+# Step 4: Protonation
+
+# Step 4: 3D Protonation
 
 
 def run_obabel_protonation(ctx, tautomer):
@@ -1485,7 +1621,7 @@ def run_obabel_attributes(ctx, tautomer, local_file, attributes):
 		ret = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 	except subprocess.TimeoutExpired as err:
 		raise RuntimeError(f"obprop timed out") from err
-	
+
 	output_lines = ret.stdout.splitlines()
 
 	if(len(output_lines) == 0):
@@ -1546,7 +1682,7 @@ def run_obabel_hbd(local_file, tautomer):
 #
 # Step 6: 3D conformation generation
 def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_have_output=1, timeout=30):
-	
+
 
 	input_file = f"{ctx['temp_dir'].name}/obabel.conf.{tautomer['key']}_input.smi"
 	write_file_single(input_file, tautomer['smi_protomer'])
@@ -1564,7 +1700,7 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 
 	if(must_have_output and len(output_lines) == 0):
 		raise RuntimeError(f"No output")
-	
+
 	if(not os.path.isfile(output_file_tmp)):
 		raise RuntimeError(f"No PDB file generated")
 	if(file_is_empty(output_file_tmp)):
@@ -1640,7 +1776,7 @@ def obabel_check_energy(ctx, tautomer, input_file, max_energy):
 	debug_save_output(stdout=ret.stdout, stderr=ret.stderr, tautomer=tautomer, ctx=ctx, file="energy_check")
 
 	output_lines = ret.stdout.splitlines()
-	
+
 	kcal_to_kJ = 4.184
 
 	if(len(output_lines) > 0):
@@ -1778,7 +1914,7 @@ def run_rdkit_attributes(ctx, tautomer, smi, attributes_to_gen, attributes):
 # General Components
 #
 
-def generate_tarfile(dir):	
+def generate_tarfile(dir):
 	os.chdir(str(Path(dir).parents[0]))
 
 	with tarfile.open(f"{os.path.basename(dir)}.tar.gz", "x:gz") as tar:
@@ -1798,7 +1934,7 @@ def get_collection_hash(collection_key):
 # We now expect our config file to be a JSON file
 
 def parse_config(filename):
-	
+
 	with open(filename, "r") as read_file:
 		config = json.load(read_file)
 
@@ -1808,14 +1944,16 @@ def parse_config(filename):
 def is_cxcalc_used(ctx):
 	used = False
 
-	if (ctx['main_config']['tautomerization'] == "true"):
+	if (ctx['main_config']['tautomerization'] == "true" and
+			(ctx['main_config']['tautomerization_program_1'] == "cxcalc" or
+			 ctx['main_config']['tautomerization_program_2'] == "cxcalc")):
 		used = True
 
 	if (ctx['main_config']['protonation_state_generation'] == "true" and
 			(ctx['main_config']['protonation_program_1'] == "cxcalc" or
 			 ctx['main_config']['protonation_program_2'] == "cxcalc")):
-		used = True 
-	
+		used = True
+
 	# In addition to these, there are some tranche assignment functions that use
 	# cxcalc. Original code does not cover these, but should be addressed
 
@@ -1826,14 +1964,17 @@ def is_molconvert_used(ctx):
 	if (ctx['main_config']['conformation_generation'] == "true" and
 			(ctx['main_config']['conformation_program_1'] == "molconvert" or
 			 ctx['main_config']['conformation_program_2'] == "molconvert")):
-		used = True 
+		used = True
 
 	return used
 
 def is_standardizer_used(ctx):
 	used = False
-	if (ctx['main_config']['neutralization'] == "true"):
-		used = True 
+	if (ctx['main_config']['neutralization'] == "true" and
+			(ctx['main_config']['neutralization_program_1'] == "standardizer" or
+			 ctx['main_config']['neutralization_program_2'] == "standardizer")):
+		used = True
+
 	return used
 
 
@@ -1853,7 +1994,7 @@ def is_rdkit_needed(ctx):
 
 
 def get_helper_versions(ctx):
-	
+
 	ctx['versions'] = {
 		'cxcalc': "INVALID",
 		'molconvert': "INVALID",
@@ -1891,12 +2032,12 @@ def get_helper_versions(ctx):
 		raise RuntimeError("Cannot get obabel version")
 	ctx['versions']['obabel'] = ret.stdout.strip()
 
-# This has the potential for a race condition. Better 
+# This has the potential for a race condition. Better
 # solution is if Nailgun could report port that it is using
 
 def get_free_port():
 	sock = socket.socket()
-	sock.bind(('', 0)) 
+	sock.bind(('', 0))
 	return sock.getsockname()[1]
 
 def start_ng_server(host, port_num, java_max_heap_size):
@@ -1919,7 +2060,7 @@ def cleanup_ng(ng_process):
 
 def get_workunit_information():
 
-	workunit_id = os.getenv('VFLP_WORKUNIT','') 
+	workunit_id = os.getenv('VFLP_WORKUNIT','')
 	subjob_id = os.getenv('VFLP_WORKUNIT_SUBJOB','')
 
 	if(workunit_id == "" or subjob_id == ""):
@@ -1998,7 +2139,7 @@ def get_subjob_config(ctx, workunit_id, subjob_id):
 			logging.error(f"Cannot open {workunit_json}: {str(err)}")
 			raise
 
-		# Set paths used later by the sharedfs mode	
+		# Set paths used later by the sharedfs mode
 		ctx['workflow_dir'] = ctx['main_config']['sharedfs_workflow_path']
 		ctx['collection_dir'] = ctx['main_config']['sharedfs_collection_path']
 
@@ -2035,7 +2176,7 @@ def process(ctx):
 	# and we have specific subjob information in ctx['subjob_config']
 
 	get_subjob_config(ctx, workunit_id, subjob_id)
-	
+
 	# Setup the Nailgun server [only setup if needed]
 
 	if(is_nailgun_needed(ctx)):
@@ -2045,7 +2186,7 @@ def process(ctx):
 		ctx['main_config']['nailgun_port'] = str(ng_port)
 		ctx['main_config']['nailgun_host'] = str(ng_host)
 		atexit.register(cleanup_ng, ng_process)
-	
+
 	# Get information about the versions of the software
 	# being used in the calculations
 	get_helper_versions(ctx)
@@ -2059,7 +2200,7 @@ def process(ctx):
 		process_collection(ctx, collection_key, collection, collection_data)
 
 
-		
+
 
 def process_collection(ctx, collection_key, collection, collection_data):
 
@@ -2087,7 +2228,7 @@ def process_collection(ctx, collection_key, collection, collection_data):
 
 		tasklist.append(task)
 
-	start_time = datetime.now() 
+	start_time = datetime.now()
 
 	res = []
 
@@ -2097,10 +2238,10 @@ def process_collection(ctx, collection_key, collection, collection_data):
 	else:
 		with multiprocessing.Pool(processes=ctx['vcpus_to_use']) as pool:
 			res = pool.map(process_ligand, tasklist)
-	
-	end_time  = datetime.now() 
+
+	end_time  = datetime.now()
 	difference_time = end_time - start_time
-	
+
 	print(f"time difference is: {difference_time.seconds} seconds")
 
 
@@ -2115,7 +2256,7 @@ def process_collection(ctx, collection_key, collection, collection_data):
 
 	collection_summary = { 'ligands': {}, 'seconds': difference_time.seconds }
 
-	
+
 	# Generate summaries based on collection from each of the results
 
 	for task_result in res:
@@ -2151,7 +2292,7 @@ def process_collection(ctx, collection_key, collection, collection_data):
 	move_list.append(move_item)
 
 
-	# Save the output files from the calculations to 
+	# Save the output files from the calculations to
 	# the location listed in the configuration file
 	#
 	# In all cases the data is tar.gz for folders
@@ -2191,7 +2332,7 @@ def process_collection(ctx, collection_key, collection, collection_data):
 	if(ctx['main_config']['store_all_intermediate_logs'] == "true"):
 		logging.error("Saving intermediate logs")
 		for collection_key, collection in ctx['subjob_config']['collections'].items():
-			
+
 			local_path_dir = [
 				collection_temp_dir.name,
 				"intermediate",
@@ -2220,7 +2361,7 @@ def process_collection(ctx, collection_key, collection, collection_data):
 
 	for move_item in move_list:
 		move_file(ctx, move_item)
-		
+
 
 
 def move_file(ctx, move_item):
@@ -2290,7 +2431,7 @@ def generate_remote_path(ctx, collection, output_type="status", output_format="j
 			collection['tranche'],
 			collection['collection_name']
 		]
-			
+
 		return"/".join(collection_path) + ".tar.gz"
 	else:
 		raise RuntimeError(f"Invalid value of output_format ({output_format})")
@@ -2311,8 +2452,8 @@ def generate_collection_summary_file(collection, collection_temp_dir, collection
 
 def get_collection_data(ctx, collection_key):
 
-	collection = ctx['subjob_config']['collections'][collection_key] 
-	
+	collection = ctx['subjob_config']['collections'][collection_key]
+
 	collection_data = {}
 	collection_data['ligands'] = {}
 
