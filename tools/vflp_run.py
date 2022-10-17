@@ -54,10 +54,15 @@ import rdkit
 import rdkit.Chem.QED
 import rdkit.Chem.Scaffolds.MurckoScaffold
 import selfies
+import numpy as np
 
 from datetime import datetime
 from pathlib import Path
 from botocore.config import Config
+from rdkit import Chem
+from rdkit.Chem.MolStandardize import rdMolStandardize
+from rdkit.Chem import MolToSmiles as mol2smi
+from rdkit.Chem.EnumerateStereoisomers import EnumerateStereoisomers, StereoEnumerationOptions
 
 ####################
 # Individual tasks that will be completed in parallel
@@ -370,12 +375,38 @@ def neutralization(ctx, ligand):
 #######################
 # Step 3: Stereoisomer Generation
 
+def stereoisomer_generation_instance(ctx, ligand, program):
+	step_timer_start = time.perf_counter()
+	valid_programs = ("rdkit", "cxcalc")
+
+	if(program == "none"):
+		raise RuntimeError(f"No stereoisomer generation program remaining")
+	elif(program not in valid_programs):
+		raise RuntimeError(f"Stereoisomer generation program '{program}' is not valid")
+
+	try:
+		if(program == "cxcalc"):
+			logging.info("Starting the stereoisomer generation with cxcalc")
+			run_chemaxon_stereoisomer_generation(ctx, ligand)
+			ligand['status_sub'].append(['stereoisomer', { 'state': 'success', 'text': '' } ])
+		elif(program == "rdkit"):
+			logging.info("Starting the stereoisomer generation with rdkit")
+			# Need to include the option for only one (True option) or multiple stereoisomers (currently multiple)
+			run_rdkit_stereoisomer_generation(ctx, ligand, False)
+			ligand['status_sub'].append(['stereoisomer', { 'state': 'success', 'text': '' } ])
+	except RuntimeError as error:
+		ligand['timers'].append([f'{program}_stereoisomer_generation', time.perf_counter() - step_timer_start])
+		return error
+
+	ligand['timers'].append([f'{program}_stereoisomer_generation', time.perf_counter() - step_timer_start])
+
 def stereoisomer_generation(ctx, ligand):
 
 	if(ctx['config']['stereoisomer_generation'] == "true"):
-		logging.info("Starting the stereoisomer generation with cxcalc")
-		run_chemaxon_stereoisomer_generation(ctx, ligand)
-		ligand['status_sub'].append(['stereoisomer', { 'state': 'success', 'text': '' } ])
+		try:
+			stereoisomer_generation_instance(ctx, ligand, ctx['config']['stereoisomer_generation_program_1'])
+		except RuntimeError as error:
+			stereoisomer_generation_instance(ctx, ligand, ctx['config']['stereoisomer_generation_program_2'])
 	else:
 		ligand['stereoisomer_smiles'] = [ ligand['smi_neutralized'] ]
 
@@ -1558,6 +1589,107 @@ def run_obabel_neutralization(ctx, ligand):
 	ligand['remarks']['neutralization'] = "The compound was neutralized by Open Babel."
 	ligand['neutralization_type'] = "genuine"
 
+# Step X: Stereoisomer generation
+
+def perform_isomer_unique_correction(ctx, sterio_smiles_ls):
+
+	'''
+    When RDkit enumerates sterio-isomers, some of them can be redundent.
+    To resolve this, we use obabel to convert them into 3D, convert back to
+    canonical smiles, and, use this as the final list of sterio smiles for
+    a particular molecule.
+
+    Parameters
+    ----------
+    sterio_smiles_ls : list of strings
+        A list of valid SMILE strings.
+
+    Returns
+    -------
+    isomers_canon : list of strings
+        A list of valid SMILE strings, containing the corrected smiles!.
+    '''
+
+	smi_file = ctx['intermediate_dir'] / "sterio.smi"
+	sdf_file = ctx['intermediate_dir'] / "sterio.sdf"
+
+	isomers_canon = []
+
+	for smi in sterio_smiles_ls:
+		with open(smi_file, 'w') as f:
+			f.writelines(smi)
+
+		subprocess.run([ 'obabel', smi_file, '--gen3D', '-O', sdf_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+		subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+		subprocess.run(['obabel', sdf_file, '-O', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+
+		with open(smi_file, 'r') as f:
+			new_smi = f.readlines()
+		new_smi = new_smi[0].strip()
+
+		subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+		subprocess.run(['rm', sdf_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+
+		mol = Chem.MolFromSmiles(new_smi)
+		new_smi_canon = Chem.MolToSmiles(mol, canonical=True)
+
+		isomers_canon.append(new_smi_canon)
+
+	return list(set(isomers_canon))
+
+
+def run_rdkit_stereoisomer_generation(ctx, ligand, assigned=True):
+	'''
+    Enumerate all stereoisomers of the provided molecule SMILES string.
+    Note: Only unspecified stereocenters are expanded.
+
+    Parameters
+    ----------
+    smi : str
+         Valid molecule SMILE string.
+    assigned: bool
+         if True, isomers will be generated for only the unasigned stereo-locations
+                  for a smile (faster)
+         if False, all isomer combinations will be generated, regardless of what is
+                  specified in the input smile (slower)
+
+    Returns
+    -------
+    stereo_smiles: list of strs.
+         A list of valid smile strings, representing stereoisomers.
+
+    '''
+
+	step_timer_start = time.perf_counter()
+
+	# Place smi string into a file that can be read
+	local_file = ctx['intermediate_dir'] / "neutralized.smi"
+	write_file_single(local_file, ligand['smi_neutralized'])
+
+	m = Chem.MolFromSmiles(ligand['smi_neutralized'])
+	if assigned == True:  # Faster
+		opts = StereoEnumerationOptions(unique=True)
+	else:
+		opts = StereoEnumerationOptions(unique=True, onlyUnassigned=False)
+
+	isomers = tuple(EnumerateStereoisomers(m, options=opts))
+
+	ligand['stereoisomer_smiles'] = []
+	for smi in sorted(Chem.MolToSmiles(x, isomericSmiles=True) for x in isomers):
+		ligand['stereoisomer_smiles'].append(smi)
+
+	if(ctx['config']['rdkit_stereoisomer_generation_unique_correction'] == "true"):
+		ligand['stereoisomer_smiles'] = perform_isomer_unique_correction(ctx, ligand['stereoisomer_smiles'])
+
+	if(len(ligand['stereoisomer_smiles']) >= 1):
+		ligand['remarks']['stereoisomer'] = "The stereoisomers were generated by RDKit."
+		ligand['timers'].append(['rdkit_stereoisomer', time.perf_counter() - step_timer_start])
+		return
+	else:
+		raise RuntimeError("No output for stereoisomer state generation")
+
+	raise RuntimeError("Stereoisomer generation failed")
+
 
 # Step 3: Tautomerization (not performed by OBabel)
 
@@ -1990,6 +2122,12 @@ def is_rdkit_needed(ctx):
 			if tranche_type in attributes:
 				if(attributes[tranche_type]['prog'] == "rdkit"):
 					return True
+
+	elif(ctx['main_config']['stereoisomer_generation'] == "true" and
+			(ctx['main_config']['stereoisomer_generation_program_1'] == "rdkit" or
+			 ctx['main_config']['stereoisomer_generation_program_2'] == "rdkit")):
+		return True
+
 	return False
 
 

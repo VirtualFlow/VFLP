@@ -234,11 +234,19 @@ stereoisomer_generation=false
 #   * false
 #   * true
 
+stereoisomer_generation_program_1=rdkit
+stereoisomer_generation_program_2=none
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Setting only required if stereoisomer_generation=true
+# Possible values:
+#   * rdkit
+#   * cxcalc
+
 stereoisomer_obligatory=false
 # Setting only required if stereoisomer_generation=true
 # Possible values:
 #   * true: Successful stereoisomer generation of the ligand is mandatory
-#           (unsuccessful tautomerization leads to the omission of this ligand).
+#           (unsuccessful stereoisomer generation leads to the omission of this ligand).
 #   * false: The ligand will continue to be processed even if the stereoisomer generation
 #            step fails.
 
@@ -249,8 +257,15 @@ cxcalc_stereoisomer_generation_options=-T -f smiles
 # Documentation on the options is available here:
 #     https://docs.chemaxon.com/display/docs/cxcalc-calculator-functions.md#src-1806682-cxcalccalculatorfunctions-stereoisomers
 
+rdkit_stereoisomer_generation_unique_correction=false
+# Enumeration of stereoisomers by RDkit can result in redundant stereoisomers
+# This can be resolved by setting this option to true. However, can be time consuming
+
 cxcalc_stereoisomer_timeout=15
-# Time in seconds to wait to timeout
+# Time in seconds to wait to timeout for cxcalc
+
+obabel_stereoisomer_timeout=30
+# Time in seconds to wait to timeout for obabel
 
 ****** Tautomerization
 
