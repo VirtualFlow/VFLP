@@ -879,7 +879,6 @@ def assign_character_mapping(string_mapping, tranche_value):
 	return "X"
 
 
-
 def assign_character(partitions, tranche_value):
 
 	tranche_letters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -1045,6 +1044,7 @@ def generate_remarks(remark_list, remark_order="default", target_format="pdb"):
 #
 # Called directly from process_tautomer into obabel
 
+
 #######################
 # Step 8: Energy Check
 #
@@ -1169,8 +1169,7 @@ def run_chemaxon_calculator(cxargs, local_file, nailgun_port, nailgun_host, time
 
 
 # Step 1: Desalt (not performed by ChemAxon)
-# Step 2: Neutralization
-#
+# Step 2: Neutralization by Standardizer
 
 def run_chemaxon_neutralization_standardizer(ctx, ligand):
 
@@ -1200,7 +1199,7 @@ def run_chemaxon_neutralization_standardizer(ctx, ligand):
 	ligand['timers'].append(['chemaxon_neutralization', time.perf_counter() - step_timer_start])
 
 
-# Step 3a: Stereoisomer Generation
+# Step 3a: Stereoisomer Generation by ChemAxon
 
 def run_chemaxon_stereoisomer_generation(ctx, ligand):
 	step_timer_start = time.perf_counter()
@@ -1238,7 +1237,7 @@ def run_chemaxon_stereoisomer_generation(ctx, ligand):
 	raise RuntimeError("Stereoisomer generation failed")
 
 
-# Step 3b: Tautomerization
+# Step 3b: Tautomerization by ChemAxon
 
 def run_chemaxon_tautomer_generation(ctx, stereoisomer):
 	step_timer_start = time.perf_counter()
@@ -1280,7 +1279,7 @@ def run_chemaxon_tautomer_generation(ctx, stereoisomer):
 	raise RuntimeError("Tautomer state generation failed")
 
 
-# Step 4: Protonation
+# Step 4: Protonation by ChemAxon
 
 def cxcalc_protonate(ctx, tautomer):
 
@@ -1568,7 +1567,7 @@ def run_obtautomer_general_get_value(obtautomerargs, output_file, timeout=30):
 	return lines
 
 # Step 1: Desalt (not performed by OBabel)
-# Step 2: Neutralization (not performed by OBabel)
+# Step 2: Neutralization by OBabel
 
 def run_obabel_neutralization(ctx, ligand):
 
@@ -1589,25 +1588,25 @@ def run_obabel_neutralization(ctx, ligand):
 	ligand['remarks']['neutralization'] = "The compound was neutralized by Open Babel."
 	ligand['neutralization_type'] = "genuine"
 
-# Step X: Stereoisomer generation
+# Step 3a: Stereoisomer Generation by RDKit
 
 def perform_isomer_unique_correction(ctx, sterio_smiles_ls):
 
 	'''
-    When RDkit enumerates sterio-isomers, some of them can be redundent.
+    When RDkit enumerates sterio-isomers, some of them can be redundant.
     To resolve this, we use obabel to convert them into 3D, convert back to
-    canonical smiles, and, use this as the final list of sterio smiles for
-    a particular molecule.
+    canonical smiles, and, use this as the final list of stereoisomer smiles
+    for a particular molecule.
 
     Parameters
     ----------
     sterio_smiles_ls : list of strings
-        A list of valid SMILE strings.
+        A list of valid SMILES strings.
 
     Returns
     -------
     isomers_canon : list of strings
-        A list of valid SMILE strings, containing the corrected smiles!.
+        A list of valid SMILES strings, containing the corrected smiles!.
     '''
 
 	smi_file = ctx['intermediate_dir'] / "sterio.smi"
@@ -1691,7 +1690,7 @@ def run_rdkit_stereoisomer_generation(ctx, ligand, assigned=True):
 	raise RuntimeError("Stereoisomer generation failed")
 
 
-# Step 3: Tautomerization (not performed by OBabel)
+# Step 3b: Tautomerization by OBabel
 
 def run_obabel_tautomerization(ctx, stereoisomer):
 
