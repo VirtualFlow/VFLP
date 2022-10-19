@@ -71,8 +71,10 @@ def parse_config(filename):
 
     timeout_defaults = {
         'chemaxon_neutralization_timeout' : 30,
+        'obabel_neutralization_timeout' : 30,
         'cxcalc_stereoisomer_timeout' : 30,
         'cxcalc_tautomerization_timeout' : 30,
+        'obabel_tautomerization_timeout' : 30,
         'cxcalc_protonation_timeout': 30,
         'obabel_protonation_timeout': 30,
         'molconvert_conformation_timeout': 30,

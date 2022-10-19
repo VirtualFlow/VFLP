@@ -8,7 +8,7 @@ job_name=testing
 # Used to describe distinct runs (using the same name will
 # overwrite data if using S3!)
 
-threads_to_use=16
+threads_to_use=384
 # This sets how many processes the main execution loop should be using
 # to process. This is generally 2x the number of vCPUs or hyperthreads
 # available on the system it is being run on
@@ -18,7 +18,7 @@ threads_to_use=16
 ** Batch system configuration
 ************************************************
 
-batchsystem=awsbatch
+batchsystem=slurm
 # Possible values: awsbatch, slurm
 
 
@@ -71,26 +71,25 @@ slurm_template=./templates/template1.slurm.sh
 # template file if they are not available as pass throughs from
 # VFVS
 
-slurm_array_job_throttle=100
+slurm_array_job_throttle=1
 # Maximum number of jobs running within a single slurm array job
 
-slurm_partition=partition
+slurm_partition=standard96
 # Partition to submit the job
 
-slurm_cpus=18
+slurm_cpus=192
 # Number of CPUs that are being used
 
-slurm_array_job_size=100
+slurm_array_job_size=1
 # Maximum number of concurrent jobs from a single array job
 # that should be run
-
 
 
 ************************************************
 ** Storage configuration
 ************************************************
 
-job_storage_mode=s3
+job_storage_mode=sharedfs
 # This mode determines where data is retrieved and stored from as part of
 # VFVS. Valid modes:
 #   * s3: Job data is stored on S3 object store, which is the required
@@ -100,7 +99,7 @@ job_storage_mode=s3
 #         same shared filesystem that will allow for both input and output
 #         of data. This is required if using Slurm
 
-job_storage_output_addressing=hash
+job_storage_output_addressing=standard
 # If input is placed with the hash addressing mode, then use 'hash'.
 # otherwise use "standard" for the classic addressing mode
 # 'hash' will place data in:
@@ -131,7 +130,7 @@ object_store_job_output_data_prefix=jobs/vflp
 
 ****** Shared Filesystem Settings
 
-collection_folder=/home/ec2-user/collections
+collection_folder=../input-files/collections
 # Path to where the collection file are stored
 #  * This is used when job_storage_mode=sharedfs or
 #    when the uploader helper script is being used
@@ -195,8 +194,20 @@ neutralization=true
 #   * false
 #   * true
 
+neutralization_program_1=obabel
+neutralization_program_2=none
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Setting only required if neutralization=true
+# Possible values:
+#   * obabel
+#   * standardizer
+#   * none (only for neutralization_program_2)
+
 chemaxon_neutralization_timeout=15
-# Time in seconds to wait to timeout
+# Time in seconds to wait to timeout for neutralization with chemaxon
+
+obabel_neutralization_timeout=15
+# Time in seconds to wait to timeout for neutralization with obabel
 
 neutralization_mode=only_genuine_desalting_and_if_charged
 ###neutralization_mode=after_desalting_if_charged
@@ -218,16 +229,24 @@ neutralization_obligatory=false
 
 ****** Stereoisomer Generation
 
-stereoisomer_generation=true
+stereoisomer_generation=false
 # Possible values:
 #   * false
 #   * true
 
-stereoisomer_obligatory=true
+stereoisomer_generation_program_1=rdkit
+stereoisomer_generation_program_2=none
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Setting only required if stereoisomer_generation=true
+# Possible values:
+#   * rdkit
+#   * cxcalc
+
+stereoisomer_obligatory=false
 # Setting only required if stereoisomer_generation=true
 # Possible values:
 #   * true: Successful stereoisomer generation of the ligand is mandatory
-#           (unsuccessful tautomerization leads to the omission of this ligand).
+#           (unsuccessful stereoisomer generation leads to the omission of this ligand).
 #   * false: The ligand will continue to be processed even if the stereoisomer generation
 #            step fails.
 
@@ -238,8 +257,15 @@ cxcalc_stereoisomer_generation_options=-T -f smiles
 # Documentation on the options is available here:
 #     https://docs.chemaxon.com/display/docs/cxcalc-calculator-functions.md#src-1806682-cxcalccalculatorfunctions-stereoisomers
 
+rdkit_stereoisomer_generation_unique_correction=false
+# Enumeration of stereoisomers by RDkit can result in redundant stereoisomers
+# This can be resolved by setting this option to true. However, can be time consuming
+
 cxcalc_stereoisomer_timeout=15
-# Time in seconds to wait to timeout
+# Time in seconds to wait to timeout for cxcalc
+
+obabel_stereoisomer_timeout=30
+# Time in seconds to wait to timeout for obabel
 
 ****** Tautomerization
 
@@ -247,6 +273,15 @@ tautomerization=true
 # Possible values:
 #   * false
 #   * true
+
+tautomerization_program_1=obabel
+tautomerization_program_2=none
+# Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
+# Setting only required if tautomerization=true
+# Possible values:
+#   * obabel
+#   * cxcalc
+#   * none (only for tautomerization_program_2)
 
 tautomerization_obligatory=false
 # Setting only required if tautomerization=true
@@ -258,7 +293,10 @@ cxcalc_tautomerization_options=
 # any options which should be passed to the tautomerization plugin of cxcalc
 
 cxcalc_tautomerization_timeout=15
-# Time in seconds to wait to timeout
+# Time in seconds to wait to timeout for tautomerization with cxcalc
+
+obabel_tautomerization_timeout=30
+# Time in seconds to wait to timeout for tautomerization with obabel
 
 ****** Protonation State Generation
 
@@ -267,8 +305,8 @@ protonation_state_generation=true
 #   * false
 #   * true
 
-protonation_program_1=cxcalc
-protonation_program_2=obabel
+protonation_program_1=obabel
+protonation_program_2=none
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead. If the second program also fails, then the ligand is skipped.
 # Setting only required if protonation_state_generation=true
 # Possible values:
@@ -282,7 +320,6 @@ cxcalc_protonation_timeout=15
 obabel_protonation_timeout=15
 # Time in seconds to wait to timeout
 
-
 protonation_obligatory=false
 # Setting only required if protonation_state_generation=true
 # Possible values:
@@ -290,7 +327,6 @@ protonation_obligatory=false
 #     protonation leads to the omission of this ligand).
 #   * false: The ligand will continue to be processed even if the protonation step fails.
 #     This might light to protonation states which are unphysiological.
-
 
 protonation_pH_value=7.4
 # Setting only required if protonation_state_generation=true
@@ -305,8 +341,8 @@ conformation_generation=true
 #   * false
 #   * true
 
-conformation_program_2=obabel
-conformation_program_1=molconvert
+conformation_program_1=obabel
+conformation_program_2=none
 # Setting only required if conformation_generation=true
 # Program 1 is used at first for each ligand, and if it fails program 2 is used instead.
 # If the second program also fails, then the ligand is skipped.
@@ -332,7 +368,6 @@ molconvert_conformation_timeout=15
 obabel_conformation_timeout=15
 # Time in seconds to wait to timeout
 
-
 conformation_obligatory=true
 # Setting only required if conformation_generation=true
 # Possible values:
@@ -340,7 +375,6 @@ conformation_obligatory=true
 #     (unsuccessful conformation generation leads to the omission of this ligand).
 #   * false: The ligand will continue to be processed even if the conformation
 #      generation step fails.
-
 
 
 ****** Target Format Generation
@@ -379,7 +413,7 @@ tranche_assignments=true
 # Should each ligand be assigned a new tranche based based on molecular properties of the ligand?
 # This is useful in particular if the tranches of the input ligands are pseudo-tranches (i.e. are arbitrary or have no meaning).
 
-tranche_types=mw_file:logp_jchem:hba_jchem:hbd_jchem:rotb_file:tpsa_jchem:mr_jchem:logs:aromaticproportion_jchem:formalcharge:positivechargecount:negativechargecount:fsp3_file:chiralcentercount:doublebondstereoisomercount_jchem:halogencount:sulfurcount:enamine_type
+tranche_types=hbd_obabel
 # These variables are only needed if tranche_assignments=true
 # Multiple values are separated by colons
 # Possible values:
@@ -441,7 +475,7 @@ tranche_types=mw_file:logp_jchem:hba_jchem:hbd_jchem:rotb_file:tpsa_jchem:mr_jch
 #   * qed_rdkit: QED generated by RDKit
 
 
-file_fieldnames=smi:ligand-name:3:4:5:6:7:mw:heavyatomcount:logp:hba:hbd:rotb:fsp3:tpsa:enamine:18
+file_fieldnames=smi:ligand-name:hbd_obabel
 # For each tranche type which reads the value from a file, those values must be defined. 
 # At a minimum 'smi' and 'ligand-name' are REQUIRED (and are generally expected to be the first
 # two items per line
@@ -516,8 +550,6 @@ tranche_aromaticproportion_jchem_partition=0:0.25:0.5:0.75
 tranche_doublebondstereoisomercount_jchem_partition=0
 tranche_qed_rdkit_partition=0.2:0.4:0.6:0.8:1.0
 
-
-
 # For tranche types that are characters or strings (non-numeric)
 # they should be in the format tranche_(tranche_type)_mapping=M:A,C:B
 #  -- the above sample shows that a string value of "M" should
@@ -540,11 +572,11 @@ attributes_to_generate=scaffold_rdkit
 
 ****** JChem-Related Packages
 
-use_cxcalc_helper=1
+use_cxcalc_helper=0
 # If using AWS Batch, then set this to 1. If not, then set to 0 currently. This option
 # provides an optimization to improve performance of the chemaxon properties
 
-jchem_package_filename=jchemsuite.tar.gz
+jchem_package_filename=none
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps, and if tranche_assignments=true
 # The filename of the JChem package located in the folder tools/packages/ in the tar.gz format (available on the ChemAxon homepage)
 # The root folder in the archive has to have the name jchemsuite (normally distributed by ChemAxon in this way)
@@ -552,14 +584,13 @@ jchem_package_filename=jchemsuite.tar.gz
 #   * <filename>
 #   * none
 
-chemaxon_license_filename=chemaxon-license.cxl
+chemaxon_license_filename=none
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # The filename of the license file, which has to be located in the folder tools/packages/
 # Possible values:
 #   * <filename>
 #   * none
 
-#Java_package_filename=java11_bin.tar.gz
 java_package_filename=none
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Any JRE binary distribution of version of at least version 8.
@@ -570,7 +601,7 @@ java_package_filename=none
 #   * <filename>
 #   * none
 
-ng_package_filename=nailgun.tar.gz
+ng_package_filename=none
 # Required only if cxcalc or molconvert (both of ChemAxon) are used in the preparation steps.
 # Nailgun package filename.
 # This has to be a file in the tar.gz format, which has to be located in the folder tools/packages/

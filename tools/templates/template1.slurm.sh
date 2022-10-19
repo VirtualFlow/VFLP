@@ -46,7 +46,9 @@
 
 source $HOME/vflp_env/bin/activate
 
-
+# Load modules (if needed, depends on cluster configuration)
+module load openbabel/3.3.1
+module load java
 
 # deletes the temp directory
 function cleanup {
