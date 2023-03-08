@@ -1979,7 +1979,7 @@ def obabel_generate_targetformat(ctx, tautomer, target_format, input_pdb_file, o
 		remarks.pop('compound')
 		remarks['targetformat'] = f"Generation of the the target format file ({target_format}) was carried out by Open Babel version {ctx['versions']['obabel']}"
 		remarks['date'] = f'Created on {now.strftime("%Y-%m-%d %H:%M:%S")}'
-		remark_string += f"COMPND    Compound: {tautomer['key']}\n"
+		remark_string += f"REMARK    Compound: {tautomer['key']}\n"
 		remark_string += generate_remarks(remarks, target_format=target_format) + "\n"
 	elif(target_format == "mol2"):
 		remarks = tautomer['remarks'].copy()
