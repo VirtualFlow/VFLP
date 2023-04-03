@@ -112,7 +112,7 @@ def submit_slurm(config, client, current_workunit, jobline):
 
 	try:
 		ret = subprocess.run(cmd, capture_output=True,
-					text=True, timeout=5)
+					text=True, timeout=int(config['slurm_job_submission_timeout']))
 	except subprocess.TimeoutExpired as err:
 		raise Exception("timeout on submission to sbatch")
 

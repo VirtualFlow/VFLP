@@ -87,6 +87,9 @@ slurm_array_job_size=1
 # Maximum number of concurrent jobs from a single array job
 # that should be run
 
+slurm_job_submission_timeout=10
+# Timeout for submission of slurm jobs
+
 
 ************************************************
 ** Storage configuration
