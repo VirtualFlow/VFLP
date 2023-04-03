@@ -74,6 +74,9 @@ slurm_template=./templates/template1.slurm.sh
 slurm_array_job_throttle=1
 # Maximum number of jobs running within a single slurm array job
 
+slurm_account=
+# Slurm account to use. If not set, default account is used
+
 slurm_partition=standard96
 # Partition to submit the job
 
