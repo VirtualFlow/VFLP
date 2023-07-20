@@ -1618,21 +1618,25 @@ def perform_isomer_unique_correction(ctx, sterio_smiles_ls):
 		with open(smi_file, 'w') as f:
 			f.writelines(smi)
 
-		subprocess.run([ 'obabel', smi_file, '--gen3D', '-O', sdf_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
-		subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
-		subprocess.run(['obabel', sdf_file, '-O', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+		try:
+			subprocess.run([ 'obabel', smi_file, '--gen3D', '-O', sdf_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
+			subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
+			subprocess.run(['obabel', sdf_file, '-O', smi_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
 
-		with open(smi_file, 'r') as f:
-			new_smi = f.readlines()
-		new_smi = new_smi[0].strip()
+			with open(smi_file, 'r') as f:
+				new_smi = f.readlines()
+			new_smi = new_smi[0].strip()
 
-		subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
-		subprocess.run(['rm', sdf_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+			subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
+			subprocess.run(['rm', sdf_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
 
-		mol = Chem.MolFromSmiles(new_smi)
-		new_smi_canon = Chem.MolToSmiles(mol, canonical=True)
+			mol = Chem.MolFromSmiles(new_smi)
+			new_smi_canon = Chem.MolToSmiles(mol, canonical=True)
 
-		isomers_canon.append(new_smi_canon)
+			isomers_canon.append(new_smi_canon)
+
+		except Exception:
+			continue
 
 	return list(set(isomers_canon))
 
