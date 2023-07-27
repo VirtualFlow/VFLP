@@ -1550,7 +1550,7 @@ def run_obabel_general_get_value(obabelargs, output_file, timeout=30):
 	if(len(lines) == 0):
 		raise RuntimeError(f"No output in file from obabel")
 
-	return lines[0]
+	return lines[0].replace("\t", "").replace("\n", "").strip()
 
 def run_obtautomer_general_get_value(obtautomerargs, output_file, timeout=30):
 	ret = run_obtautomer_general(obtautomerargs, output_file, timeout=timeout)
@@ -1732,7 +1732,7 @@ def run_obabel_protonation(ctx, tautomer):
 	cmd = [
 		'-p', ctx['config']['protonation_pH_value'],
 		'-ismi', input_file,
-		'-osmi' '-O', output_file
+		'-osmi', '-O', output_file
 	]
 
 	tautomer['smi_protomer'] = run_obabel_general_get_value(cmd, output_file, timeout=ctx['config']['obabel_protonation_timeout'])
