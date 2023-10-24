@@ -1550,7 +1550,7 @@ def run_obabel_general_get_value(obabelargs, output_file, timeout=30):
 	if(len(lines) == 0):
 		raise RuntimeError(f"No output in file from obabel")
 
-	return lines[0]
+	return lines[0].replace("\t", "").replace("\n", "").strip()
 
 def run_obtautomer_general_get_value(obtautomerargs, output_file, timeout=30):
 	ret = run_obtautomer_general(obtautomerargs, output_file, timeout=timeout)
@@ -1618,21 +1618,25 @@ def perform_isomer_unique_correction(ctx, sterio_smiles_ls):
 		with open(smi_file, 'w') as f:
 			f.writelines(smi)
 
-		subprocess.run([ 'obabel', smi_file, '--gen3D', '-O', sdf_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
-		subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
-		subprocess.run(['obabel', sdf_file, '-O', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+		try:
+			subprocess.run([ 'obabel', smi_file, '--gen3D', '-O', sdf_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
+			subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
+			subprocess.run(['obabel', sdf_file, '-O', smi_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
 
-		with open(smi_file, 'r') as f:
-			new_smi = f.readlines()
-		new_smi = new_smi[0].strip()
+			with open(smi_file, 'r') as f:
+				new_smi = f.readlines()
+			new_smi = new_smi[0].strip()
 
-		subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
-		subprocess.run(['rm', sdf_file], capture_output=True, text=True, timeout=ctx['config']['obabel_stereoisomer_timeout'])
+			subprocess.run(['rm', smi_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
+			subprocess.run(['rm', sdf_file], capture_output=True, text=True, timeout=float(ctx['config']['obabel_stereoisomer_timeout']))
 
-		mol = Chem.MolFromSmiles(new_smi)
-		new_smi_canon = Chem.MolToSmiles(mol, canonical=True)
+			mol = Chem.MolFromSmiles(new_smi)
+			new_smi_canon = Chem.MolToSmiles(mol, canonical=True)
 
-		isomers_canon.append(new_smi_canon)
+			isomers_canon.append(new_smi_canon)
+
+		except Exception:
+			continue
 
 	return list(set(isomers_canon))
 
@@ -1728,7 +1732,7 @@ def run_obabel_protonation(ctx, tautomer):
 	cmd = [
 		'-p', ctx['config']['protonation_pH_value'],
 		'-ismi', input_file,
-		'-osmi' '-O', output_file
+		'-osmi', '-O', output_file
 	]
 
 	tautomer['smi_protomer'] = run_obabel_general_get_value(cmd, output_file, timeout=ctx['config']['obabel_protonation_timeout'])
