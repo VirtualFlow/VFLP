@@ -268,8 +268,7 @@ rdkit_stereoisomer_generation_unique_correction=false
 # This can be resolved by setting this option to true. However, can be time consuming
 
 rdkit_stereoisomer_max_count=20
-# Setting maximum number of stereoisomers to be generated when using RDKit. For this to be active, the option
-# rdkit_stereoisomer_generation_unique_correction has to be set to true
+# Setting maximum number of stereoisomers to be generated when using RDKit.
 
 cxcalc_stereoisomer_timeout=15
 # Time in seconds to wait to timeout for cxcalc
