@@ -415,7 +415,7 @@ energy_check=true
 #   * false
 
 energy_max=10000
-# Maximum allowed energy value. Recommended: 10000
+# Maximum allowed energy value (in kJ/mol). Recommended: 10000
 # Possible values: Positive integer
 
 

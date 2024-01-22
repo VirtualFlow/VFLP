@@ -491,7 +491,8 @@ def process_tautomer(ctx, ligand, tautomer):
 	# If there are specific attributes to place in remarks, do that now
 	tautomer['remarks']['additional_attr'] = []
 	for attribute_type in ctx['config']['attributes_to_generate']:
-		tautomer['remarks']['additional_attr'].append(f"{attribute_type}: {tautomer['attr'][attribute_type]}")
+		if attribute_type != "":
+			tautomer['remarks']['additional_attr'].append(f"{attribute_type}: {tautomer['attr'][attribute_type]}")
 
 	# Assign the tranches if needed
 	step_timer_start = time.perf_counter()
@@ -565,10 +566,10 @@ def process_tautomer(ctx, ligand, tautomer):
 
 		if(not obabel_check_energy(ctx, tautomer, tautomer['pdb_file'], ctx['config']['energy_max'])):
 			logging.warning("    * Warning: Ligand will be skipped since it did not pass the energy-check.")
-			tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': '' } ])
+			tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': 'not passed' } ])
 			raise RuntimeError('Failed energy check')
 		else:
-			tautomer['status_sub'].append(['energy-check', { 'state': 'success', 'text': '' } ])
+			tautomer['status_sub'].append(['energy-check', { 'state': 'success', 'text': 'passed' } ])
 
 	## Target formats
 
@@ -735,7 +736,8 @@ def generate_attributes(ctx, ligand, tautomer):
 				rdkit_run = 1
 		else:
 			# We need to generate this one at a time
-			attribute_dict[tranche_type] = generate_single_attribute(ctx, tranche_type, ligand, tautomer, smi_file)
+			if tranche_type != "":
+				attribute_dict[tranche_type] = generate_single_attribute(ctx, tranche_type, ligand, tautomer, smi_file)
 
 	if(obabel_run == 1):
 		run_obabel_attributes(ctx, tautomer, smi_file, attributes)
@@ -1677,18 +1679,15 @@ def run_rdkit_stereoisomer_generation(ctx, ligand, assigned=True):
 		return
 
 	if assigned == True:  # Faster
-		opts = StereoEnumerationOptions(unique=True)
+		opts = StereoEnumerationOptions(unique=True, tryEmbedding=True, maxIsomers=int(ctx['config']['rdkit_stereoisomer_max_count']))
 	else:
-		opts = StereoEnumerationOptions(unique=True, onlyUnassigned=False)
+		opts = StereoEnumerationOptions(unique=True, onlyUnassigned=False, tryEmbedding=True, maxIsomers=int(ctx['config']['rdkit_stereoisomer_max_count']))
 
 	ligand['stereoisomer_smiles'] = []
 	isomers = tuple(EnumerateStereoisomers(m, options=opts))
 
 	for smi in sorted(Chem.MolToSmiles(x, isomericSmiles=True) for x in isomers):
 		ligand['stereoisomer_smiles'].append(smi)
-
-	if int(ctx['config']['rdkit_stereoisomer_max_count']) != 0 and len(ligand['stereoisomer_smiles']) > int(ctx['config']['rdkit_stereoisomer_max_count']):
-		ligand['stereoisomer_smiles'] = ligand['stereoisomer_smiles'][:int(ctx['config']['rdkit_stereoisomer_max_count'])]
 
 	if(ctx['config']['rdkit_stereoisomer_generation_unique_correction'] == "true"):
 		ligand['stereoisomer_smiles'] = perform_isomer_unique_correction(ctx, ligand['stereoisomer_smiles'])
@@ -1834,15 +1833,18 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 	input_file = f"{ctx['temp_dir'].name}/obabel.conf.{tautomer['key']}_input.smi"
 	write_file_single(input_file, tautomer['smi_protomer'])
 
+	output_file_sdf = f"{output_file}.sdf"
 	output_file_tmp = f"{output_file}.tmp"
 	if(conformation):
-		cmd = [ '--gen3d', '-ismi', input_file, '-opdb', '-O', output_file_tmp]
+		cmd1 = [ '--gen3d', '-ismi', input_file, '-osdf', '-O', output_file_sdf]
+		cmd2 = ['-isdf', output_file_sdf, '-opdb', '-O', output_file_tmp]
 		logging.debug(f"Running obabel conformation on smi:'{tautomer['smi_protomer']}")
 	else:
-		cmd = ['-ismi', input_file, '-opdb', '-O', output_file_tmp]
+		cmd1 = ['-ismi', input_file, '-osdf', '-O', output_file_sdf]
+		cmd2 = ['-isdf', output_file_sdf, '-opdb', '-O', output_file_tmp]
 
-
-	ret = run_obabel_general(cmd, timeout=timeout)
+	run_obabel_general(cmd1, timeout=timeout)
+	ret = run_obabel_general(cmd2, timeout=timeout)
 	output_lines = ret['stdout'].splitlines()
 
 	if(must_have_output and len(output_lines) == 0):
@@ -1928,14 +1930,19 @@ def obabel_check_energy(ctx, tautomer, input_file, max_energy):
 
 	if(len(output_lines) > 0):
 		# obabel v2
-		match = re.search(r"^TOTAL\s+ENERGY\s+\=\s+(?P<energy>\d+\.?\d*)\s+(?P<energy_unit>(kcal|kJ))", output_lines[-1])
+		match = re.search(r"^TOTAL\s+ENERGY\s+\=\s+(?P<energy>-?\d+\.?\d*)\s+(?P<energy_unit>(kcal|kJ))", output_lines[-1])
 		if(match):
 			energy_value = float(match.group('energy'))
 			if(match.group('energy_unit') == "kcal"):
 				energy_value *= kcal_to_kJ
 
+			tautomer['remarks']['additional_attr'].append('obenergy: ' + str(energy_value))
+
 			if(energy_value <= float(max_energy)):
 				return 1
+
+			if(energy_value > float(max_energy)):
+				return 0
 
 	tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': "|".join(output_lines) } ])
 
