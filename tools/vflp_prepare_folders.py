@@ -66,6 +66,7 @@ def parse_config(filename):
     config['tranche_types'] = config['tranche_types'].split(":")
     config['file_fieldnames'] = config['file_fieldnames'].split(":")
     config['attributes_to_generate'] = config['attributes_to_generate'].split(":")
+    config['posebusters_check_values'] = config['posebusters_check_values'].split(":")
 
 
 

@@ -571,6 +571,17 @@ def process_tautomer(ctx, ligand, tautomer):
 		else:
 			tautomer['status_sub'].append(['energy-check', { 'state': 'success', 'text': 'passed' } ])
 
+	# Checking the conformer with posebusters
+	if (ctx['config']['posebusters_check'] == "true"):
+		logging.warning("\n * Starting to check the conformer of the ligand with posebusters")
+
+		if (not posebusters_check(ctx, tautomer, tautomer['sdf_file'], ctx['config']['posebusters_check_values'])):
+			logging.warning("    * Warning: Ligand will be skipped since it did not pass the posebusters-check.")
+			tautomer['status_sub'].append(['posebusters-check', {'state': 'failed', 'text': 'not passed'}])
+			raise RuntimeError('Failed posebusters check')
+		else:
+			tautomer['status_sub'].append(['posebusters-check', {'state': 'success', 'text': 'passed'}])
+
 	## Target formats
 
 	logging.debug(f"target formats is {ctx['config']['target_formats']}")
@@ -1868,6 +1879,8 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 	first_smile_component = tautomer['smi_protomer'].split()[0]
 	#tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
 
+	tautomer['sdf_file'] = output_file_sdf
+
 	local_remarks = tautomer['remarks'].copy()
 	local_remarks.pop('compound')
 	remark_string = generate_remarks(local_remarks) + "\n"
@@ -1947,6 +1960,49 @@ def obabel_check_energy(ctx, tautomer, input_file, max_energy):
 	tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': "|".join(output_lines) } ])
 
 	return 0
+
+
+def posebusters_check(ctx, tautomer, input_file, check_values):
+	step_timer_start = time.perf_counter()
+
+	with open(input_file, "r") as read_file:
+		lines = read_file.readlines()
+
+	try:
+		ret = subprocess.run([ 'bust', input_file, '--outfmt', 'csv'], capture_output=True, text=True, timeout=5)
+	except subprocess.TimeoutExpired as err:
+		tautomer['timers'].append(['posebusters', time.perf_counter() - step_timer_start])
+		raise RuntimeError(f"bust timed out") from err
+
+	tautomer['timers'].append(['posebusters', time.perf_counter() - step_timer_start])
+
+	debug_save_output(stdout=ret.stdout, stderr=ret.stderr, tautomer=tautomer, ctx=ctx, file="posebusters_check")
+
+	output_lines = ret.stdout.splitlines()
+
+	if(len(output_lines) > 0):
+		match = output_lines[-1]
+		posebusters_values = match.split(',')[2:]
+		posebusters_values = [bool(value) for value in posebusters_values]
+		check_values = [bool(int(value)) for value in check_values]
+
+		check = True
+		for idx, posebusters_value in enumerate(posebusters_values):
+			if not posebusters_value and check_values[idx]:
+				check = False
+				break
+
+		if(check):
+			tautomer['remarks']['additional_attr'].append('posebusters: ' + str(check))
+			return 1
+		else:
+			tautomer['remarks']['additional_attr'].append('posebusters: ' + str(check))
+			return 0
+
+	tautomer['status_sub'].append(['posebusters-check', { 'state': 'failed', 'text': "|".join(output_lines) } ])
+
+	return 0
+
 
 # Step 9: Generate Target Formats
 
