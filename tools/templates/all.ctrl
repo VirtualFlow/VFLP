@@ -431,7 +431,7 @@ posebusters_check_values=1:1:1:1:1:1:1:1:1
 # Define which posebusters check needs to be passed (1 = needs to be passed, 0 = allowed to fail)
 # Checks: sanitization,all_atoms_connected,bond_lengths,bond_angles,internal_steric_clash,aromatic_ring_flatness,double_bond_flatness,internal_energy
 # Possible values:
-#   * colon-separated list of nine elements (0 or 1)
+#   * colon-separated list of nine integers (0 or 1)
 #   * 1:1:1:1:1:1:1:1:1 (e.g. for all checks to be passed)
 
 posebusters_timeout=5
