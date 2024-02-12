@@ -1928,7 +1928,7 @@ def obabel_check_energy(ctx, tautomer, input_file, max_energy):
 		lines = read_file.readlines()
 
 	try:
-		ret = subprocess.run([ 'obenergy', input_file], capture_output=True, text=True, timeout=int(ctx['main_config']['obenergy_timeout']))
+		ret = subprocess.run([ 'obenergy', input_file], capture_output=True, text=True, timeout=int(ctx['config']['obenergy_timeout']))
 	except subprocess.TimeoutExpired as err:
 		tautomer['timers'].append(['obenergy', time.perf_counter() - step_timer_start])
 		raise RuntimeError(f"obprop timed out") from err
@@ -1969,7 +1969,7 @@ def posebusters_check(ctx, tautomer, input_file, check_values):
 		lines = read_file.readlines()
 
 	try:
-		ret = subprocess.run([ 'bust', input_file, '--outfmt', 'csv'], capture_output=True, text=True, timeout=int(ctx['main_config']['posebusters_timeout']))
+		ret = subprocess.run([ 'bust', input_file, '--outfmt', 'csv'], capture_output=True, text=True, timeout=int(ctx['config']['posebusters_timeout']))
 	except subprocess.TimeoutExpired as err:
 		tautomer['timers'].append(['posebusters', time.perf_counter() - step_timer_start])
 		raise RuntimeError(f"bust timed out") from err
