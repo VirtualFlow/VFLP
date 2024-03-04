@@ -267,6 +267,9 @@ rdkit_stereoisomer_generation_unique_correction=false
 # Enumeration of stereoisomers by RDkit can result in redundant stereoisomers
 # This can be resolved by setting this option to true. However, can be time consuming
 
+rdkit_stereoisomer_max_count=20
+# Setting maximum number of stereoisomers to be generated when using RDKit.
+
 cxcalc_stereoisomer_timeout=15
 # Time in seconds to wait to timeout for cxcalc
 
@@ -287,6 +290,7 @@ tautomerization_program_2=none
 # Possible values:
 #   * obabel
 #   * cxcalc
+#   * rdkit
 #   * none (only for tautomerization_program_2)
 
 tautomerization_obligatory=false
@@ -297,6 +301,12 @@ tautomerization_obligatory=false
 
 cxcalc_tautomerization_options=
 # any options which should be passed to the tautomerization plugin of cxcalc
+
+obabel_tautomer_max_count=20
+# Setting maximum number of tautomers to be generated when using Open Babel.
+
+rdkit_tautomer_max_count=20
+# Setting maximum number of tautomers to be generated when using RDKit.
 
 cxcalc_tautomerization_timeout=15
 # Time in seconds to wait to timeout for tautomerization with cxcalc
@@ -400,17 +410,36 @@ obabel_memory_limit=1000000
 # Recommended value: >= 500000
 
 
-****** Energy Check
+****** Energy and Conformer Check
 
 energy_check=true
-# Determines whether the potential energy is checked by obenergy (Open Babel Enegy). This can be useuful to filter out compounds with unrealistic predicted 3D geometry
+# Determines whether the potential energy is checked by obenergy (Open Babel Energy). This can be useuful to filter out compounds with unrealistic predicted 3D geometry
 # Possible values:
 #   * true
 #   * false
 
 energy_max=10000
-# Maximum allowed energy value. Recommended: 10000
+# Maximum allowed energy value (in kJ/mol). Recommended: 10000
 # Possible values: Positive integer
+
+obenergy_timeout=30
+# Time in seconds to wait to timeout for energy check with obenergy
+
+posebusters_check=true
+# Determines whether the conformer is checked by posebusters
+# Possible values:
+#   * true
+#   * false
+
+posebusters_check_values=1:1:1:1:1:1:1:1:1
+# Define which posebusters check needs to be passed (1 = needs to be passed, 0 = allowed to fail)
+# Checks: sanitization,all_atoms_connected,bond_lengths,bond_angles,internal_steric_clash,aromatic_ring_flatness,double_bond_flatness,internal_energy
+# Possible values:
+#   * colon-separated list of nine integers (0 or 1)
+#   * 1:1:1:1:1:1:1:1:1 (e.g. for all checks to be passed)
+
+posebusters_timeout=5
+# Time in seconds to wait to timeout for posebusters conformer check
 
 
 ****** Tranche Assignments

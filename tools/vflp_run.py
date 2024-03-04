@@ -62,7 +62,9 @@ from botocore.config import Config
 from rdkit import Chem
 from rdkit.Chem.MolStandardize import rdMolStandardize
 from rdkit.Chem import MolToSmiles as mol2smi
+from rdkit.Chem import MolFromSmiles as smi2mol
 from rdkit.Chem.EnumerateStereoisomers import EnumerateStereoisomers, StereoEnumerationOptions
+from rdkit.Chem.MolStandardize.rdMolStandardize import TautomerEnumerator
 
 ####################
 # Individual tasks that will be completed in parallel
@@ -416,7 +418,7 @@ def stereoisomer_generation(ctx, ligand):
 
 def tautomerization_instance(ctx, stereoisomer, program):
 	step_timer_start = time.perf_counter()
-	valid_programs = ("cxcalc", "obabel")
+	valid_programs = ("cxcalc", "obabel", "rdkit")
 
 	if(program == "none"):
 		raise RuntimeError(f"No tautomerization program remaining")
@@ -430,7 +432,11 @@ def tautomerization_instance(ctx, stereoisomer, program):
 			stereoisomer['status_sub'].append(['tautomerization', {'state': 'success', 'text': ''}])
 		elif(program == "obabel"):
 			logging.info("Starting the tautomerization with obtautomer")
-			run_obabel_tautomerization(ctx, stereoisomer)
+			run_obabel_tautomer_generation(ctx, stereoisomer)
+			stereoisomer['status_sub'].append(['tautomerization', {'state': 'success', 'text': ''}])
+		elif(program == "rdkit"):
+			logging.info("Starting the tautomerization with rdkit")
+			run_rdkit_tautomer_generation(ctx, stereoisomer)
 			stereoisomer['status_sub'].append(['tautomerization', {'state': 'success', 'text': ''}])
 	except RuntimeError as error:
 		stereoisomer['timers'].append([f'{program}_tautomerize', time.perf_counter() - step_timer_start])
@@ -491,7 +497,8 @@ def process_tautomer(ctx, ligand, tautomer):
 	# If there are specific attributes to place in remarks, do that now
 	tautomer['remarks']['additional_attr'] = []
 	for attribute_type in ctx['config']['attributes_to_generate']:
-		tautomer['remarks']['additional_attr'].append(f"{attribute_type}: {tautomer['attr'][attribute_type]}")
+		if attribute_type != "":
+			tautomer['remarks']['additional_attr'].append(f"{attribute_type}: {tautomer['attr'][attribute_type]}")
 
 	# Assign the tranches if needed
 	step_timer_start = time.perf_counter()
@@ -565,10 +572,21 @@ def process_tautomer(ctx, ligand, tautomer):
 
 		if(not obabel_check_energy(ctx, tautomer, tautomer['pdb_file'], ctx['config']['energy_max'])):
 			logging.warning("    * Warning: Ligand will be skipped since it did not pass the energy-check.")
-			tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': '' } ])
+			tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': 'not passed' } ])
 			raise RuntimeError('Failed energy check')
 		else:
-			tautomer['status_sub'].append(['energy-check', { 'state': 'success', 'text': '' } ])
+			tautomer['status_sub'].append(['energy-check', { 'state': 'success', 'text': 'passed' } ])
+
+	# Checking the conformer with posebusters
+	if (ctx['config']['posebusters_check'] == "true"):
+		logging.warning("\n * Starting to check the conformer of the ligand with posebusters")
+
+		if (not posebusters_check(ctx, tautomer, tautomer['sdf_file'], ctx['config']['posebusters_check_values'])):
+			logging.warning("    * Warning: Ligand will be skipped since it did not pass the posebusters-check.")
+			tautomer['status_sub'].append(['posebusters-check', {'state': 'failed', 'text': 'not passed'}])
+			raise RuntimeError('Failed posebusters check')
+		else:
+			tautomer['status_sub'].append(['posebusters-check', {'state': 'success', 'text': 'passed'}])
 
 	## Target formats
 
@@ -735,7 +753,8 @@ def generate_attributes(ctx, ligand, tautomer):
 				rdkit_run = 1
 		else:
 			# We need to generate this one at a time
-			attribute_dict[tranche_type] = generate_single_attribute(ctx, tranche_type, ligand, tautomer, smi_file)
+			if tranche_type != "":
+				attribute_dict[tranche_type] = generate_single_attribute(ctx, tranche_type, ligand, tautomer, smi_file)
 
 	if(obabel_run == 1):
 		run_obabel_attributes(ctx, tautomer, smi_file, attributes)
@@ -971,6 +990,10 @@ def run_conformation_instance(ctx, tautomer, program, output_file):
 			chemaxon_conformation(ctx, tautomer, output_file)
 		elif(program == "obabel"):
 			obabel_conformation(ctx, tautomer, output_file)
+		elif(program == "rdkit"):
+			# Todo: add RDKit-based conformer generation (ETKDG-based)
+			# https://github.com/rdkit/rdkit/blob/master/Docs/Book/Cookbook.rst#conformer-generation-with-etkdg
+			pass
 	except RuntimeError as error:
 		tautomer['timers'].append([f'{program}_conformation', time.perf_counter() - step_timer_start])
 		raise error
@@ -1613,6 +1636,7 @@ def perform_isomer_unique_correction(ctx, sterio_smiles_ls):
 	sdf_file = ctx['intermediate_dir'] / "sterio.sdf"
 
 	isomers_canon = []
+	isomers_canon_unique = []
 
 	for smi in sterio_smiles_ls:
 		with open(smi_file, 'w') as f:
@@ -1634,11 +1658,12 @@ def perform_isomer_unique_correction(ctx, sterio_smiles_ls):
 			new_smi_canon = Chem.MolToSmiles(mol, canonical=True)
 
 			isomers_canon.append(new_smi_canon)
+			isomers_canon_unique = list(set(isomers_canon))
 
 		except Exception:
 			continue
 
-	return list(set(isomers_canon))
+	return isomers_canon_unique
 
 
 def run_rdkit_stereoisomer_generation(ctx, ligand, assigned=True):
@@ -1670,14 +1695,18 @@ def run_rdkit_stereoisomer_generation(ctx, ligand, assigned=True):
 	write_file_single(local_file, ligand['smi_neutralized'])
 
 	m = Chem.MolFromSmiles(ligand['smi_neutralized'])
-	if assigned == True:  # Faster
-		opts = StereoEnumerationOptions(unique=True)
-	else:
-		opts = StereoEnumerationOptions(unique=True, onlyUnassigned=False)
 
-	isomers = tuple(EnumerateStereoisomers(m, options=opts))
+	if m is None or m == "":
+		return
+
+	if assigned == True:  # Faster
+		opts = StereoEnumerationOptions(unique=True, tryEmbedding=True, maxIsomers=int(ctx['config']['rdkit_stereoisomer_max_count']))
+	else:
+		opts = StereoEnumerationOptions(unique=True, onlyUnassigned=False, tryEmbedding=True, maxIsomers=int(ctx['config']['rdkit_stereoisomer_max_count']))
 
 	ligand['stereoisomer_smiles'] = []
+	isomers = tuple(EnumerateStereoisomers(m, options=opts))
+
 	for smi in sorted(Chem.MolToSmiles(x, isomericSmiles=True) for x in isomers):
 		ligand['stereoisomer_smiles'].append(smi)
 
@@ -1696,7 +1725,7 @@ def run_rdkit_stereoisomer_generation(ctx, ligand, assigned=True):
 
 # Step 3b: Tautomerization by OBabel
 
-def run_obabel_tautomerization(ctx, stereoisomer):
+def run_obabel_tautomer_generation(ctx, stereoisomer):
 
 	input_file = f"{ctx['temp_dir'].name}/obabel.tauto_input.smi"
 	output_file = f"{ctx['temp_dir'].name}/obabel.tauto_output.smi"
@@ -1712,6 +1741,9 @@ def run_obabel_tautomerization(ctx, stereoisomer):
 	stereoisomer['tautomer_smiles'] = run_obtautomer_general_get_value(cmd, output_file, timeout=ctx['config']['obabel_tautomerization_timeout'])
 	del (stereoisomer['tautomer_smiles'][-1])
 	stereoisomer['tautomer_smiles'] = [i.strip() for i in stereoisomer['tautomer_smiles']]
+
+	if int(ctx['config']['obabel_tautomer_max_count']) != 0 and len(stereoisomer['tautomer_smiles']) > int(ctx['config']['obabel_tautomer_max_count']):
+		stereoisomer['tautomer_smiles'] = stereoisomer['tautomer_smiles'][:int(ctx['config']['obabel_tautomer_max_count'])]
 
 	stereoisomer['remarks']['tautomerization'] = "The tautomeric state was generated by Open Babel."
 
@@ -1736,6 +1768,33 @@ def run_obabel_protonation(ctx, tautomer):
 	]
 
 	tautomer['smi_protomer'] = run_obabel_general_get_value(cmd, output_file, timeout=ctx['config']['obabel_protonation_timeout'])
+
+
+# Step 3b: Tautomerization by RDKit
+def run_rdkit_tautomer_generation(ctx, stereoisomer):
+	step_timer_start = time.perf_counter()
+
+	stereoisomer['tautomer_smiles'] = []
+
+	try:
+		mol = smi2mol(stereoisomer['smi'])
+		enumerator = TautomerEnumerator()
+		enumerator.SetMaxTautomers(int(ctx['config']['rdkit_tautomer_max_count']))
+		tautomer_mols = enumerator.Enumerate(mol)
+		for mol in tautomer_mols:
+			stereoisomer['tautomer_smiles'].append(mol2smi(mol))
+	except Exception:
+		stereoisomer['timers'].append(['rdkit_tautomerization', time.perf_counter() - step_timer_start])
+		raise RuntimeError("Tautomer state generation failed")
+
+	if (len(stereoisomer['tautomer_smiles']) >= 1):
+		stereoisomer['remarks'][
+			'tautomerization'] = f"The tautomeric state was generated by RDKit."
+		stereoisomer['timers'].append(['rdkit_tautomerization', time.perf_counter() - step_timer_start])
+		return
+	else:
+		stereoisomer['timers'].append(['rdkit_tautomerization', time.perf_counter() - step_timer_start])
+		raise RuntimeError(f"No output for tautomer state generation")
 
 
 # Step 5: Assign Tranche
@@ -1822,15 +1881,18 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 	input_file = f"{ctx['temp_dir'].name}/obabel.conf.{tautomer['key']}_input.smi"
 	write_file_single(input_file, tautomer['smi_protomer'])
 
+	output_file_sdf = f"{output_file}.sdf"
 	output_file_tmp = f"{output_file}.tmp"
 	if(conformation):
-		cmd = [ '--gen3d', '-ismi', input_file, '-opdb', '-O', output_file_tmp]
+		cmd1 = [ '--gen3d', '-ismi', input_file, '-osdf', '-O', output_file_sdf]
+		cmd2 = ['-isdf', output_file_sdf, '-opdb', '-O', output_file_tmp]
 		logging.debug(f"Running obabel conformation on smi:'{tautomer['smi_protomer']}")
 	else:
-		cmd = ['-ismi', input_file, '-opdb', '-O', output_file_tmp]
+		cmd1 = ['-ismi', input_file, '-osdf', '-O', output_file_sdf]
+		cmd2 = ['-isdf', output_file_sdf, '-opdb', '-O', output_file_tmp]
 
-
-	ret = run_obabel_general(cmd, timeout=timeout)
+	run_obabel_general(cmd1, timeout=timeout)
+	ret = run_obabel_general(cmd2, timeout=timeout)
 	output_lines = ret['stdout'].splitlines()
 
 	if(must_have_output and len(output_lines) == 0):
@@ -1853,6 +1915,8 @@ def obabel_generate_pdb_general(ctx, tautomer, output_file, conformation, must_h
 
 	first_smile_component = tautomer['smi_protomer'].split()[0]
 	#tautomer['remarks']['smiles'] = f"SMILES: {first_smile_component}"
+
+	tautomer['sdf_file'] = output_file_sdf
 
 	local_remarks = tautomer['remarks'].copy()
 	local_remarks.pop('compound')
@@ -1901,7 +1965,7 @@ def obabel_check_energy(ctx, tautomer, input_file, max_energy):
 		lines = read_file.readlines()
 
 	try:
-		ret = subprocess.run([ 'obenergy', input_file], capture_output=True, text=True, timeout=30)
+		ret = subprocess.run([ 'obenergy', input_file], capture_output=True, text=True, timeout=int(ctx['config']['obenergy_timeout']))
 	except subprocess.TimeoutExpired as err:
 		tautomer['timers'].append(['obenergy', time.perf_counter() - step_timer_start])
 		raise RuntimeError(f"obprop timed out") from err
@@ -1916,18 +1980,66 @@ def obabel_check_energy(ctx, tautomer, input_file, max_energy):
 
 	if(len(output_lines) > 0):
 		# obabel v2
-		match = re.search(r"^TOTAL\s+ENERGY\s+\=\s+(?P<energy>\d+\.?\d*)\s+(?P<energy_unit>(kcal|kJ))", output_lines[-1])
+		match = re.search(r"^TOTAL\s+ENERGY\s+\=\s+(?P<energy>-?\d+\.?\d*)\s+(?P<energy_unit>(kcal|kJ))", output_lines[-1])
 		if(match):
 			energy_value = float(match.group('energy'))
 			if(match.group('energy_unit') == "kcal"):
 				energy_value *= kcal_to_kJ
 
+			tautomer['remarks']['additional_attr'].append('obenergy: ' + str(energy_value))
+
 			if(energy_value <= float(max_energy)):
 				return 1
+
+			if(energy_value > float(max_energy)):
+				return 0
 
 	tautomer['status_sub'].append(['energy-check', { 'state': 'failed', 'text': "|".join(output_lines) } ])
 
 	return 0
+
+
+def posebusters_check(ctx, tautomer, input_file, check_values):
+	step_timer_start = time.perf_counter()
+
+	with open(input_file, "r") as read_file:
+		lines = read_file.readlines()
+
+	try:
+		ret = subprocess.run([ 'bust', input_file, '--outfmt', 'csv'], capture_output=True, text=True, timeout=int(ctx['config']['posebusters_timeout']))
+	except subprocess.TimeoutExpired as err:
+		tautomer['timers'].append(['posebusters', time.perf_counter() - step_timer_start])
+		raise RuntimeError(f"bust timed out") from err
+
+	tautomer['timers'].append(['posebusters', time.perf_counter() - step_timer_start])
+
+	debug_save_output(stdout=ret.stdout, stderr=ret.stderr, tautomer=tautomer, ctx=ctx, file="posebusters_check")
+
+	output_lines = ret.stdout.splitlines()
+
+	if(len(output_lines) > 0):
+		match = output_lines[-1]
+		posebusters_values = match.split(',')[2:]
+		posebusters_values = [bool(value) for value in posebusters_values]
+		check_values = [bool(int(value)) for value in check_values]
+
+		check = True
+		for idx, posebusters_value in enumerate(posebusters_values):
+			if not posebusters_value and check_values[idx]:
+				check = False
+				break
+
+		if(check):
+			tautomer['remarks']['additional_attr'].append('posebusters: ' + str(check))
+			return 1
+		else:
+			tautomer['remarks']['additional_attr'].append('posebusters: ' + str(check))
+			return 0
+
+	tautomer['status_sub'].append(['posebusters-check', { 'state': 'failed', 'text': "|".join(output_lines) } ])
+
+	return 0
+
 
 # Step 9: Generate Target Formats
 
