@@ -290,6 +290,7 @@ tautomerization_program_2=none
 # Possible values:
 #   * obabel
 #   * cxcalc
+#   * rdkit
 #   * none (only for tautomerization_program_2)
 
 tautomerization_obligatory=false
@@ -303,6 +304,9 @@ cxcalc_tautomerization_options=
 
 obabel_tautomer_max_count=20
 # Setting maximum number of tautomers to be generated when using Open Babel.
+
+rdkit_tautomer_max_count=20
+# Setting maximum number of tautomers to be generated when using RDKit.
 
 cxcalc_tautomerization_timeout=15
 # Time in seconds to wait to timeout for tautomerization with cxcalc
