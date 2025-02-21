@@ -2260,7 +2260,7 @@ def run_epik7_protonation_batch(ctx, collection_temp_file, tasklist):
 		except Exception:
 			raise RuntimeError(f"Protonation state generation failed")
 
-	logging.debug(f"succesful batch protonation with epik7 for collection")
+	logging.debug(f"successful batch protonation with epik7 for collection")
 
 	return
 
